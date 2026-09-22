@@ -1,8 +1,15 @@
 name: pipeline
 
+# Deliberately NOT both events on every branch. Running on push AND
+# pull_request duplicates every check in the pull-request UI -- "backend
+# (push)" beside "backend (pull_request)" -- which is noise a table has to read
+# past to find the one check that actually gates the merge.
+#
+#   pull_request  ->  everything, on every branch with an open PR
+#   push to main  ->  the deploy, after a merge
 on:
   push:
-    branches: ["**"]
+    branches: [main]
   pull_request:
     branches: [main]
 
