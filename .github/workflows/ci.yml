@@ -40,9 +40,9 @@ jobs:
           FILES=$(git diff --name-only "$BASE"...HEAD 2>/dev/null || git diff --name-only HEAD~1)
           echo "changed files:"; echo "$FILES" | sed 's/^/  /'
 
-          # ci/ affects both, because the checks themselves changed
-          echo "$FILES" | grep -qE '^(backend/|ci/)'  && B=true || B=false
-          echo "$FILES" | grep -qE '^(frontend/|ci/)' && F=true || F=false
+          # ci/ and the workflow affect both: the checks themselves changed
+          echo "$FILES" | grep -qE '^(backend/|ci/|\.github/workflows/)'  && B=true || B=false
+          echo "$FILES" | grep -qE '^(frontend/|ci/|\.github/workflows/)' && F=true || F=false
 
           echo "backend=$B"  >> "$GITHUB_OUTPUT"
           echo "frontend=$F" >> "$GITHUB_OUTPUT"
@@ -168,7 +168,14 @@ jobs:
   deploy:
     name: deploy
     needs: gate
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # always() is required: backend/frontend may legitimately be skipped, and a
+    # skipped job propagates its skip to everything downstream unless the job
+    # opts out. Without this, a docs-only merge to main would silently not deploy.
+    if: >-
+      always() &&
+      needs.gate.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -196,5 +203,13 @@ jobs:
           python-version: "3.12"
 
       # "It works on my machine" is not a release.                    [M04.5]
+      # Skips only until the first deploy gives us a domain to point at; once
+      # API_URL is set this becomes a hard gate on every release.
       - name: smoke test
-        run: python ci/smoke.py "${{ vars.API_URL }}"
+        run: |
+          if [ -z "${{ vars.API_URL }}" ]; then
+            echo "API_URL is not set yet - skipping the smoke test."
+            echo "Set it as a repository variable once the backend has a domain."
+            exit 0
+          fi
+          python ci/smoke.py "${{ vars.API_URL }}"
