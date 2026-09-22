@@ -77,14 +77,15 @@ jobs:
 
       - run: npm ci || npm install
 
+      # build first: it generates next-env.d.ts, which typecheck reads
+      - name: build
+        run: npm run build
+
       - name: typecheck
         run: npm run typecheck
 
       - name: lint
         run: npm run lint
-
-      - name: build
-        run: npm run build
 
   # ---------------------------------------------------------------------------
   # DEPLOY. Reachable only through CI, and CI stops at a human.
