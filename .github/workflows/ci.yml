@@ -1,0 +1,123 @@
+name: pipeline
+
+# Every push runs the checks. A merge to main additionally deploys — but only
+# after a named human approves the `production` environment.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # SCOPE — runs first and alone, because a diff that strays outside its lane
+  # should be refused before anyone spends compute on it.
+  #
+  # This is M04.3's permission boundary made mechanical: the genuine rejection
+  # the module requires, checkable rather than narrated.
+  # ---------------------------------------------------------------------------
+  scope:
+    name: scope check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # needs history to diff against main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python ci/check_scope.py
+
+  backend:
+    name: backend
+    needs: scope
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - run: pip install -r requirements-dev.txt
+
+      # acceptance criteria are executable                    [M04.2 / M04.4]
+      - name: tests
+        run: pytest -q
+
+      # security review is not optional            [M04.4 five-pass, pass 2]
+      - name: security scan
+        run: bandit -r app/ -ll
+
+      # provenance and licensing                   [M04.4 five-pass, pass 4]
+      - name: licence check
+        run: python ../ci/check_licences.py
+
+      - name: lint
+        run: ruff check app/ tests/
+
+  frontend:
+    name: frontend
+    needs: scope
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci || npm install
+
+      - name: typecheck
+        run: npm run typecheck
+
+      - name: lint
+        run: npm run lint
+
+      - name: build
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # DEPLOY. Reachable only through CI, and CI stops at a human.
+  #
+  # There is no path from a workspace to Railway. If a table could deploy from a
+  # terminal the gate would be bypassable — and the gate is the lesson.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: deploy
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production        # <-- required reviewer configured here
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install railway cli
+        run: npm install -g @railway/cli
+
+      - name: deploy backend
+        run: railway up --service "${{ vars.RAILWAY_BACKEND_SERVICE }}" --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: deploy frontend
+        run: railway up --service "${{ vars.RAILWAY_FRONTEND_SERVICE }}" --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # "It works on my machine" is not a release.                    [M04.5]
+      - name: smoke test
+        run: python ci/smoke.py "${{ vars.API_URL }}"

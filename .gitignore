@@ -1,0 +1,23 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# env + local state
+.env
+.env.local
+*.db
+*.sqlite3
+
+# os
+.DS_Store
+Thumbs.db

@@ -1,0 +1,49 @@
+{
+  "name": "M04 Policy Assistant",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+
+  // Both services start automatically. An agent edit is visible on refresh in
+  // about two seconds -- that loop is what makes the feature feel like theirs.
+  "postCreateCommand": "cd frontend && npm install",
+  "postAttachCommand": "bash .devcontainer/start.sh",
+
+  "forwardPorts": [3000, 8000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Policy Assistant (your branch)",
+      "onAutoForward": "openPreview",
+      "visibility": "org"
+    },
+    "8000": {
+      "label": "API",
+      "onAutoForward": "silent",
+      "visibility": "org"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint",
+        "GitHub.copilot",
+        "GitHub.copilot-chat"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.testing.pytestEnabled": true,
+        "python.testing.cwd": "${workspaceFolder}/backend"
+      }
+    }
+  },
+
+  "remoteEnv": {
+    "TABLE": "${localEnv:TABLE}",
+    "NEXT_PUBLIC_API_URL": "http://localhost:8000"
+  }
+}
