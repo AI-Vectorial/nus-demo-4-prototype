@@ -1,0 +1,2 @@
+# Next.js serves this directory as static assets.
+# Tracked so the Docker build context contains it -- git ignores empty dirs.
