@@ -1,7 +1,5 @@
 name: pipeline
 
-# Every push runs the checks. A merge to main additionally deploys — but only
-# after a named human approves the `production` environment.
 on:
   push:
     branches: ["**"]
@@ -10,11 +8,52 @@ on:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # SCOPE — runs first and alone, because a diff that strays outside its lane
-  # should be refused before anyone spends compute on it.
+  # WHAT CHANGED. Runs first so we only build what the diff actually touched.
   #
-  # This is M04.3's permission boundary made mechanical: the genuine rejection
-  # the module requires, checkable rather than narrated.
+  # During the lab a table commits ticket files to tickets/ several times. Each
+  # of those triggering a full backend + frontend build would waste minutes in a
+  # session where minutes are the scarce resource.
+  # ---------------------------------------------------------------------------
+  changes:
+    name: what changed
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=50 --quiet
+            BASE="origin/${{ github.base_ref }}"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            BASE="HEAD~1"
+          else
+            git fetch origin main --depth=50 --quiet
+            BASE="origin/main"
+          fi
+
+          FILES=$(git diff --name-only "$BASE"...HEAD 2>/dev/null || git diff --name-only HEAD~1)
+          echo "changed files:"; echo "$FILES" | sed 's/^/  /'
+
+          # ci/ affects both, because the checks themselves changed
+          echo "$FILES" | grep -qE '^(backend/|ci/)'  && B=true || B=false
+          echo "$FILES" | grep -qE '^(frontend/|ci/)' && F=true || F=false
+
+          echo "backend=$B"  >> "$GITHUB_OUTPUT"
+          echo "frontend=$F" >> "$GITHUB_OUTPUT"
+          echo; echo "backend job: $B    frontend job: $F"
+
+  # ---------------------------------------------------------------------------
+  # SCOPE. Always runs, on every change, including documentation.
+  #
+  # This is M04.3's permission boundary made mechanical, and it is the one check
+  # that must never be skippable — a diff touching a protected path is exactly
+  # as wrong when it is a markdown file as when it is code.
   # ---------------------------------------------------------------------------
   scope:
     name: scope check
@@ -22,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0          # needs history to diff against main
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -30,7 +69,8 @@ jobs:
 
   backend:
     name: backend
-    needs: scope
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -62,7 +102,8 @@ jobs:
 
   frontend:
     name: frontend
-    needs: scope
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -75,7 +116,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - run: npm ci || npm install
+      - run: npm ci
 
       # build first: it generates next-env.d.ts, which typecheck reads
       - name: build
@@ -88,6 +129,37 @@ jobs:
         run: npm run lint
 
   # ---------------------------------------------------------------------------
+  # GATE. The single required status check.
+  #
+  # Always runs, so a skipped job never leaves a pull request waiting on a check
+  # that will never report. Passes when nothing that ran failed.
+  # ---------------------------------------------------------------------------
+  gate:
+    name: gate
+    needs: [scope, backend, frontend]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: verdict
+        run: |
+          echo "scope    ${{ needs.scope.result }}"
+          echo "backend  ${{ needs.backend.result }}"
+          echo "frontend ${{ needs.frontend.result }}"
+          echo
+
+          if [ "${{ needs.scope.result }}" != "success" ]; then
+            echo "The scope check did not pass. Nothing merges."
+            exit 1
+          fi
+          for result in "${{ needs.backend.result }}" "${{ needs.frontend.result }}"; do
+            case "$result" in
+              success|skipped) ;;
+              *) echo "A required job failed. Nothing merges."; exit 1 ;;
+            esac
+          done
+          echo "Everything that needed to run has passed."
+
+  # ---------------------------------------------------------------------------
   # DEPLOY. Reachable only through CI, and CI stops at a human.
   #
   # There is no path from a workspace to Railway. If a table could deploy from a
@@ -95,18 +167,18 @@ jobs:
   # ---------------------------------------------------------------------------
   deploy:
     name: deploy
-    needs: [backend, frontend]
+    needs: gate
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: production        # <-- required reviewer configured here
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
       - name: install railway cli
         run: npm install -g @railway/cli
 
-      # Each service uploads only its own directory, so the backend build
-      # never sees node_modules and the frontend never sees the venv.
+      # Each service uploads only its own directory, so the backend build never
+      # sees node_modules and the frontend never sees the venv.
       - name: deploy backend
         working-directory: backend
         run: railway up --service "${{ vars.RAILWAY_BACKEND_SERVICE }}" --detach
