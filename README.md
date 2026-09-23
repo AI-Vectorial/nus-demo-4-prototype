@@ -23,8 +23,8 @@ URL, everything after it is content rather than engineering.
 | Step | | Status |
 |---|---|---|
 | **1** | Repo, devcontainer, CI, Railway — **the deploy loop** | ✅ **done** |
-| 2 | `docs/project-brief.md` | next |
-| 3 | The RAG application — retrieval, generation, persistence — **built through the pipeline itself** | |
+| **2** | `docs/project-brief.md` | ✅ **done** |
+| 3 | The RAG application — retrieval, generation, persistence — **built through the pipeline itself** | in progress |
 | 4 | `PRD.md` + `design/` written from what exists | |
 | 5 | `pipeline/` stage files, `AGENTS.md`, `START-HERE.md` | |
 | 6 | `features/feature-1..5.md` | |
@@ -41,7 +41,9 @@ backend/                FastAPI
     api/                routers
     core/               config, database session          PROTECTED
     ingest/             corpus loading, chunking, embedding   PROTECTED
-    retrieve/           vector search                     PROTECTED
+    retrieve/           vector search over Qdrant         PROTECTED
+      store.py            the interface — domain types only
+      qdrant_store.py     the only module that imports the Qdrant client
     generate/           model call, answer composition    PROTECTED
     features/           ← one module per table
   tests/
@@ -64,6 +66,20 @@ tickets/                written during the lab — the Linear replacement
 **The split that matters:** everything the application needs in order to *function*
 is ours. Everything a table builds is a capability the application is better with and
 **fine without** — so an unfinished table breaks nothing.
+
+---
+
+## Data stores
+
+| | | |
+|---|---|---|
+| **Postgres** | corpus metadata, and the record of every exchange | `DATABASE_URL` |
+| **Qdrant** | the embedded policy passages | `QDRANT_URL`, `QDRANT_API_KEY` |
+
+Retrieval is reached through `app.retrieve.get_vector_store()`, which returns the
+interface in `app/retrieve/store.py`. **Exactly one module imports the Qdrant client**,
+and a regression test fails the build if a second one appears — so ingest, generation
+and every table feature stay free of storage detail.
 
 ---
 

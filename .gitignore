@@ -21,3 +21,11 @@ out/
 # os
 .DS_Store
 Thumbs.db
+
+# Instructor planning material. Participants clone this repo -- the demo plan,
+# the PRDs and the infrastructure spec describe the planted defect, the
+# rejection moment and the delivery script. Shipping them would tell a table
+# exactly what is meant to surprise them.
+docs/v1/
+docs/v2/
+docs/CV-NUS_*
