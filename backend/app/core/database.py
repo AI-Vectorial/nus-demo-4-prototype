@@ -25,11 +25,19 @@ class Base(DeclarativeBase):
 
 
 def _normalise(url: str) -> str:
+    """Railway's URL, pointed at this table's own database."""
     # Railway hands out postgres:// ; SQLAlchemy 2 wants postgresql+pg8000://
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+pg8000://", 1)
+
+    # One Postgres instance, one database per table. Swapping the path here --
+    # rather than trusting every session to set search_path -- means isolation
+    # holds no matter how the connection is later used.
+    if settings.database_name:
+        base, _, _ = url.rpartition("/")
+        url = f"{base}/{settings.database_name}"
     return url
 
 

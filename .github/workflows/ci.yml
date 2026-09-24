@@ -7,11 +7,17 @@ name: pipeline
 #
 #   pull_request  ->  everything, on every branch with an open PR
 #   push to main  ->  the deploy, after a merge
+#   pull_request  ->  the checks, on every table's PR
+#   push          ->  the deploy, after a merge into a table branch
+#
+# A push to table-N/build never deploys. Only a merge into table-N does, and
+# that merge needs a human. If a push could deploy, the gate would be
+# bypassable -- and the gate is the module.
 on:
   push:
-    branches: [main]
+    branches: [main, "table-[1-5]"]
   pull_request:
-    branches: [main]
+    branches: [main, "table-[1-5]"]
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -172,6 +178,8 @@ jobs:
   # There is no path from a workspace to Railway. If a table could deploy from a
   # terminal the gate would be bypassable — and the gate is the lesson.
   # ---------------------------------------------------------------------------
+  # Each table deploys to its own pair of services, decided by the branch that
+  # was merged. Table 3's merge can only ever reach table 3's deployment.
   deploy:
     name: deploy
     needs: gate
@@ -181,12 +189,22 @@ jobs:
     if: >-
       always() &&
       needs.gate.result == 'success' &&
-      github.ref == 'refs/heads/main' &&
-      github.event_name == 'push'
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/heads/table-')
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
+
+      - name: which table is this
+        id: table
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          N="${BRANCH#table-}"
+          echo "n=$N" >> "$GITHUB_OUTPUT"
+          echo "api=api-table-$N"  >> "$GITHUB_OUTPUT"
+          echo "web=web-table-$N"  >> "$GITHUB_OUTPUT"
+          echo "deploying table $N"
 
       - name: install railway cli
         run: npm install -g @railway/cli
@@ -195,13 +213,13 @@ jobs:
       # sees node_modules and the frontend never sees the venv.
       - name: deploy backend
         working-directory: backend
-        run: railway up --service "${{ vars.RAILWAY_BACKEND_SERVICE }}" --detach
+        run: railway up --service "${{ steps.table.outputs.api }}" --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: deploy frontend
         working-directory: frontend
-        run: railway up --service "${{ vars.RAILWAY_FRONTEND_SERVICE }}" --detach
+        run: railway up --service "${{ steps.table.outputs.web }}" --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 

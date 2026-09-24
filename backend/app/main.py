@@ -1,11 +1,11 @@
 """M04 Policy Assistant — backend API.
 
-STEP 1 SCAFFOLD. A walking skeleton: enough to prove the deployment loop end to
-end (branch -> PR -> CI -> human approval -> merge -> Railway) before any
-retrieval or model code exists.
+THE SCAFFOLD. Everything needed to serve, test and deploy -- and nothing that
+answers a question. Ingestion, retrieval, refusal, generation and the /ask
+endpoint are yours to build.
 
-Retrieval, generation and persistence arrive in step 3, built through the
-pipeline itself so the stage prompts are tested by the people who wrote them.
+Start with docs/PRD.md for what must be true, and docs/features.md for what to
+build first. START-HERE.md is your first two minutes.
 """
 
 from __future__ import annotations
@@ -43,14 +43,11 @@ app.add_middleware(
 
 app.include_router(health.router)
 
-# Feature routers are mounted here by the tables during the lab.
-# Each table owns exactly one module in app/features/ and one line below.
+# Your routers are mounted here.
 #
-#   app.include_router(citations.router)   Table 1
-#   app.include_router(history.router)     Table 2
-#   app.include_router(guardrail.router)   Table 3
-#   app.include_router(feedback.router)    Table 4
-#   app.include_router(audit.router)       Table 5
+#   app.include_router(ask.router)    F5 -- the endpoint that makes it a product
+#
+# See docs/features.md for what to build and in what order.
 
 
 @app.get("/")

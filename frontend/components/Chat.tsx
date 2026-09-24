@@ -37,14 +37,14 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
           Retrieval and generation arrive in step 3, built through the pipeline. */}
       <section className="chat" aria-label="Conversation">
         <div className="placeholder">
-          <strong>Step&nbsp;1 scaffold.</strong> The conversation surface is here; it
-          does not answer yet. There is no corpus, no retrieval and no model call —
-          those arrive in step&nbsp;3.
+          <strong>The scaffold.</strong> The surface is here; it does not answer yet.
+          The corpus is indexed and waiting, the stores are connected — retrieval,
+          refusal and generation are yours to build.
           <br />
           <br />
-          This page exists to prove one thing: a change can travel from a branch,
-          through CI, past a human approval, into <code>main</code>, and out to a live
-          URL.
+          Read <code>docs/PRD.md</code> for what must be true, and{" "}
+          <code>docs/features.md</code> for what to build first. Then open{" "}
+          <code>pipeline/01-shape.md</code>.
         </div>
       </section>
 
@@ -65,13 +65,13 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
       </form>
 
       {/*
-        Table feature slots. Each table mounts exactly one component here.
+        Your components go here.
 
-          <Citations />   Table 1
-          <History />     Table 2
-          <Guardrail />   Table 3
-          <Feedback />    Table 4
-          <AuditExport /> Table 5
+          <Answer />      F5 -- the composed answer and its citations
+          <Refusal />     F3 -- visibly different from an answer, and from an error
+          <Degraded />    F4 -- the kill switch, shown honestly
+
+        docs/features.md has the order. Build F1-F5, deploy, then choose.
       */}
 
       <footer>

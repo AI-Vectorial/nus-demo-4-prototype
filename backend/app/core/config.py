@@ -25,7 +25,13 @@ class Settings:
     allowed_origins: list[str] = field(default_factory=_origins)
 
     # Postgres holds the corpus metadata and the record of every exchange.
+    # DATABASE_NAME is set per table and swapped into the URL, so each table
+    # writes to its own database on the shared instance.
     database_url: str = os.getenv("DATABASE_URL", "")
+    database_name: str = os.getenv("DATABASE_NAME", "")
+
+    # Which table this deployment belongs to. Display only.
+    table_id: str = os.getenv("TABLE_ID", "")
 
     # Qdrant holds the embedded passages.
     qdrant_url: str = os.getenv("QDRANT_URL", "http://localhost:6333")
