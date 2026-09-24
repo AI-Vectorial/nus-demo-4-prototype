@@ -1,0 +1,113 @@
+# Aldermere Bank — internal policy corpus
+#
+# Every document in this directory is fictional. Aldermere Bank does not exist.
+# No real institution, person, product or policy text appears anywhere.
+#
+# THIS FILE IS PROTECTED. ci/check_scope.py refuses any change to backend/corpus/.
+# If retrieval performs badly, fix retrieval. Never the corpus.
+
+corpus:
+  name: Aldermere Bank internal policy
+  documents: 5
+  current: 4
+  superseded: 1
+
+documents:
+  - id: travel-expense-policy
+    file: travel-expense-policy-v3.1.md
+    title: Travel and Expense Policy
+    version: "3.1"
+    effective: 2026-04-01
+    supersedes: "3.0"
+    owner: Group Finance
+    status: current
+
+  - id: travel-expense-policy
+    file: travel-expense-policy-v3.0.md
+    title: Travel and Expense Policy
+    version: "3.0"
+    effective: 2025-04-01
+    superseded_by: "3.1"
+    superseded_on: 2026-04-01
+    owner: Group Finance
+    status: superseded
+
+  - id: client-onboarding-kyc
+    file: client-onboarding-kyc-v2.4.md
+    title: Client Onboarding and KYC Refresh Policy
+    version: "2.4"
+    effective: 2026-01-15
+    supersedes: "2.3"
+    owner: Financial Crime Compliance
+    status: current
+
+  - id: records-retention
+    file: records-retention-v4.0.md
+    title: Records Retention and Data Handling Policy
+    version: "4.0"
+    effective: 2026-02-01
+    supersedes: "3.2"
+    owner: Group Legal and Company Secretariat
+    status: current
+
+  - id: outsourcing-third-party
+    file: outsourcing-third-party-v1.8.md
+    title: Outsourcing and Third-Party Risk Policy
+    version: "1.8"
+    effective: 2026-03-01
+    supersedes: "1.7"
+    owner: Group Operational Risk
+    status: current
+
+# ---------------------------------------------------------------------------
+# Deliberate properties. Each exists so a specific behaviour is demonstrable.
+# ---------------------------------------------------------------------------
+
+known_conflict:
+  summary: >-
+    Records Retention requires client correspondence to be kept for seven years from
+    the end of the relationship. Outsourcing requires a provider to destroy all copies
+    within five years of termination. Both documents are current. Where a provider
+    holds the only copy, the two cannot both be satisfied.
+  documents:
+    - id: records-retention
+      section: "4.1 General table — client correspondence"
+      requires: 7 years from end of relationship
+    - id: outsourcing-third-party
+      section: "6.4 Return and destruction on exit"
+      requires: destruction within 5 years of termination
+  resolution: >-
+    Unresolved by design. Outsourcing section 6.4 carries a note telling the reader to
+    escalate to Group Legal and Group Operational Risk jointly and NOT to resolve it
+    locally. This is the real-world answer -- the conflict is a governance problem the
+    bank already has, not one its software should decide.
+  teaches: >-
+    PRD decision D6. A team that resolves this in code has made their software decide
+    which policy wins. Saying so is a better answer than a clever implementation.
+
+superseded_version:
+  summary: >-
+    The travel expense approval threshold changed from GBP 50 to GBP 75 on 1 April 2026.
+    Both versions are indexed. A question about "the approval threshold" is answerable
+    two different ways depending on which version is retrieved.
+  teaches: >-
+    REQ-I7 and PRD decision D4. Superseded documents are indexed WITH their status, not
+    excluded -- otherwise "is this still current?" becomes unanswerable.
+
+exact_threshold:
+  summary: >-
+    Travel and Expense section 4.2 states that claims of GBP 75 OR MORE require
+    line-manager approval, and says explicitly that a claim of exactly GBP 75 requires
+    approval.
+  teaches: >-
+    The boundary. An implementation using > rather than >= passes every happy-path test
+    and fails at exactly 75. This is where M04 Lab 17's planted defect lives.
+
+deliberate_gap:
+  summary: >-
+    Nothing in this corpus covers expenses for a family member, partner or dependant
+    accompanying an employee on business travel. The Travel and Expense Policy is silent.
+  teaches: >-
+    Refusal. "Can I expense my partner's flight?" must produce a refusal that points at
+    Group Finance, not a plausible invention. This is the brief's section 12 example and
+    the product's defining behaviour.
