@@ -268,16 +268,14 @@ def _refusal(reason: str, owner_hint: str | None) -> str:
     document names an owner in its front matter, so a refusal can name a real
     team to ask instead.
     """
-    parts = ["I could not find anything in Aldermere's policy corpus that answers this."]
-    if reason:
-        parts.append(reason)
-    if owner_hint:
-        parts.append(
-            f"{owner_hint} owns the closest policy and can tell you whether a rule exists."
-        )
-    else:
-        parts.append(
-            "The Policy Office can tell you whether a rule exists outside the published corpus."
-        )
-    parts.append("I have not guessed an answer, because a wrong one here is worse than none.")
-    return " ".join(parts)
+    # One statement, then where to go. The reason from retrieval already says
+    # "the policy corpus does not cover this", so opening with our own version
+    # of the same sentence said it twice -- which is how it read on the
+    # deployed build.
+    lead = reason.strip() if reason else "The policy corpus does not cover this."
+    owner = owner_hint or "The Policy Office"
+    pointer = (
+        f"{owner} can tell you whether a rule exists outside the published corpus. "
+        "No answer has been guessed, because a wrong one here is worse than none."
+    )
+    return lead + chr(10) + chr(10) + pointer

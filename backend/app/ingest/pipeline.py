@@ -50,9 +50,29 @@ def ingest(force: bool = False) -> dict[str, int]:
     }
 
 
+def _embedding_text(chunk: Chunk) -> str:
+    """What gets embedded: the passage, prefixed with where it came from.
+
+    The body alone often does not contain the words someone would search with.
+    "6.3 Subsistence" reads "Meals are reimbursable on days involving business
+    travel, subject to the following daily limits" -- no "Travel", no "Expense",
+    no "Subsistence" anywhere in the vector, because those words are in the
+    headings, not the prose.
+
+    Measured on the deployed build: "what is the limit for an evening meal"
+    matched, "what is the cap for an evening meal" did not, and the difference
+    was one word the passage never contained.
+
+    The STORED text is untouched -- only the vector sees this prefix -- so
+    citations and the composed answer still show the passage as written.
+    """
+    header = f"{chunk.document_title} - {chunk.section}"
+    return header + chr(10) + chr(10) + chunk.text
+
+
 def _embedded(chunks: list[Chunk]) -> list[Passage]:
     """Chunks with their vectors. embed() batches, so this is one pass (REQ-I6)."""
-    vectors = embed([chunk.text for chunk in chunks])
+    vectors = embed([_embedding_text(chunk) for chunk in chunks])
     return [
         Passage(
             id=chunk.id,
