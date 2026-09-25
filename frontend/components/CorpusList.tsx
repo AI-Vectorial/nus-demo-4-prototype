@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 
 import Shell from "./Shell";
 import StatusBadge from "./StatusBadge";
-import { ChevronRightIcon, PageIcon } from "./Icons";
+import { ArrowLeftIcon, ChevronRightIcon, PageIcon } from "./Icons";
 import { ApiError, getCorpus } from "@/lib/api";
 import { formatEffective } from "@/lib/format";
 import type { CorpusListItem } from "@/lib/types";
@@ -34,7 +34,6 @@ function corpusHref(doc: { id: string; version: string; status: string }): strin
 export default function CorpusList({ apiUrl }: { apiUrl: string }) {
   const [documents, setDocuments] = useState<CorpusListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -56,22 +55,25 @@ export default function CorpusList({ apiUrl }: { apiUrl: string }) {
   const count = documents?.length ?? 0;
 
   return (
-    <Shell
-      collapsed={collapsed}
-      onToggleCollapsed={() => setCollapsed((value) => !value)}
-      topbar={
-        <div className="topbar-stack">
-          <h1 className="topbar-title">Corpus</h1>
-          <p className="topbar-sub">
-            {documents === null
-              ? "Aldermere Bank internal policy"
-              : `${count} ${count === 1 ? "document" : "documents"}`}
-          </p>
-        </div>
-      }
-    >
+    <Shell>
       <div className="page-scroll">
         <div className="page">
+          {/* REQ-B6. The list needs a way back to the assistant that is not
+              the chrome: an arrow alone is a guess, so it carries the word. */}
+          <Link href="/" className="back-link">
+            <ArrowLeftIcon />
+            Back
+          </Link>
+
+          <div className="page-head">
+            <h1 className="page-title">Corpus</h1>
+            <p className="page-sub">
+              {documents === null
+                ? "Aldermere Bank internal policy"
+                : `${count} ${count === 1 ? "document" : "documents"}`}
+            </p>
+          </div>
+
           {error && <p className="error-line">{error}</p>}
           {!error && documents === null && (
             <p className="pending">Loading the corpus…</p>

@@ -5,6 +5,10 @@
  *
  * Sections down the left, text beside them -- so a reader who arrived from a
  * citation can find the section it named without scrolling the whole policy.
+ *
+ * The text is Markdown (REQ-U12). Rendering it as markup is not decoration:
+ * the tables are where the thresholds, the caps and the retention periods
+ * live, and as raw pipes and dashes they cannot be read at all.
  */
 
 import Link from "next/link";
@@ -14,7 +18,8 @@ import Shell from "./Shell";
 import StatusBadge from "./StatusBadge";
 import { ArrowLeftIcon } from "./Icons";
 import { ApiError, getCorpusDocument } from "@/lib/api";
-import { formatEffective, paragraphs, sectionSlug } from "@/lib/format";
+import { formatEffective, sectionSlug } from "@/lib/format";
+import Markdown from "@/lib/markdown";
 import type { CorpusDocument } from "@/lib/types";
 
 export default function CorpusDocumentView({
@@ -29,7 +34,6 @@ export default function CorpusDocumentView({
   const [doc, setDoc] = useState<CorpusDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<string | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -84,68 +88,69 @@ export default function CorpusDocumentView({
     (doc && doc.sections.length > 0 ? sectionSlug(doc.sections[0].heading, 0) : null);
 
   return (
-    <Shell
-      collapsed={collapsed}
-      onToggleCollapsed={() => setCollapsed((value) => !value)}
-      topbar={
-        <>
-          <Link href="/corpus" className="icon-button" aria-label="Back to the corpus">
+    <Shell>
+      <div className="page-scroll">
+        <div className="doc-frame">
+          {/* REQ-B6. An arrow and the word, back to the list it came from. */}
+          <Link href="/corpus" className="back-link">
             <ArrowLeftIcon />
+            Back
           </Link>
-          <div className="topbar-stack">
-            <h1 className="topbar-title">{doc ? doc.title : "Document"}</h1>
+
+          <div className="page-head">
+            <div className="page-head-row">
+              <h1 className="page-title">{doc ? doc.title : "Document"}</h1>
+              {doc && <StatusBadge status={doc.status} />}
+            </div>
             {doc && (
-              <p className="topbar-sub">
+              <p className="page-sub">
                 {doc.owner} · v{doc.version} · effective{" "}
                 {formatEffective(doc.effective)}
               </p>
             )}
           </div>
-          {doc && <StatusBadge status={doc.status} />}
-        </>
-      }
-    >
-      <div className="page-scroll">
-        {error && <p className="error-line">{error}</p>}
-        {!error && !doc && <p className="pending">Loading the document…</p>}
 
-        {doc && (
-          <div className="doc-layout">
-            <nav className="section-rail" aria-label="Sections">
-              <ul>
+          {error && <p className="error-line">{error}</p>}
+          {!error && !doc && <p className="pending">Loading the document…</p>}
+
+          {doc && (
+            <div className="doc-layout">
+              <nav className="section-rail" aria-label="Sections">
+                <ul>
+                  {doc.sections.map((section, index) => {
+                    const slug = sectionSlug(section.heading, index);
+                    return (
+                      <li key={slug}>
+                        <a
+                          href={`#${slug}`}
+                          className={
+                            slug === activeSlug ? "section-link active" : "section-link"
+                          }
+                          aria-current={slug === activeSlug ? "true" : undefined}
+                          onClick={() => setActive(slug)}
+                        >
+                          {section.heading}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+
+              <article className="doc-text">
                 {doc.sections.map((section, index) => {
                   const slug = sectionSlug(section.heading, index);
                   return (
-                    <li key={slug}>
-                      <a
-                        href={`#${slug}`}
-                        className={slug === activeSlug ? "section-link active" : "section-link"}
-                        aria-current={slug === activeSlug ? "true" : undefined}
-                        onClick={() => setActive(slug)}
-                      >
-                        {section.heading}
-                      </a>
-                    </li>
+                    <section key={slug} id={slug}>
+                      <h2>{section.heading}</h2>
+                      <Markdown text={section.text} />
+                    </section>
                   );
                 })}
-              </ul>
-            </nav>
-
-            <article className="doc-text">
-              {doc.sections.map((section, index) => {
-                const slug = sectionSlug(section.heading, index);
-                return (
-                  <section key={slug} id={slug}>
-                    <h2>{section.heading}</h2>
-                    {paragraphs(section.text).map((para, paraIndex) => (
-                      <p key={paraIndex}>{para}</p>
-                    ))}
-                  </section>
-                );
-              })}
-            </article>
-          </div>
-        )}
+              </article>
+            </div>
+          )}
+        </div>
       </div>
     </Shell>
   );

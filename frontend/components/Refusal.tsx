@@ -15,6 +15,8 @@
 
 import Link from "next/link";
 
+import { InlineMarkdown } from "@/lib/markdown";
+
 export default function Refusal({ reason }: { reason: string }) {
   const parts = reason
     .split(/\n\s*\n/)
@@ -28,12 +30,18 @@ export default function Refusal({ reason }: { reason: string }) {
   return (
     <>
       <div className="refusal">
-        <p className="lead">{lead}</p>
+        <p className="lead">
+          <InlineMarkdown text={lead} />
+        </p>
         {middle.map((para, index) => (
-          <p key={index}>{para}</p>
+          <p key={index}>
+            <InlineMarkdown text={para} />
+          </p>
         ))}
         <p className="next">
-          {next ?? (
+          {next !== null ? (
+            <InlineMarkdown text={next} />
+          ) : (
             <>
               Every policy in the <Link href="/corpus">corpus</Link> lists the team
               that owns it.

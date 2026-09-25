@@ -5,7 +5,8 @@
  *
  * Two states: an empty one that invites a question (REQ-U1), and a thread with
  * a composer pinned under it. The conversation id returned by the first answer
- * rides on every question after it (REQ-U8); New chat drops it (REQ-C6).
+ * rides on every question after it (REQ-U8); Reset in the top bar drops it and
+ * returns to the empty state (REQ-C6, REQ-U9).
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -35,7 +36,6 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [pending, setPending] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
 
   const nextId = useRef(0);
   const threadEnd = useRef<HTMLDivElement>(null);
@@ -51,9 +51,6 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
     if (!trimmed || pending) return;
 
     setQuestion("");
-    // REQ-U9: the rail narrows when the conversation begins -- and only then,
-    // so that reopening it mid-conversation sticks.
-    if (turns.length === 0) setCollapsed(true);
     setTurns((current) => [
       ...current,
       { kind: "question", id: nextId.current++, text: trimmed },
@@ -83,11 +80,15 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
     }
   }
 
-  function newChat() {
+  /**
+   * Reset. The conversation id goes with the turns -- keeping it would
+   * silently answer the next question with the thread the reader just
+   * cleared, which is the opposite of what the word promises.
+   */
+  function reset() {
     setTurns([]);
     setConversationId(null);
     setQuestion("");
-    setCollapsed(false);
   }
 
   function onSubmit(event: React.FormEvent) {
@@ -95,16 +96,8 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
     void submit(question);
   }
 
-  const firstQuestion = turns.find((turn) => turn.kind === "question");
-  const title = firstQuestion?.kind === "question" ? firstQuestion.text : "New chat";
-
   return (
-    <Shell
-      collapsed={collapsed}
-      onToggleCollapsed={() => setCollapsed((value) => !value)}
-      onNewChat={newChat}
-      topbar={started ? <h1 className="topbar-title">{title}</h1> : undefined}
-    >
+    <Shell onReset={reset}>
       {started ? (
         <>
           <div className="thread-scroll">

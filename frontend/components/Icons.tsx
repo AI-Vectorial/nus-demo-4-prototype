@@ -1,5 +1,5 @@
 /**
- * The icon set. Inline SVG rather than a dependency -- six shapes do not
+ * The icon set. Inline SVG rather than a dependency -- five shapes do not
  * justify a package, and these inherit currentColor so the tokens in
  * globals.css keep deciding the colour.
  *
@@ -16,14 +16,6 @@ const base = {
   "aria-hidden": true,
   focusable: false,
 };
-
-export function MenuIcon() {
-  return (
-    <svg {...base} className="icon">
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </svg>
-  );
-}
 
 /** The send control. Up-and-away, because the question leaves the composer. */
 export function SendIcon() {
