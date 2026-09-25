@@ -39,10 +39,31 @@ class Settings:
     qdrant_collection: str = os.getenv("QDRANT_COLLECTION", "policy_passages")
 
     # Must match the embedding model. Changing it means re-indexing the corpus.
-    embedding_dim: int = int(os.getenv("EMBEDDING_DIM", "1024"))
+    embedding_dimensions: int = int(os.getenv("EMBEDDING_DIMENSIONS", "1536"))
+
+    # --- OpenRouter: the only model credential -----------------------------
+    openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
+    openrouter_base_url: str = os.getenv(
+        "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
+    )
+
+    llm_model: str = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
+    llm_timeout_seconds: int = int(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
+    llm_max_retries: int = int(os.getenv("LLM_MAX_RETRIES", "3"))
+
+    # Your decision -- PRD section 9, D0. The Qdrant collection is created at
+    # whatever dimension you index with, so these two must agree.
+    embedding_model_slug: str = os.getenv(
+        "EMBEDDING_MODEL_SLUG", "openai/text-embedding-3-small"
+    )
+    embedding_batch_size: int = int(os.getenv("EMBEDDING_BATCH_SIZE", "96"))
+
+    # Turning generation off must leave a working policy search behind.
+    generation_enabled: bool = os.getenv("GENERATION_ENABLED", "true").lower() != "false"
 
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
+    # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
     min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
 
     @property

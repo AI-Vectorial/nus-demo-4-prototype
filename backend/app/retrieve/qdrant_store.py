@@ -29,7 +29,7 @@ class QdrantVectorStore:
         dim: int | None = None,
     ) -> None:
         self.collection = collection or settings.qdrant_collection
-        self.dim = dim or settings.embedding_dim
+        self.dim = dim or settings.embedding_dimensions
         self._client = QdrantClient(
             url=url or settings.qdrant_url,
             api_key=api_key or settings.qdrant_api_key or None,
