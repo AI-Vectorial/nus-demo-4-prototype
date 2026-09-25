@@ -133,8 +133,8 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-C3** | A follow-up question is answered **with the recent turns in context** |
 | **REQ-C4** | How many turns is configurable (`CONTEXT_MESSAGES`), default **5** |
 | **REQ-C5** | **Retrieval still runs on every turn.** Context informs the answer; it never replaces the search |
-| **REQ-C7** | A follow-up is **embedded together with the questions before it**, not on its own |
 | **REQ-C6** | **New chat** starts a fresh conversation with no prior context |
+| **REQ-C7** | A follow-up is **embedded together with the questions before it**, not on its own |
 
 > **REQ-C5 is the trap.** It is tempting to skip retrieval on a follow-up because "we
 > already have the passages". Do not. *"And what about above £500?"* needs different
