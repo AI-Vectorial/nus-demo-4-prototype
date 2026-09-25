@@ -13,7 +13,7 @@ on purpose, and the gate is where they defend them.
 |---|---|
 | `tickets/T1-*.md` | the ticket from stage 01 |
 | `docs/PRD.md` §4–§7 | the fixed contracts |
-| **`docs/PRD.md` §9** | **the decisions that are yours** |
+| **`docs/PRD.md` §10** | **the decisions that are yours** |
 
 ## Output
 
@@ -35,7 +35,7 @@ on purpose, and the gate is where they defend them.
 ```
 Before you write a plan, run the decision interview.
 
-docs/PRD.md section 9 lists decisions that are deliberately left to us.
+docs/PRD.md section 10 lists decisions that are deliberately left to us.
 For EACH one, in a single message, give me:
 
   - the decision, in one line
@@ -56,17 +56,18 @@ gate, out loud, because it is the exact failure the exercise exists to surface.
 
 ## The decisions
 
-From PRD §9 — chunk size and overlap · the refusal threshold and how it was chosen ·
-how many passages to retrieve · superseded policies · what a refusal says · **what
-happens when two policies conflict** · citation grouping · when the record is written.
+From PRD §10 — the embedding model and its dimensions · chunk size and overlap · the
+refusal threshold and how it was chosen · how many passages to retrieve · superseded
+policies · what a refusal says · **what happens when two policies conflict** · citation
+grouping · **how much conversation a follow-up sees** · **whether a follow-up
+re-retrieves**.
 
-Plus, because the corpus is not indexed yet:
+> **Two of those bite hardest.** The embedding dimension fixes the Qdrant collection at
+> creation, so changing it later means re-indexing. And REQ-C5 requires retrieval to run
+> on *every* turn — skipping it on a follow-up gives a confident answer from the previous
+> question's passages, which looks right and is not.
 
-| | |
-|---|---|
-| **Embedding model and dimensions** | `text-embedding-3-small` is 1536, `-large` is 3072. Cost, quality, and **the Qdrant collection is fixed at the dimension you first create it with** — changing later means re-indexing |
-
-> **Every answer goes into configuration, not into code.** PRD §7 has the names. A value
+> **Every answer goes into configuration, not into code.** PRD §8 has the names. A value
 > the team chose should be visible in one file, not buried in three.
 
 ---
@@ -107,7 +108,7 @@ Five questions. **Be ready to answer without opening the code.**
 
 ## Before you leave this stage
 
-- [ ] Every PRD §9 decision has an answer **and a human's reason**
+- [ ] Every PRD §10 decision has an answer **and a human's reason**
 - [ ] The plan fits on one page
 - [ ] It names the riskiest part
 - [ ] It says what is **not** being done

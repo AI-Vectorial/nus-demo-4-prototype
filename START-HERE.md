@@ -28,10 +28,10 @@ vector store — nobody else can reach them, and you cannot reach anybody else's
 | 2 | **`docs/PRD.md`** | **what must be true. The contract** |
 | 3 | `docs/features.md` | what to build first |
 
-> **PRD §9 is the one to read twice.** Eight decisions are deliberately left to
-> you — chunk size, the refusal threshold, what happens when two policies
-> contradict each other. **You will be asked to defend your answers**, and *"the
-> agent chose it"* is a failed answer.
+> **PRD §10 is the one to read twice.** Ten decisions are deliberately left to
+> you — chunk size, the refusal threshold, how much conversation a follow-up
+> sees, what happens when two policies contradict each other. **You will be
+> asked to defend your answers**, and *"the agent chose it"* is a failed answer.
 
 ---
 
@@ -53,12 +53,20 @@ agent and what has to be true before you move on.
 
 ## 4. What you are building
 
-The corpus is already written — four Aldermere Bank policy documents in
+The corpus is already written — five Aldermere Bank policy documents in
 `backend/corpus/`. **It is not indexed.** Indexing it is the first thing you build.
 
 ```
 F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──▶ F5 ask + UI ──▶ DEPLOY
+                                                                  │
+                                           F6 follow-up ◀─────────┘
+                                           F7 corpus browser
 ```
+
+Two routes: **`/`** the assistant, **`/corpus`** the documents. A left rail with
+**New chat** and **Corpus**, and nothing else.
+
+**No settings page. No conversation list.** Both are explicitly out of scope.
 
 **Deploy the moment F5 works.** Do not wait to be finished.
 
@@ -83,9 +91,9 @@ worse outcome — so if you are running short, **cut scope, never a stage.**
 
 | | |
 |---|---|
-| Edit `docs/PRD.md`, `pipeline/`, `ci/`, `.github/` or **`backend/corpus/`** | CI refuses the build |
+| Edit `docs/`, `pipeline/`, `ci/`, `.github/` or **`backend/corpus/`** | CI refuses the build |
 | Push straight to `table-N` | Pull request only, and it needs an approval |
-| Let your agent decide a PRD §9 question for you | It is your decision, and you will be asked |
+| Let your agent decide a PRD §10 question for you | It is your decision, and you will be asked |
 
 > **The corpus is the one you will be tempted by.** When retrieval performs
 > badly, editing a policy document so it contains the words you searched for

@@ -6,48 +6,74 @@ document says *what* must be true of it.
 | | |
 |---|---|
 | **Product** | Policy Assistant, for the fictional **Aldermere Bank** |
+| **Stack** | **FastAPI** (Python 3.12) · **React** via Next.js · Postgres · Qdrant · OpenRouter |
 | **Brief** | [`project-brief.md`](project-brief.md) |
 | **Features** | [`features.md`](features.md) |
-| **Version** | 1.0 |
+| **UI target** | the eight screens you were shown — build to them |
+| **Version** | 2.0 |
 
 > ### How to read this
 >
-> **§3–§7 are fixed.** The API shape, the data model and the vector payload are
-> contracts. Five teams build against them so five results are comparable, and so the
-> checks in `ci/` can test anything.
+> **§4–§8 are fixed.** The routes, the data model and the vector payload are contracts.
+> Five tables build against them so five results are comparable, and so the checks in
+> `ci/` can test anything.
 >
-> **§9 is yours.** Every decision in it is deliberately unresolved. You will be asked to
+> **§10 is yours.** Every decision in it is deliberately unresolved. You will be asked to
 > defend your answers at the plan gate. *"The agent chose it"* is not an answer.
 
 ---
 
 # 1. What you are building
 
-A staff member types a policy question in plain language. The assistant finds the
-relevant passages in Aldermere's policy corpus, composes an answer **from those passages
-and nothing else**, and shows which sections it used.
+A staff member opens the assistant and asks a policy question in plain language. The
+assistant finds the relevant passages in Aldermere's policy corpus, composes an answer
+**from those passages and nothing else**, and shows which sections it used.
+
+They can **ask a follow-up**, and it understands what "it" refers to.
 
 When the corpus cannot support an answer, **it says so and stops.**
 
+They can also **browse the corpus** — see the five policy documents and read any section
+the assistant cited.
+
 ```
 question ──▶ embed ──▶ search Qdrant ──▶ enough?
-                                           │
-                            ┌──────────────┴──────────────┐
-                            │ no                          │ yes
-                            ▼                             ▼
-                        REFUSE                    compose answer
-                     (no model call)              from passages
-                            │                             │
-                            └──────────┬──────────────────┘
+   ▲                                       │
+   │                        ┌──────────────┴──────────────┐
+   │                        │ no                          │ yes
+   │                        ▼                             ▼
+   │                    REFUSE                    compose answer
+   │                 (no model call)              from passages
+   │                        │                     + recent turns
+   │                        └──────────┬──────────────────┘
+   │                                   ▼
+   └──── follow-up ────── save the turn to the conversation
                                        ▼
-                             record it in Postgres
-                                       ▼
-                                   respond
+                                    respond
 ```
 
 ---
 
-# 2. The user and the outcome
+# 2. The screens
+
+Three routes. **No settings page. No conversation list.**
+
+| Route | What it is |
+|---|---|
+| **`/`** | The assistant. Empty state → ask → answer → follow-up. A persistent left rail with **New chat** and **Corpus** |
+| **`/corpus`** | The five documents, each with owner, version, effective date and status |
+| **`/corpus/[id]`** | One document, with its sections down the left and the text beside them |
+
+**The left rail** collapses to a narrow strip once a conversation starts. It holds
+**New chat** and **Corpus**, and nothing else.
+
+> **Why no conversation list.** One conversation at a time is enough to demonstrate
+> follow-up, and a history browser is a feature you would build after shipping, not
+> before. **Conversations are still persisted** — the data is there when it is wanted.
+
+---
+
+# 3. The user and the outcome
 
 Operations and front-office staff who hit a policy question mid-task. **The policy
 question is never the job** — it is an obstacle in front of the job.
@@ -60,7 +86,7 @@ refusal is a good outcome. An invention is not.
 
 ---
 
-# 3. Functional requirements
+# 4. Functional requirements
 
 Each has an id. Your acceptance criteria should reference them.
 
@@ -73,7 +99,7 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-I3** | Every passage carries its document id, title, section, version and status |
 | **REQ-I4** | Re-running ingestion changes nothing — **same passage count, same ids** |
 | **REQ-I5** | `--force` recreates the collection and re-embeds everything |
-| **REQ-I6** | Embedding calls are **batched**; a 200-passage corpus is not 200 requests |
+| **REQ-I6** | Embedding calls are **batched** |
 | **REQ-I7** | Superseded documents are indexed **with `status: superseded`**, not excluded |
 
 > **REQ-I7 matters.** *"Is this still current?"* is a real question. Excluding superseded
@@ -92,6 +118,29 @@ Each has an id. Your acceptance criteria should reference them.
 
 > **REQ-R3 is the one to get right.** Make refusal a *type*, not an empty list. Then
 > generation cannot run on a refusal by accident — the code will not compile that way.
+>
+> This is not theoretical. Asked *"Can I expense my partner's flight?"* with only
+> irrelevant policy in context, `gpt-oss-120b` restated the irrelevant policy rather than
+> declining. **A model asked whether it knows something will answer with whatever it
+> has.** The rule has to live in code.
+
+## Conversation
+
+| | |
+|---|---|
+| **REQ-C1** | A conversation is created on the first question and persists |
+| **REQ-C2** | Every turn — question and answer — is stored against its conversation |
+| **REQ-C3** | A follow-up question is answered **with the recent turns in context** |
+| **REQ-C4** | How many turns is configurable (`CONTEXT_MESSAGES`), default **5** |
+| **REQ-C5** | **Retrieval still runs on every turn.** Context informs the answer; it never replaces the search |
+| **REQ-C6** | **New chat** starts a fresh conversation with no prior context |
+
+> **REQ-C5 is the trap.** It is tempting to skip retrieval on a follow-up because "we
+> already have the passages". Do not. *"And what about above £500?"* needs different
+> passages from the question before it, and reusing the old ones produces a confident
+> answer from the wrong section.
+>
+> An easy mistake to make and a hard one to notice, because the answer still looks right.
 
 ## Generation
 
@@ -106,38 +155,43 @@ Each has an id. Your acceptance criteria should reference them.
 
 > **REQ-G6 is a deliverable, not a nice-to-have.** The brief's §9 states the test: *turn
 > the model off and see what is left*. What is left must be a working policy search —
-> less useful, still honest, still working. Build it now; retrofitting it means every
-> caller already assumes an answer exists.
+> less useful, still honest, still working. Build it while you write the model call;
+> retrofitting it means changing every caller.
 
-## Persistence
-
-| | |
-|---|---|
-| **REQ-P1** | Every exchange is recorded — **including refusals and degraded answers** |
-| **REQ-P2** | Citations are stored with document id, title, section, version and score |
-| **REQ-P3** | A persistence failure must not lose the user's answer |
-
-## The endpoint
+## Corpus browsing
 
 | | |
 |---|---|
-| **REQ-A1** | `POST /ask` accepts a question and returns one of three outcomes |
-| **REQ-A2** | Every response validates against §4 |
-| **REQ-A3** | Every response carries an `exchange_id` that resolves in Postgres |
-| **REQ-A4** | `/healthz` reports database, vector store and model reachability |
+| **REQ-B1** | `/corpus` lists every document with title, owner, version, effective date and status |
+| **REQ-B2** | A **superseded** document is visibly distinguished in the list |
+| **REQ-B3** | `/corpus/[id]` shows one document's sections and their text |
+| **REQ-B4** | The section list is navigable — clicking one moves to it |
+| **REQ-B5** | Documents are read from `backend/corpus/`, not duplicated in the database |
+
+## The API
+
+| | |
+|---|---|
+| **REQ-A1** | `POST /ask` accepts a question and an optional conversation, and returns one of three outcomes |
+| **REQ-A2** | Every response validates against §5 |
+| **REQ-A3** | `GET /conversations/{id}` returns a conversation and its turns |
+| **REQ-A4** | `GET /corpus` and `GET /corpus/{id}` serve the documents |
+| **REQ-A5** | `/healthz` reports database, vector store and model reachability |
 
 ## The interface
 
 | | |
 |---|---|
-| **REQ-U1** | A question can be typed and submitted |
-| **REQ-U2** | The answer renders with its citations **visible without further interaction** |
+| **REQ-U1** | An empty state invites a question, centred, with a send control |
+| **REQ-U2** | Asking shows the question, then the answer, with **citations visible without further interaction** |
 | **REQ-U3** | Each citation shows document, section, version and status |
 | **REQ-U4** | A **superseded** citation is visibly distinguished |
 | **REQ-U5** | A refusal renders differently from an answer **and** differently from an error |
 | **REQ-U6** | Degraded mode is visibly degraded — never passages shown as if they were an answer |
 | **REQ-U7** | A pending state shows while waiting |
-| **REQ-U8** | It works at phone width |
+| **REQ-U8** | A follow-up can be asked without losing the conversation above it |
+| **REQ-U9** | The left rail offers **New chat** and **Corpus**, and collapses once a conversation starts |
+| **REQ-U10** | It works at phone width |
 
 > **REQ-U2 is a product decision, not a layout one.** The brief's assumption A3 is that
 > *showing the source is what makes the answer trustworthy*. Hiding citations behind a
@@ -145,18 +199,16 @@ Each has an id. Your acceptance criteria should reference them.
 
 ---
 
-# 4. The API contract — fixed
+# 5. The API contract — fixed
 
-## Request
+## Ask
 
 ```http
 POST /ask
-Content-Type: application/json
-
-{ "question": "What is the approval threshold for a travel expense claim?" }
+{ "question": "What is the approval threshold?", "conversation_id": null }
 ```
 
-## Response — one shape, three outcomes
+`conversation_id` is `null` on the first question and the id thereafter.
 
 ```jsonc
 {
@@ -172,7 +224,8 @@ Content-Type: application/json
       "score": 0.82
     }
   ],
-  "exchange_id": "5f2c...",
+  "conversation_id": "9c1e...",
+  "message_id": "5f2c...",
   "latency_ms": 1840
 }
 ```
@@ -180,31 +233,51 @@ Content-Type: application/json
 | outcome | `answer` | `citations` | when |
 |---|---|---|---|
 | `answered` | the composed text | the passages used | retrieval was sufficient |
-| `refused` | **the reason, and where to go instead** | `[]` | retrieval found nothing above threshold |
+| `refused` | **the reason, and where to go instead** | `[]` | nothing scored above the threshold |
 | `degraded` | `null` | the passages found | the model was off or unreachable |
 
 > **`outcome` is explicit, never inferred.** A client must not have to deduce a refusal
 > from a null answer.
 
+## Conversation
+
+```http
+GET /conversations/{id}
+{ "id": "9c1e...", "started_at": "...", "messages": [ { "role": "user" | "assistant", ... } ] }
+```
+
+## Corpus
+
+```http
+GET /corpus            → [ { id, title, owner, version, effective, status, sections } ]
+GET /corpus/{id}       → { id, title, owner, version, effective, status,
+                           sections: [ { heading, text } ] }
+```
+
 ---
 
-# 5. The data model — fixed
+# 6. The data model — fixed
 
 ```sql
-exchanges
+conversations
+  id            uuid primary key
+  started_at    timestamptz not null default now()
+  last_at       timestamptz not null default now()
+
+messages
   id              uuid primary key
-  question        text        not null
-  outcome         text        not null   -- answered | refused | degraded
-  answer          text        null       -- null for refused and degraded
+  conversation_id uuid        not null references conversations(id) on delete cascade
+  role            text        not null   -- user | assistant
+  content         text        null       -- the question, or the answer
+  outcome         text        null       -- answered | refused | degraded (assistant only)
   model           text        null
   prompt_version  text        null
-  latency_ms      integer     not null
-  degraded        boolean     not null default false
+  latency_ms      integer     null
   created_at      timestamptz not null default now()
 
-exchange_citations
+message_citations
   id              uuid primary key
-  exchange_id     uuid        not null references exchanges(id)
+  message_id      uuid        not null references messages(id) on delete cascade
   document_id     text        not null
   document_title  text        not null
   section         text        not null
@@ -213,11 +286,13 @@ exchange_citations
   score           double precision not null
 ```
 
+> **`messages` is both the record and the context.** The last `CONTEXT_MESSAGES` rows of
+> a conversation are what a follow-up is answered with — so there is no second store to
+> keep in step, and the thing an auditor reads is the same thing the model read.
+
 ---
 
-# 6. The vector payload — fixed
-
-Every passage stored in Qdrant carries exactly this payload:
+# 7. The vector payload — fixed
 
 ```jsonc
 {
@@ -231,13 +306,13 @@ Every passage stored in Qdrant carries exactly this payload:
 }
 ```
 
-**This is a contract.** The citation in §4 is built from it, and the shared types in
+**This is a contract.** The citation in §5 is built from it, and the shared types in
 `app/retrieve/store.py` already express it. Add fields if you need them; do not rename
 these.
 
 ---
 
-# 7. Configuration — fixed names
+# 8. Configuration — fixed names
 
 Everything arrives from the environment. **No model name, URL, dimension or threshold
 appears as a literal in code.**
@@ -245,16 +320,18 @@ appears as a literal in code.**
 ```bash
 OPENROUTER_API_KEY=            OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 LLM_MODEL=openai/gpt-oss-120b  LLM_TIMEOUT_SECONDS=60
-EMBEDDING_MODEL=openai/text-embedding-3-small
-EMBEDDING_DIM=1536             EMBEDDING_BATCH_SIZE=96
+
+EMBEDDING_MODEL_SLUG=openai/text-embedding-3-small
+EMBEDDING_DIMENSIONS=1536      EMBEDDING_BATCH_SIZE=96
 
 DATABASE_URL=                  DATABASE_NAME=table_N
-QDRANT_URL=                    QDRANT_API_KEY=
-QDRANT_COLLECTION=policy_passages_table_N
+QDRANT_URL=                    QDRANT_COLLECTION=policy_passages_table_N
 
-MIN_SCORE=                     # yours to choose -- see §9
+MIN_SCORE=                     # yours -- see §10
 CHUNK_MAX_TOKENS=              # yours
 CHUNK_OVERLAP_TOKENS=          # yours
+RETRIEVE_TOP_K=                # yours
+CONTEXT_MESSAGES=5             # yours -- how many turns a follow-up sees
 GENERATION_ENABLED=true
 ```
 
@@ -263,7 +340,7 @@ GENERATION_ENABLED=true
 
 ---
 
-# 8. Non-functional requirements
+# 9. Non-functional requirements
 
 | | Target | Why |
 |---|---|---|
@@ -275,26 +352,28 @@ GENERATION_ENABLED=true
 | **NFR-6** Secrets | never logged, never in a response, never committed | |
 
 > **NFR-2 is a design consequence worth noticing.** If your refusal is slow, you are
-> calling the model before deciding whether to answer — which means the model is
-> deciding whether it knows something. The brief says it must not.
+> calling the model before deciding whether to answer — which means the model is deciding
+> whether it knows something. The brief says it must not.
 
 ---
 
-# 9. ⭐ The decisions that are yours
+# 10. ⭐ The decisions that are yours
 
 **Deliberately unresolved.** Your implementation plan must state each one and why. You
 will be asked at the gate — and *"the agent picked it"* is not an answer.
 
 | # | Decision | What hangs on it |
 |---|---|---|
+| **D0** | **Embedding model and dimensions** | 1536 is cheaper, 3072 is better. **The Qdrant collection is fixed at the dimension you first index with** — changing later means re-indexing |
 | **D1** | **Chunk size, and whether chunks overlap** | Too large and citations are vague; too small and passages lose the clause that gives them meaning |
-| **D2** | **The refusal threshold** — and **how you arrived at it** | Too low and it invents; too high and it refuses what it knows. Tune it against `EVALUATION.md`; do not guess |
+| **D2** | **The refusal threshold** — and **how you arrived at it** | Tune it against `EVALUATION.md`; do not guess |
 | **D3** | **How many passages to retrieve** | More context, or more noise |
 | **D4** | **Whether superseded policies are shown, hidden or flagged** | The corpus contains one. Whatever you choose, be able to say why |
 | **D5** | **What a refusal says** | *"I don't know"* is not enough. The user needs to know where to go |
-| **D6** | **What happens when two policies conflict** | The corpus contains a genuine conflict. Surface both, pick one, or refuse — this is a governance decision, not a coding one |
+| **D6** | **What happens when two policies conflict** | The corpus contains a genuine conflict. Surface both, pick one, or refuse — a governance decision, not a coding one |
 | **D7** | **How citations are grouped** | Three passages from one document — one citation or three? |
-| **D8** | **Where the record is written** | Before responding, or after? What if it fails? |
+| **D8** | **How much conversation a follow-up sees** | Too little and "what about above £500?" is meaningless; too much and old turns drag the answer off course |
+| **D9** | **Whether a follow-up re-retrieves** | REQ-C5 says it must. Be able to say why that is right |
 
 > **D6 is the one worth arguing about.** Conflicting policy is a problem Aldermere
 > already has. Resolving it in code means your software decides which policy wins. That
@@ -302,37 +381,39 @@ will be asked at the gate — and *"the agent picked it"* is not an answer.
 
 ---
 
-# 10. Out of scope
+# 11. Out of scope
 
 | | Why |
 |---|---|
+| **A settings page** | Configuration is environment variables. Do not build a UI for it |
+| **A conversation list / history browser** | One conversation at a time. The data is stored; browsing it is a later feature |
 | Authentication, users, sessions | Not what this teaches |
 | Editing policy | The assistant reads; the Policy Office writes |
 | Deciding whether an exception is permitted | Judgement stays with humans, by design |
 | Anything outside the corpus — no web search, no general knowledge | REQ-G2 |
-| Conversation memory / follow-up questions | One question, one answer |
 | Re-indexing on document change | Ingestion is a command you run |
+| Streaming responses | Nice, not needed, and it complicates everything downstream |
 
 ---
 
-# 11. Definition of done
+# 12. Definition of done
 
 > **You are done when you have completed all six stages and deployed a working increment
-> to your own URL. Not when the chatbot is feature-complete.**
+> to your own URL. Not when the product is feature-complete.**
 
 A team that ships ingestion and retrieval but runs out of time before generation has
 still shaped a ticket, defended a plan to a human, built against their own acceptance
 criteria, reviewed in five passes, written a rollback, and released through a gate.
 **That is the module.**
 
-A polished chatbot with no review record is the worse outcome.
+A polished product with no review record is the worse outcome.
 
 ### The evidence
 
 | | |
 |---|---|
 | 1 | Your ticket, with acceptance criteria **in your words** |
-| 2 | Your implementation plan, including **§9's decisions and your reasons** |
+| 2 | Your implementation plan, including **§10's decisions and your reasons** |
 | 3 | The plan-gate decision — approved, or rejected and revised |
 | 4 | Working code, deployed |
 | 5 | Test evidence — something that was red and is now green |
@@ -344,4 +425,4 @@ A polished chatbot with no review record is the worse outcome.
 
 ---
 
-*Policy Assistant · PRD v1.0 · Aldermere Bank is fictional · CONFIDENTIAL — Chartered Vectorial*
+*Policy Assistant · PRD v2.0 · Aldermere Bank is fictional · CONFIDENTIAL — Chartered Vectorial*

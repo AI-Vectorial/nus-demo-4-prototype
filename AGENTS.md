@@ -16,7 +16,7 @@ the lesson**, which means the rules below matter more here than the code you wri
 pipeline/            .github/            ci/
 AGENTS.md            CLAUDE.md           START-HERE.md
 docs/PRD.md          docs/features.md    docs/project-brief.md
-backend/corpus/      scripts/
+backend/corpus/      scripts/            docs/instructor/
 ```
 
 **If you believe one of these must change: stop and say so. Do not change it.**
@@ -34,7 +34,7 @@ and wait.
 
 Some things are specified. **Some are deliberately left open, and those are not yours.**
 
-`docs/PRD.md` §9 lists them. When you reach one:
+`docs/PRD.md` §10 lists them. When you reach one:
 
 1. **Stop.**
 2. Present the options, with the trade-off for each
@@ -84,12 +84,12 @@ theatre, and the plan review is the point.
 **Stop and ask a human whenever:**
 
 - You need a protected file changed
-- You hit a decision in PRD §9
+- You hit a decision in PRD §10
 - The PRD is ambiguous, or contradicts itself
 - The PRD contradicts what you were told in conversation
 - A test fails and you cannot see why after **two** attempts
 - You want to add a dependency
-- You want to change the API contract in PRD §4, the data model in §5, or the payload in §6
+- You want to change the API contract in PRD §5, the data model in §6, or the payload in §7
 - You are about to do something the team has not asked for
 
 **How to stop properly.** State what you hit, what the options are, what you recommend
@@ -134,7 +134,7 @@ propose an alternative instead.
 # 6. Code expectations
 
 - **Configuration comes from the environment.** No model name, URL, dimension,
-  threshold, chunk size or token count as a literal in code. PRD §7 has the names.
+  threshold, chunk size or token count as a literal in code. PRD §8 has the names.
 - **Match the surrounding code.** Same comment density, same naming, same idiom.
 - **Write the test first** where you reasonably can. The team's acceptance criteria
   are the specification, and CI runs them.

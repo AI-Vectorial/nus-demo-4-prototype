@@ -5,8 +5,8 @@ have 150 minutes and you will not finish everything.
 
 > ### Read this before you plan
 >
-> **F1 to F5 are the product.** Without all five there is no chatbot.
-> **F6 onward are real features** you should reach for only once F1–F5 are deployed.
+> **F1 to F6 are the product.** Without all six there is no assistant.
+> **F7 onward are real features** you should reach for only once F1–F6 are deployed.
 >
 > **Build in order. Deploy as soon as F5 works.** A deployed increment beats an
 > undeployed improvement, every time — and the pipeline only completes if something ships.
@@ -17,10 +17,11 @@ have 150 minutes and you will not finish everything.
 
 ```
 F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──▶ F5 ask + UI ──▶ DEPLOY
-                                                                              │
-                        ┌─────────────────────────────────────────────────────┘
-                        ▼
-              F6 …  F7 …  F8 …        only after you have shipped
+                                                                   │
+                                            F6 follow-up ◀─────────┘
+                                            F7 corpus browser
+                                                   │
+                                        F8 …  F9 …  only after you have shipped
 ```
 
 ---
@@ -30,17 +31,17 @@ F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──
 **Must have.** Nothing works until the corpus is searchable.
 
 Read `backend/corpus/`, split each document on its section boundaries, embed each
-passage, write them to Qdrant with the payload in PRD §6.
+passage, write them to Qdrant with the payload in PRD §7.
 
 | | |
 |---|---|
 | **Covers** | REQ-I1 … REQ-I7 |
-| **Decisions** | **D1** — chunk size and overlap |
+| **Decisions** | **D0** — embedding model and dimensions · **D1** — chunk size and overlap |
 | **Done when** | `python -m app.ingest` indexes the corpus, and running it twice changes nothing |
 
 > Idempotency (REQ-I4) is the part most likely to be quietly wrong. Test it by running
 > twice and asserting the count did not move. A stable passage id — a hash of document,
-> section and text — makes it fall out naturally.
+> section and text — makes it fall out for free.
 
 ---
 
@@ -48,8 +49,8 @@ passage, write them to Qdrant with the payload in PRD §6.
 
 **Must have.**
 
-Embed the question, search the collection, return the closest passages with their
-scores and payload.
+Embed the question, search the collection, return the closest passages with their scores
+and payload.
 
 | | |
 |---|---|
@@ -77,8 +78,9 @@ call the model.**
 > type-check. If it returns `list[Hit]`, someone will eventually call the model with an
 > empty list and get a confident invention.
 >
-> This is a five-line decision that determines whether the product's defining behaviour
-> is guaranteed or merely intended.
+> We tested this: asked *"Can I expense my partner's flight?"* with only irrelevant
+> policy in context, `gpt-oss-120b` restated the irrelevant policy rather than declining.
+> **The model will not save you here.** Five lines of typing will.
 
 ---
 
@@ -96,8 +98,8 @@ versioned file.
 | **Done when** | An answer cites only retrieved passages, **and `GENERATION_ENABLED=false` still returns something useful** |
 
 > **The kill switch (REQ-G6) is part of F4, not a later polish.** Build it while you are
-> writing the call. Once every caller assumes an answer exists, adding degraded mode
-> means changing all of them.
+> writing the call. Once every caller assumes an answer exists, adding degraded mode means
+> changing all of them.
 
 ---
 
@@ -105,46 +107,76 @@ versioned file.
 
 **Must have. This is the one that makes it a product.**
 
-`POST /ask` tying F1–F4 together, the record written to Postgres, and an interface that
-renders all three outcomes.
+`POST /ask` tying F1–F4 together, the turn written to Postgres, and an interface that
+renders all three outcomes — with the left rail from the UI target.
 
 | | |
 |---|---|
-| **Covers** | REQ-A1 … REQ-A4, REQ-P1 … REQ-P3, REQ-U1 … REQ-U8 |
-| **Decisions** | **D7** — citation grouping · **D8** — when the record is written |
-| **Done when** | You can ask a question in a browser and see a cited answer — **and a refusal looks different from an error** |
+| **Covers** | REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1 … REQ-U7, REQ-U9, REQ-U10 |
+| **Decisions** | **D7** — citation grouping |
+| **Done when** | You can ask in a browser and see a cited answer — **and a refusal looks different from an error** |
 
-> **Deploy here.** Do not wait for F6. The pipeline completes on a deployed increment;
-> an undeployed improvement completes nothing.
+> **Deploy here.** Do not wait for F6. The pipeline completes on a deployed increment; an
+> undeployed improvement completes nothing.
+
+---
+
+# F6 — Follow-up questions
+
+**Must have** — it is what makes it a conversation rather than a search box.
+
+Pass the recent turns to the model so *"and what about above £500?"* means something.
+
+| | |
+|---|---|
+| **Covers** | REQ-C3 … REQ-C6, REQ-A3, REQ-U8 |
+| **Decisions** | **D8** — how many turns · **D9** — whether a follow-up re-retrieves |
+| **Done when** | A follow-up is answered correctly, and **New chat** starts clean |
+
+> ⚠️ **Retrieval still runs on every turn (REQ-C5).** It is tempting to skip it on a
+> follow-up because you already have passages. Do not. *"And what about above £500?"*
+> needs a different passage from the question before it, and reusing the old ones gives a
+> confident answer from the wrong section.
+>
+> Easy to get wrong, hard to notice — the answer still looks right.
+
+---
+
+# F7 — Browse the corpus
+
+**Should have.** It is what lets someone check a citation rather than trust it.
+
+`/corpus` lists the five documents; `/corpus/[id]` shows one, with its sections.
+
+| | |
+|---|---|
+| **Covers** | REQ-B1 … REQ-B5, REQ-A4 |
+| **Done when** | You can open a cited document and read the section it came from |
+
+> Read from `backend/corpus/` (REQ-B5). Copying the documents into the database gives you
+> two sources of truth and a bug waiting to happen.
 
 ---
 
 # Beyond the critical path
 
 **Only after F5 is deployed and your URL answers.** Each is genuinely useful and
-genuinely optional. Pick whichever your table finds most interesting — you are not
-expected to reach these.
+genuinely optional.
 
-### F6 — Conversation history
-Past exchanges, retrievable and displayed. The data is already in Postgres from F5.
-*Covers: a read path over `exchanges`.*
+### F8 — Was this helpful
+Capture a judgement against a `message_id`. Success measure S4 in the brief depends on it.
 
-### F7 — A personal-data guardrail
+### F9 — A personal-data guardrail
 Flag a question that appears to contain personal or client data before it reaches the
 model. **Decide what "personal data" means and write it down** — that definition is the
 feature, the regex is not.
-*The brief's open question Q3 is unresolved here. You are deciding it.*
 
-### F8 — Was this helpful
-Capture a judgement against an `exchange_id`. Success measure S4 in the brief depends on
-this existing.
-
-### F9 — Audit export
-Download a complete record of an exchange — question, answer, every citation with its
+### F10 — Audit export
+Download a complete record of a conversation — every question, answer, citation with its
 policy version, model, prompt version, timestamp. **This is what makes the product
-defensible to an auditor**, and the data model already supports it.
+defensible to an auditor.**
 
-### F10 — Answer confidence
+### F11 — Answer confidence
 Show how well-grounded an answer is. Harder than it looks: retrieval score is not
 confidence, and presenting it as such would be a misleading interface. If you build it,
 be able to defend what the number means.
@@ -155,10 +187,11 @@ be able to defend what the number means.
 
 | | Why |
 |---|---|
+| **A settings page** | Configuration is environment variables. Explicitly out of scope |
+| **A conversation list** | One at a time. The data is stored; browsing it is a later feature |
 | Authentication | Not what this teaches |
-| Streaming responses | Nice, not needed, and it complicates every downstream piece |
-| Re-ranking, hybrid search, query expansion | Reach for these only if retrieval is measurably failing — and measure first |
-| A settings screen | Configuration is environment variables |
+| Streaming responses | Nice, not needed, complicates every downstream piece |
+| Re-ranking, hybrid search, query expansion | Only if retrieval is measurably failing — and measure first |
 | Editing the corpus | **Protected. If retrieval is weak, fix retrieval** |
 
 > **That last line is the trap.** When retrieval underperforms, editing a policy document
@@ -167,4 +200,4 @@ be able to defend what the number means.
 
 ---
 
-*Policy Assistant · Feature list v1.0 · Build F1–F5, deploy, then choose · CONFIDENTIAL — Chartered Vectorial*
+*Policy Assistant · Feature list v2.0 · Build F1–F5, deploy, then F6 · CONFIDENTIAL — Chartered Vectorial*

@@ -61,6 +61,11 @@ class Settings:
     # Turning generation off must leave a working policy search behind.
     generation_enabled: bool = os.getenv("GENERATION_ENABLED", "true").lower() != "false"
 
+    # How many recent turns a follow-up question is answered with. Yours -- D8.
+    # Retrieval still runs on every turn: context informs the answer, it never
+    # replaces the search.
+    context_messages: int = int(os.getenv("CONTEXT_MESSAGES", "5"))
+
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.

@@ -1,35 +1,86 @@
-# M04 Policy Assistant
+# Policy Assistant
 
-The application built and extended during **M04 — AI-Native Development Lifecycle**,
-AI Practitioner Certificate, NUS AIDF / MUFG.
+**You are going to build this, and deploy it.**
 
-Staff ask questions about internal policy in plain language; the assistant retrieves
-from a fictional policy corpus and answers, citing its sources.
+A staff member at Aldermere Bank asks a policy question in plain language. The assistant
+finds the relevant passages in the bank's policy corpus, answers **only from those
+passages**, and shows which sections it used. When the corpus cannot support an answer,
+**it says so and stops.**
 
-> **This repository is a teaching artefact.** Everything in it is fictional. No MUFG
-> data, systems or credentials appear anywhere.
+Built during **M04 — AI-Native Development Lifecycle**, AI Practitioner Certificate,
+NUS AIDF / MUFG.
+
+> **This repository is a teaching artefact.** Aldermere Bank is fictional. Every policy,
+> figure and name in it is invented. No MUFG data, systems or credentials appear anywhere.
 
 ---
 
-## Status — step 1 of 8
+## 👉 Start with [`START-HERE.md`](START-HERE.md)
 
-A **walking skeleton**. It serves, it is tested, and it deploys through a
-human-approved pipeline. It does not yet answer questions.
+Ninety seconds. It tells you where you are, what to read, and which file to open first.
 
-That order is deliberate: **prove the deployment loop before writing the interesting
-code.** If a one-line change can travel branch → PR → CI → approval → merge → live
-URL, everything after it is content rather than engineering.
+---
 
-| Step | | Status |
-|---|---|---|
-| **1** | Repo, devcontainer, CI, Railway — **the deploy loop** | ✅ **done** |
-| **2** | `docs/project-brief.md` | ✅ **done** |
-| 3 | The RAG application — retrieval, generation, persistence — **built through the pipeline itself** | in progress |
-| 4 | `PRD.md` + `design/` written from what exists | |
-| 5 | `pipeline/` stage files, `AGENTS.md`, `START-HERE.md` | |
-| 6 | `features/feature-1..5.md` | |
-| 7 | Reference branch — all five features built | |
-| 8 | Cards, runbooks, rehearsal, recording | |
+## What you are building
+
+Five tables. **Five separate builds of the same specification, deployed to five separate
+URLs.** Your table owns a branch, a database, a vector collection and a pair of
+deployments. Nothing you do can affect another table.
+
+```
+F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──▶ F5 ask + UI ──▶ DEPLOY
+                                                                   │
+                                            F6 follow-up ◀─────────┘
+                                            F7 corpus browser
+```
+
+| | |
+|---|---|
+| [`docs/project-brief.md`](docs/project-brief.md) | **why** this product exists, and whether AI belongs in it |
+| [`docs/PRD.md`](docs/PRD.md) | **what must be true.** The contract — routes, data model, payload |
+| [`docs/features.md`](docs/features.md) | **what to build first** |
+
+> **PRD §10 is the one to read twice.** Ten decisions are deliberately left to you —
+> chunk size, the refusal threshold, what happens when two policies contradict each other.
+> **You will be asked to defend your answers**, and *"the agent chose it"* is a failed
+> answer.
+
+---
+
+## The six stages
+
+```
+01 shape ──▶ 02 plan ──▶ 03 build ──▶ 04 review ──▶ 05 release ──▶ 06 verify
+  15min        25min        60min        25min         10min        15min
+                 │                                                     │
+          ⚠️ HUMAN GATE                                        ⚠️ HUMAN GATE
+       your plan is approved                                  your release is
+            or rejected                                     approved, then merges
+```
+
+Each stage in [`pipeline/`](pipeline/) says what to give your agent, what it produces, and
+what has to be true before you move on. **Start at [`pipeline/01-shape.md`](pipeline/01-shape.md).**
+
+> **Done is a completed pipeline and a deployed increment — not a finished product.**
+>
+> A team that ships ingestion and retrieval but runs out of time before generation has
+> still shaped a ticket, defended a plan, reviewed in five passes, written a rollback and
+> released through a gate. **That is the module.** If you are running short, **cut scope,
+> never a stage.**
+
+---
+
+## The stack
+
+| | |
+|---|---|
+| **FastAPI** · Python 3.12 | the API |
+| **React** via Next.js · TypeScript | the interface |
+| **Postgres** | conversations and their turns |
+| **Qdrant** | the embedded policy passages |
+| **OpenRouter** | every model call — chat and embeddings |
+| **Railway** | your deployment |
+| **GitHub Actions** | the four checks, and the gate |
 
 ---
 
@@ -37,55 +88,39 @@ URL, everything after it is content rather than engineering.
 
 ```
 backend/                FastAPI
+  corpus/               the Aldermere policy documents        PROTECTED
+    MANIFEST.yaml         what is in the corpus, and why
+    EVALUATION.md         13 questions -- 10 answerable, 3 not
   app/
-    api/                routers
-    core/               config, database session          PROTECTED
-    ingest/             corpus loading, chunking, embedding   PROTECTED
-    retrieve/           vector search over Qdrant         PROTECTED
-      store.py            the interface — domain types only
-      qdrant_store.py     the only module that imports the Qdrant client
-    generate/           model call, answer composition    PROTECTED
-    features/           ← one module per table
+    api/                your routers
+    core/               config, database session
+    ingest/             ← F1  loading, chunking, embedding
+    retrieve/           ← F2/F3  search, and the refusal rule
+      store.py            Passage, Hit, the VectorStore interface  (given)
+      qdrant_store.py     the only module importing the Qdrant client  (given)
+    generate/           ← F4  the prompt, the composed answer
+      client.py           the only module importing the model SDK  (given)
   tests/
-    regression/         ours, and it must stay green      PROTECTED
-    features/           ← one test file per table
+    conftest.py           fixtures: fake store, fake model, sample corpus  (given)
+    regression/           ours, and it must stay green
 
-frontend/               Next.js 15 · React 19 · TypeScript
-  app/                  app router, layout, global styles PROTECTED
-  components/
-    features/           ← one component per table
-  lib/
+frontend/               React / Next.js
+  app/                  routes: / and /corpus
+  components/           Answer, Citations, Refusal, Degraded  (shells, yours to fill)
+  lib/                  typed API client and shared types  (given)
 
-ci/                     the four checks
-docs/                   project brief, PRD, design decisions
-pipeline/               the six stages — prompts, templates, gates    [step 5]
-features/               the five feature briefs                        [step 6]
-tickets/                written during the lab — the Linear replacement
+pipeline/               the six stages                        PROTECTED
+docs/                   brief, PRD, feature list              PROTECTED
+ci/                     the four checks                       PROTECTED
+tickets/                yours -- written as you go
 ```
-
-**The split that matters:** everything the application needs in order to *function*
-is ours. Everything a table builds is a capability the application is better with and
-**fine without** — so an unfinished table breaks nothing.
-
----
-
-## Data stores
-
-| | | |
-|---|---|---|
-| **Postgres** | corpus metadata, and the record of every exchange | `DATABASE_URL` |
-| **Qdrant** | the embedded policy passages | `QDRANT_URL`, `QDRANT_API_KEY` |
-
-Retrieval is reached through `app.retrieve.get_vector_store()`, which returns the
-interface in `app/retrieve/store.py`. **Exactly one module imports the Qdrant client**,
-and a regression test fails the build if a second one appears — so ingest, generation
-and every table feature stay free of storage detail.
 
 ---
 
 ## Run it
 
-In a Codespace, nothing. Both services start automatically:
+**In a Codespace, nothing.** Both services start automatically, and your API key is
+already in your environment.
 
 - **`http://localhost:3000`** — the assistant, your branch, live
 - `http://localhost:8000/docs` — the API
@@ -93,28 +128,31 @@ In a Codespace, nothing. Both services start automatically:
 Locally:
 
 ```bash
-# backend
 cd backend
-python -m venv .venv && .venv/Scripts/activate     # or source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate    # or .venv/Scripts/activate
 pip install -r requirements-dev.txt
+cp .env.example .env                                  # then fill it in
 uvicorn app.main:app --reload
 
-# frontend, in another terminal
-cd frontend
-npm install
-npm run dev
+cd frontend && npm install && npm run dev
+```
+
+Index the corpus once you have built F1:
+
+```bash
+cd backend && python -m app.ingest
 ```
 
 ---
 
 ## The four checks
 
-Every push runs these. They are the governance, and they are mechanical — nobody
-talks their way past them.
+Every push runs these. They are the governance, and they are mechanical — nobody talks
+their way past them.
 
 | Check | Asks | Teaches |
 |---|---|---|
-| **`ci/check_scope.py`** | **Did this diff touch something it may not?** | **M04.3 — permission boundaries** |
+| **`ci/check_scope.py`** | **Did this change touch something it may not?** | **M04.3 — permission boundaries** |
 | `pytest` | Do the acceptance criteria hold? | M04.2 · M04.4 |
 | `bandit` | Any obvious security fault? | M04.4 — review pass 2 |
 | `ci/check_licences.py` | May we ship every dependency? | M04.4 — review pass 4 |
@@ -125,61 +163,85 @@ Run them the way CI does:
 python ci/check_scope.py
 cd backend && pytest -q && bandit -r app/ -ll && ruff check app/ tests/
 python ci/check_licences.py
-cd frontend && npm run typecheck && npm run lint && npm run build
+cd frontend && npm run build && npm run typecheck && npm run lint
 ```
 
-### The scope check is the interesting one
+> **The licence check is not paperwork.** It already refused a build on this project:
+> `psycopg` is LGPLv3 and arrived as a side effect of adding Postgres. Nobody was looking
+> for it.
 
-It fails the build when a diff touches `pipeline/`, `.github/`, `ci/`, `AGENTS.md`,
-the backend core or the shared frontend shell — or when a table's branch strays
-outside the three files that table owns.
+### What you may not change
 
-M04.3's Demo Brief requires one change that is **genuinely rejected — "checkable,
-not narrated."** This is it. An agent already told *no* once by a human during plan
-review, reaching for a protected file anyway, gets stopped by a machine.
+```
+pipeline/    .github/    ci/    AGENTS.md    START-HERE.md
+docs/PRD.md  docs/features.md   docs/project-brief.md
+backend/corpus/    scripts/    docs/instructor/
+```
+
+**`backend/corpus/` is the one you will be tempted by.** When retrieval performs badly,
+editing a policy document so it contains the words you searched for makes the demo work
+and the product worthless. **Fix retrieval.**
 
 ---
 
-## Deployment
+## How your work ships
 
 ```
-branch  ──push──▶  scope ▸ backend ▸ frontend  ──green──▶  pull request
-                                                                │
-                                                    ┌───────────┴───────────┐
-                                                    │   HUMAN APPROVAL      │
-                                                    │   release manager     │
-                                                    └───────────┬───────────┘
-                                                                │ merge to main
-                                                          Railway deploys
-                                                                │
-                                                           smoke test
+work on work/table-N
+        │  push -- CI runs the checks, nothing deploys
+        ▼
+open PR:  work/table-N ──▶ table-N
+        │
+        ▼
+CI: scope ▸ backend ▸ frontend ▸ gate
+        │
+┌───────┴───────────────┐
+│   HUMAN APPROVAL      │   ← the release manager
+└───────┬───────────────┘
+        │ merge to table-N
+        ▼
+CI deploys ──▶ api-table-N + web-table-N
+        ▼
+smoke test on your own URL
 ```
 
-**There is no path from a workspace to Railway.** Deployment is reachable only
-through CI, and CI stops at a named human. If a table could deploy from a terminal
-the gate would be bypassable — and the gate is the lesson.
+**A push never deploys.** Only a merge into `table-N` does, and that merge needs an
+approval. If a push could deploy, the gate would be bypassable — and the gate is the
+module.
 
-**Rollback:** revert the merge commit and push. Railway redeploys the previous
-version in roughly ninety seconds.
+**Rollback:** revert the merge commit and push. Railway redeploys the previous version in
+about ninety seconds.
+
+**If a deploy fails, your live site is unaffected.** Railway does not route traffic to a
+build whose health check never passed, so the previous version keeps serving.
 
 ---
 
-## Required configuration
+## Your data is yours
 
-Set on the repository before the first deploy:
+One Postgres instance and one Qdrant instance, partitioned per table:
 
-| | Where | What |
-|---|---|---|
-| `RAILWAY_TOKEN` | Repository **secret** | Railway deploy credential |
-| `RAILWAY_BACKEND_SERVICE` | Repository **variable** | Backend service name |
-| `RAILWAY_FRONTEND_SERVICE` | Repository **variable** | Frontend service name |
-| `API_URL` | Repository **variable** | Public backend URL, for the smoke test |
-| `production` environment | Settings → Environments | **With a required reviewer** |
-| Branch protection on `main` | Settings → Rules | Require CI green **and** one approving review |
+| | |
+|---|---|
+| `DATABASE_NAME=table_N` | your own database, not a schema |
+| `QDRANT_COLLECTION=policy_passages_table_N` | your own collection |
 
-The last two are what make the human gate real. Without them the pipeline still runs,
-but anyone can merge.
+**Both are set for you.** You cannot reach another table's data, and re-indexing yours
+affects nobody else.
 
 ---
 
-*AI Practitioner Certificate · NUS AIDF / MUFG · CONFIDENTIAL — Chartered Vectorial*
+## If something breaks
+
+| | |
+|---|---|
+| Tests failing | `cd backend && pytest -q` — read the failure before changing anything |
+| API unreachable | `curl localhost:8000/healthz` — it reports every dependency |
+| CI red | Click **Details** on the check. The message says what and why |
+| Scope check red | Your agent edited a protected file. **Revert it** — do not argue with it |
+| Deploy red | Your live site is fine. Check the Railway build logs, then `/healthz` |
+| Stuck ten minutes | **Ask an instructor.** That is what they are there for |
+
+---
+
+*AI Practitioner Certificate · NUS AIDF / MUFG · Aldermere Bank is fictional · CONFIDENTIAL — Chartered Vectorial*
