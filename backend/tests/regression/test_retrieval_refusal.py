@@ -259,3 +259,88 @@ def test_the_question_is_not_embedded_twice():
     query = _contextualise("Same question", [("user", "Same question")])
 
     assert query.count("Same question") == 1
+
+
+# ---------------------------------------------------------------------------
+# Superseded passages must not crowd out current ones.
+#
+# Found on the deployed build. Asked for the evening-meal cap, retrieval
+# returned only the superseded subsistence section, and the answer was that the
+# policy set does not give one -- when the current policy gives 40 pounds. A
+# wrong answer, which is worse than a refusal.
+#
+# The two versions of the travel policy say almost the same thing, so they score
+# almost the same and compete for the same slots.
+# ---------------------------------------------------------------------------
+
+
+def _hit(section: str, score: float, status: str):
+    from app.retrieve.store import Hit
+
+    return Hit(
+        passage_id=f"{section}-{status}",
+        text=section,
+        document_id="travel-expense-policy",
+        document_title="Travel and Expense Policy",
+        section=section,
+        score=score,
+        metadata={"status": status, "version": "3.0" if status == "superseded" else "3.1"},
+    )
+
+
+def test_current_passages_are_not_displaced_by_superseded_ones():
+    from app.retrieve.service import _prefer_current
+
+    # The withdrawn version scores higher on every passage, as it really did.
+    hits = [
+        _hit("6.2 Subsistence", 0.71, "superseded"),
+        _hit("6.1 Accommodation caps", 0.70, "superseded"),
+        _hit("4.1 Approval thresholds", 0.69, "superseded"),
+        _hit("6.3 Subsistence", 0.66, "current"),
+        _hit("6.2 Accommodation caps", 0.65, "current"),
+        _hit("4.2 Approval thresholds", 0.64, "current"),
+    ]
+    chosen = _prefer_current(hits, limit=4)
+    statuses = [h.metadata["status"] for h in chosen]
+
+    assert statuses.count("current") >= 3, (
+        "current policy was crowded out by the withdrawn version"
+    )
+
+
+def test_a_superseded_passage_still_gets_through():
+    """D4 shows them, flagged -- "has this changed?" stays answerable."""
+    from app.retrieve.service import _prefer_current
+
+    hits = [
+        _hit("4.2 Approval thresholds", 0.73, "current"),
+        _hit("2.4 Transparency", 0.70, "current"),
+        _hit("3. Definitions", 0.68, "current"),
+        _hit("4.1 Approval thresholds", 0.60, "superseded"),
+    ]
+    chosen = _prefer_current(hits, limit=4)
+
+    assert any(h.metadata["status"] == "superseded" for h in chosen)
+
+
+def test_scores_are_left_alone():
+    """The threshold and the refusal evidence must still mean what they meant."""
+    from app.retrieve.service import _prefer_current
+
+    hits = [_hit("a", 0.73, "current"), _hit("b", 0.61, "superseded")]
+    chosen = _prefer_current(hits, limit=2)
+
+    assert sorted(h.score for h in chosen) == [0.61, 0.73]
+
+
+def test_results_stay_in_score_order():
+    from app.retrieve.service import _prefer_current
+
+    hits = [
+        _hit("a", 0.50, "current"),
+        _hit("b", 0.80, "current"),
+        _hit("c", 0.65, "superseded"),
+    ]
+    scores = [h.score for h in _prefer_current(hits, limit=3)]
+
+    assert scores == sorted(scores, reverse=True)

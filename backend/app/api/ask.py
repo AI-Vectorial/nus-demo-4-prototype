@@ -78,9 +78,19 @@ def ask(payload: AskRequest) -> AskResponse:
         recorded_latency: int | None = None
     else:
         composed = answer(result, turn.history or None)
-        outcome = "degraded" if composed.degraded else "answered"
+        # Three outcomes from one call. `declined` is the model saying the
+        # passages do not answer the question even though they cleared the
+        # threshold -- a refusal, not an answer, and it carries no citations.
+        # Shown as an answer it reads as a contradiction: "the policy set does
+        # not cover that" sitting on top of a list headed SOURCES.
+        if composed.declined:
+            outcome = "refused"
+        elif composed.degraded:
+            outcome = "degraded"
+        else:
+            outcome = "answered"
         text = composed.text
-        citations = _citations(result.passages)
+        citations = [] if composed.declined else _citations(result.passages)
         model = composed.model
         prompt_version = composed.prompt_version
         recorded_latency = composed.latency_ms

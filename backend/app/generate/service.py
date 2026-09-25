@@ -58,6 +58,16 @@ class Answer:
     prompt_version: str
     model: str
     latency_ms: int
+    # The passages were retrieved, but they did not answer the question and the
+    # model said so. Not the same as degraded (the model is fine) and not the
+    # same as an answer, so the caller renders it as a refusal.
+    declined: bool = False
+
+
+# The prompt asks for this exact prefix when the passages do not answer the
+# question. A sentinel rather than phrase-matching the model's prose, because
+# prose changes with the model and a missed match renders a refusal as an answer.
+DECLINED_MARKER = "CANNOT_ANSWER"
 
 
 @lru_cache(maxsize=1)
@@ -107,8 +117,26 @@ def answer(result: Grounded, history: list[tuple[str, str]] | None = None) -> An
         # as an answer. Degraded at least reads as degraded.
         return _degraded(citations, started, "the model returned nothing")
 
+    # Retrieval cleared the threshold, but the passages did not actually answer
+    # the question and the model said so. Rendered as an answer this is
+    # contradictory -- "the policy set does not cover that" sitting above a list
+    # of SOURCES reads as though the sources were used. It is a refusal.
+    stripped = text.strip()
+    if stripped.upper().startswith(DECLINED_MARKER):
+        reason = stripped[len(DECLINED_MARKER) :].lstrip(": ").strip()
+        log.info("model declined: %s", reason or "no reason given")
+        return Answer(
+            text=reason or "The passages found do not answer this question.",
+            citations=[],
+            degraded=False,
+            declined=True,
+            prompt_version=PROMPT_VERSION,
+            model=settings.llm_model,
+            latency_ms=_elapsed(started),
+        )
+
     return Answer(
-        text=text.strip(),
+        text=stripped,
         citations=citations,
         degraded=False,
         prompt_version=PROMPT_VERSION,

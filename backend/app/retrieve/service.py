@@ -55,6 +55,34 @@ def _contextualise(question: str, history: list[tuple[str, str]] | None) -> str:
     return chr(10).join([*recent, question])
 
 
+def _prefer_current(hits: list[Hit], limit: int) -> list[Hit]:
+    """Fill the result with current policy first, then superseded.
+
+    The corpus holds v3.0 and v3.1 of the travel policy, and their passages say
+    almost the same thing -- so they score almost the same and compete for the
+    same slots. Ranked purely by score, the withdrawn version can crowd the
+    current one out of the top k entirely.
+
+    That is not a ranking curiosity. Asked for the evening-meal cap, retrieval
+    returned only the superseded section and the answer was that the policy set
+    does not give one -- when the current policy gives 40 pounds. A wrong answer,
+    which is worse than a refusal and exactly what this product exists not to do.
+
+    Superseded passages are still returned (D4 shows them, flagged) -- they just
+    no longer displace current ones. Scores are untouched, so the threshold and
+    the refusal evidence still mean what they meant.
+    """
+    current = [hit for hit in hits if hit.metadata.get("status") != "superseded"]
+    superseded = [hit for hit in hits if hit.metadata.get("status") == "superseded"]
+
+    # Keep at least one slot for a superseded passage when there is one, so
+    # "has this changed?" is still answerable.
+    room = max(limit - 1, 1) if superseded else limit
+    chosen = current[:room]
+    chosen += superseded[: limit - len(chosen)]
+    return sorted(chosen, key=lambda hit: hit.score, reverse=True)
+
+
 def retrieve(question: str, history: list[tuple[str, str]] | None = None) -> RetrievalResult:
     """Find the passages that answer a question, or say why none do.
 
@@ -86,9 +114,12 @@ def retrieve(question: str, history: list[tuple[str, str]] | None = None) -> Ret
     # carries the question actually asked, so the answer is composed for it.
     embedding = embed([_contextualise(asked, history)])[0]
     # min_score=0.0 deliberately: the near miss is what a refusal is made of.
+    # Over-fetch, because the corpus holds two versions of one policy and their
+    # passages are near-duplicates -- see _prefer_current.
     hits = get_vector_store().search(
-        embedding, limit=settings.retrieve_top_k, min_score=0.0
+        embedding, limit=settings.retrieve_top_k * 3, min_score=0.0
     )
+    hits = _prefer_current(hits, settings.retrieve_top_k)
 
     grounded = [hit for hit in hits if hit.score >= settings.min_score]
     if grounded:

@@ -50,6 +50,7 @@ class Answer:
     prompt_version: str = "answer.v1"
     model: str = "openai/gpt-oss-120b"
     latency_ms: int = 1840
+    declined: bool = False
 
 
 def hit(section: str, score: float, *, status: str = "current", version: str = "3.1") -> Hit:
@@ -376,3 +377,44 @@ def test_an_empty_question_is_rejected(client: TestClient, pipeline: FakePipelin
 
     assert response.status_code == 422
     assert pipeline.questions == []
+
+
+# ---------------------------------------------------------------------------
+# A model that declines is a refusal, not an answer.
+#
+# Found on the deployed reference build. Retrieval cleared the threshold, so
+# the model was called; the passages turned out not to answer the question and
+# the model said so. Rendered as an answer, "the policy set does not cover that
+# question" sat on top of a list headed SOURCES -- which reads as though those
+# sources had been used to say it.
+# ---------------------------------------------------------------------------
+
+
+def test_a_declined_answer_is_reported_as_refused(client, pipeline):
+    pipeline.answer = Answer(
+        text="the passages cover approval limits, not family travel",
+        declined=True,
+    )
+
+    body = client.post("/ask", json={"question": "Can I expense my partner?"}).json()
+
+    assert body["outcome"] == "refused"
+
+
+def test_a_declined_answer_carries_no_citations(client, pipeline):
+    """Sources under a refusal read as sources the refusal was built from."""
+    pipeline.answer = Answer(text="not covered by these passages", declined=True)
+
+    body = client.post("/ask", json={"question": "Can I expense my partner?"}).json()
+
+    assert body["citations"] == []
+
+
+def test_declining_is_not_degrading(client, pipeline):
+    """The model is working perfectly -- it is the passages that fall short."""
+    pipeline.answer = Answer(text="not covered", declined=True)
+
+    body = client.post("/ask", json={"question": "Anything"}).json()
+
+    assert body["outcome"] != "degraded"
+    assert body["answer"], "a refusal still has to say something"
