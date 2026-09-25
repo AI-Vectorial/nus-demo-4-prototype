@@ -112,7 +112,7 @@ renders all three outcomes — with the left rail from the UI target.
 
 | | |
 |---|---|
-| **Covers** | REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1 … REQ-U7, REQ-U9, REQ-U10 |
+| **Covers** | REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1 … REQ-U7, REQ-U9 … REQ-U11 |
 | **Decisions** | **D7** — citation grouping |
 | **Done when** | You can ask in a browser and see a cited answer — **and a refusal looks different from an error** |
 
@@ -156,11 +156,16 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 
 | | |
 |---|---|
-| **Covers** | REQ-B1 … REQ-B5, REQ-A4 |
-| **Done when** | You can open a cited document and read the section it came from |
+| **Covers** | REQ-B1 … REQ-B6, REQ-A4, REQ-U12 |
+| **Done when** | You can open a cited document and **read** the section it came from |
 
 > Read from `backend/corpus/` (REQ-B5). Copying the documents into the database gives you
 > two sources of truth and a bug waiting to happen.
+>
+> ⚠️ **Render the Markdown (REQ-U12).** The policy tables carry the numbers — thresholds,
+> caps, retention periods. Printed as raw `|` and `---` they are unreadable, and a reader
+> who cannot read the section cannot check the citation, which is the only reason this
+> screen exists.
 
 ---
 

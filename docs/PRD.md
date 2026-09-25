@@ -60,12 +60,13 @@ Three routes. **No settings page. No conversation list.**
 
 | Route | What it is |
 |---|---|
-| **`/`** | The assistant. Empty state → ask → answer → follow-up. A persistent left rail with **New chat** and **Corpus** |
+| **`/`** | The assistant. Empty state → ask → answer → follow-up |
 | **`/corpus`** | The five documents, each with owner, version, effective date and status |
 | **`/corpus/[id]`** | One document, with its sections down the left and the text beside them |
 
-**The left rail** collapses to a narrow strip once a conversation starts. It holds
-**New chat** and **Corpus**, and nothing else.
+**A top bar runs across every route.** The product name on the left; on the right exactly
+two actions — **Reset** (clear the conversation) and **Corpus**. No sidebar, no collapsing
+rail, no hamburger.
 
 > **Why no conversation list.** One conversation at a time is enough to demonstrate
 > follow-up, and a history browser is a feature you would build after shipping, not
@@ -179,6 +180,7 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-B2** | A **superseded** document is visibly distinguished in the list |
 | **REQ-B3** | `/corpus/[id]` shows one document's sections and their text |
 | **REQ-B4** | The section list is navigable — clicking one moves to it |
+| **REQ-B6** | Both corpus routes offer a way **back** — to the list, and to the assistant |
 | **REQ-B5** | Documents are read from `backend/corpus/`, not duplicated in the database |
 
 ## The API
@@ -203,12 +205,36 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-U6** | Degraded mode is visibly degraded — never passages shown as if they were an answer |
 | **REQ-U7** | A pending state shows while waiting |
 | **REQ-U8** | A follow-up can be asked without losing the conversation above it |
-| **REQ-U9** | The left rail offers **New chat** and **Corpus**, and collapses once a conversation starts |
+| **REQ-U9** | A **top bar** on every route, with exactly two actions: **Reset** and **Corpus** |
 | **REQ-U10** | It works at phone width |
+| **REQ-U11** | **Light theme only.** No dark mode, no theme switch |
+| **REQ-U12** | Markdown in a policy section renders as **markup, not as literal characters** — tables as tables |
 
 > **REQ-U2 is a product decision, not a layout one.** The brief's assumption A3 is that
 > *showing the source is what makes the answer trustworthy*. Hiding citations behind a
 > tab tests a different assumption.
+>
+> ⚠️ **REQ-U12 is not cosmetic.** The corpus is written in Markdown and its tables carry
+> the numbers — the approval thresholds, the accommodation caps, the retention periods.
+> Rendered as raw pipes and dashes they are unreadable, so a reader cannot check the
+> citation, and checking the citation is the point of the corpus browser.
+
+## The theme
+
+| | |
+|---|---|
+| Background | `#fafafc` |
+| Panel | `#ffffff` |
+| Surface tint | `#eef1f3` |
+| Border | `#dfe5e8` · strong `#c8d2d6` |
+| Text | `#00141a` · dim `#5b6b72` |
+| Accent | `#00ad6d` · soft `rgba(0,173,109,0.12)` |
+| Danger | `#c0442f` |
+| Warning | `#8a6516` on `#fdf6da`, border `#ecd894` |
+| Type | **Space Grotesk**, system-ui fallback |
+
+Taken from Module 3 unchanged, so a participant moving between modules sees one product,
+not two. **Light only** — REQ-U11.
 
 ---
 
