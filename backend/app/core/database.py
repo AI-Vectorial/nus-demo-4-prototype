@@ -13,6 +13,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
@@ -24,8 +25,12 @@ class Base(DeclarativeBase):
     """Base for every ORM model."""
 
 
-def _normalise(url: str) -> str:
-    """Railway's URL, pointed at this table's own database."""
+def _normalise(url: str, database: str | None = "") -> str:
+    """Railway's URL, pointed at this table's own database.
+
+    database="" uses settings.database_name; database=None leaves the server's
+    default database in place, which is what ensure_database() needs.
+    """
     # Railway hands out postgres:// ; SQLAlchemy 2 wants postgresql+pg8000://
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
@@ -35,9 +40,10 @@ def _normalise(url: str) -> str:
     # One Postgres instance, one database per table. Swapping the path here --
     # rather than trusting every session to set search_path -- means isolation
     # holds no matter how the connection is later used.
-    if settings.database_name:
+    target = settings.database_name if database == "" else database
+    if target:
         base, _, _ = url.rpartition("/")
-        url = f"{base}/{settings.database_name}"
+        url = f"{base}/{target}"
     return url
 
 
@@ -77,6 +83,59 @@ def get_session() -> Iterator[Session]:
     """FastAPI dependency."""
     with session_scope() as db:
         yield db
+
+
+def ensure_database() -> tuple[bool, str]:
+    """Create this table's database if it does not exist yet.
+
+    One Postgres instance holds five databases, one per table. Rather than
+    creating them by hand before the lab -- which is a step that can be
+    forgotten, and which needs a public proxy the instance does not have -- each
+    service creates its own on startup, from inside Railway's private network.
+
+    That also makes a reset self-healing: drop the database, restart, and it
+    comes back empty. Never raises; a failure here is reported by /healthz.
+    """
+    if not settings.database_url or not settings.database_name:
+        return False, "DATABASE_URL or DATABASE_NAME not set"
+
+    # CREATE DATABASE cannot run inside a transaction, and it cannot run from a
+    # connection to the database being created -- so connect to the server's
+    # default database instead.
+    admin_url = _normalise(settings.database_url, database=None)
+
+    try:
+        admin = create_engine(admin_url, isolation_level="AUTOCOMMIT")
+        with admin.connect() as conn:
+            exists = conn.execute(
+                text("SELECT 1 FROM pg_database WHERE datname = :name"),
+                {"name": settings.database_name},
+            ).scalar()
+            if exists:
+                return True, f"{settings.database_name} already present"
+
+            # Identifiers cannot be bound as parameters. The value comes from
+            # our own deployment configuration, never from a request, and is
+            # checked here so a typo cannot become a statement.
+            name = settings.database_name
+            if not name.replace("_", "").isalnum():
+                return False, f"refusing to create a database named {name!r}"
+
+            conn.execute(text(f'CREATE DATABASE "{name}"'))  # noqa: S608
+            log.info("created database %s", name)
+            return True, f"{name} created"
+    except ProgrammingError as error:
+        # Another service created it between the check and the create.
+        if "already exists" in str(error):
+            return True, f"{settings.database_name} already present"
+        return False, f"could not create: {type(error).__name__}"
+    except Exception as error:  # noqa: BLE001 - reported, not handled
+        return False, f"could not create: {type(error).__name__}"
+    finally:
+        try:
+            admin.dispose()
+        except Exception:  # noqa: BLE001, S110 - nothing useful to do
+            pass
 
 
 def health() -> tuple[bool, str]:
