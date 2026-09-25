@@ -19,9 +19,9 @@ name: pipeline
 # and the second would need it to be a directory.
 on:
   push:
-    branches: [main, "table-[1-5]"]
+    branches: [main, "table-[1-5]", reference]
   pull_request:
-    branches: [main, "table-[1-5]"]
+    branches: [main, "table-[1-5]", reference]
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -194,21 +194,31 @@ jobs:
       always() &&
       needs.gate.result == 'success' &&
       github.event_name == 'push' &&
-      startsWith(github.ref, 'refs/heads/table-')
+      (startsWith(github.ref, 'refs/heads/table-') || github.ref == 'refs/heads/reference')
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
 
-      - name: which table is this
+      # The branch decides which pair of services it reaches. Table 3's merge
+      # can only ever touch table 3's deployment, and the reference branch can
+      # only ever touch the reference pair.
+      - name: which deployment is this
         id: table
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
-          N="${BRANCH#table-}"
-          echo "n=$N" >> "$GITHUB_OUTPUT"
-          echo "api=api-table-$N"  >> "$GITHUB_OUTPUT"
-          echo "web=web-table-$N"  >> "$GITHUB_OUTPUT"
-          echo "deploying table $N"
+          if [ "$BRANCH" = "reference" ]; then
+            echo "n=ref"        >> "$GITHUB_OUTPUT"
+            echo "api=api"      >> "$GITHUB_OUTPUT"
+            echo "web=web"      >> "$GITHUB_OUTPUT"
+            echo "deploying the reference build"
+          else
+            N="${BRANCH#table-}"
+            echo "n=$N"              >> "$GITHUB_OUTPUT"
+            echo "api=api-table-$N"  >> "$GITHUB_OUTPUT"
+            echo "web=web-table-$N"  >> "$GITHUB_OUTPUT"
+            echo "deploying table $N"
+          fi
 
       - name: install railway cli
         run: npm install -g @railway/cli
