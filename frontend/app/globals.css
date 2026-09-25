@@ -119,3 +119,107 @@ code {
   padding: 0.1em 0.3em;
   border-radius: 0.2em;
 }
+
+/* ---------------------------------------------------------------------------
+   The three outcomes.
+
+   Styles ship ready so a table spends its sixty minutes on behaviour rather
+   than CSS. Wire them up; do not rebuild them.
+   --------------------------------------------------------------------------- */
+
+.answer {
+  padding: 1rem 1.15rem;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  line-height: 1.6;
+}
+
+.citations {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.citation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+
+.citation .doc { font-weight: 600; }
+.citation .section { color: var(--ink-3); }
+
+.citation .version {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink-3);
+}
+
+/* REQ-U4. A correct answer citing a withdrawn policy is the failure the
+   product exists to prevent, so this must be impossible to miss. */
+.citation.superseded {
+  border-color: var(--rust);
+  background: color-mix(in srgb, var(--rust) 9%, transparent);
+}
+
+.citation.superseded .badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rust);
+  border: 1px solid var(--rust);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}
+
+/* REQ-U5. Different from an answer, and different from an error. This is the
+   product working correctly. */
+.refusal {
+  padding: 1rem 1.15rem;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  background: transparent;
+  line-height: 1.6;
+}
+
+.refusal .lead { font-weight: 600; }
+.refusal .next { margin-top: 0.5rem; color: var(--ink-3); font-size: 0.9rem; }
+
+/* REQ-U6. Visibly degraded -- never passages dressed up as an answer. */
+.degraded {
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--rust);
+  background: color-mix(in srgb, var(--rust) 7%, transparent);
+  font-size: 0.88rem;
+  margin-bottom: 0.85rem;
+}
+
+/* REQ-U7. Two to four seconds of nothing reads as broken. */
+.pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink-3);
+  font-size: 0.9rem;
+}
+
+.pending::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  border-top-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

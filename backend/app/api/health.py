@@ -15,6 +15,7 @@ from fastapi import APIRouter
 
 from app.core import database
 from app.core.config import settings
+from app.generate import health as model_health
 from app.retrieve import get_vector_store
 
 router = APIRouter(tags=["ops"])
@@ -31,6 +32,7 @@ def _vector_store_status() -> str:
 @router.get("/healthz")
 def healthz() -> dict:
     db_ok, db_detail = database.health()
+    model_ok, model_detail = model_health()
     return {
         "status": "ok",
         "build": settings.build_sha,
@@ -38,7 +40,6 @@ def healthz() -> dict:
         "dependencies": {
             "database": db_detail if db_ok else f"down ({db_detail})",
             "vector_store": _vector_store_status(),
-            # Arrives with generation, in step 3.
-            "model": "not_configured",
+            "model": model_detail if model_ok else f"down ({model_detail})",
         },
     }
