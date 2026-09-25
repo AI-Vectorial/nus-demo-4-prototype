@@ -56,17 +56,24 @@ question ──▶ embed ──▶ search Qdrant ──▶ enough?
 
 # 2. The screens
 
-Three routes. **No settings page. No conversation list.**
+Four routes. **No settings page.**
 
 | Route | What it is |
 |---|---|
 | **`/`** | The assistant. Empty state → ask → answer → follow-up |
+| **`/history`** | Past conversations, newest first. Open one to read it |
 | **`/corpus`** | The five documents, each with owner, version, effective date and status |
 | **`/corpus/[id]`** | One document, with its sections down the left and the text beside them |
 
-**A top bar runs across every route.** The product name on the left; on the right exactly
-two actions — **Reset** (clear the conversation) and **Corpus**. No sidebar, no collapsing
-rail, no hamburger.
+**A top bar runs across every route.** The product name on the left; on the right three
+actions — **Reset** (start a fresh conversation), **History**, **Corpus**. No sidebar, no
+collapsing rail, no hamburger.
+
+> **Why history is a screen and not just a table.** Every exchange is already stored with
+> the model, the prompt version and the policy versions that answered it — REQ-P1, and the
+> thing that makes the product defensible to an auditor. Storing that and never showing it
+> means the only person who can check what the assistant said is someone with database
+> access.
 
 > **Why no conversation list.** One conversation at a time is enough to demonstrate
 > follow-up, and a history browser is a feature you would build after shipping, not
@@ -136,6 +143,8 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-C5** | **Retrieval still runs on every turn.** Context informs the answer; it never replaces the search |
 | **REQ-C6** | **New chat** starts a fresh conversation with no prior context |
 | **REQ-C7** | A follow-up is **embedded together with the questions before it**, not on its own |
+| **REQ-C8** | Conversations are **listable**, newest first, each with enough to recognise it |
+| **REQ-C9** | Opening a past conversation shows its turns **and lets the user continue it** |
 
 > **REQ-C5 is the trap.** It is tempting to skip retrieval on a follow-up because "we
 > already have the passages". Do not. *"And what about above £500?"* needs different
@@ -191,6 +200,7 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-A2** | Every response validates against §5 |
 | **REQ-A3** | `GET /conversations/{id}` returns a conversation and its turns |
 | **REQ-A4** | `GET /corpus` and `GET /corpus/{id}` serve the documents |
+| **REQ-A6** | `GET /conversations` lists them, newest first, paginated |
 | **REQ-A5** | `/healthz` reports database, vector store and model reachability |
 
 ## The interface
@@ -209,6 +219,8 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-U10** | It works at phone width |
 | **REQ-U11** | **Light theme only.** No dark mode, no theme switch |
 | **REQ-U12** | Markdown in a policy section renders as **markup, not as literal characters** — tables as tables |
+| **REQ-U13** | `/history` lists past conversations; opening one shows it and allows a follow-up |
+| **REQ-U14** | A conversation with no turns is never listed |
 
 > **REQ-U2 is a product decision, not a layout one.** The brief's assumption A3 is that
 > *showing the source is what makes the answer trustworthy*. Hiding citations behind a
@@ -281,9 +293,17 @@ POST /ask
 ## Conversation
 
 ```http
+GET /conversations?limit=50
+[ { "id": "9c1e...", "started_at": "...", "last_at": "...",
+    "title": "What is the approval threshold...",   // the first question, truncated
+    "message_count": 4 } ]
+
 GET /conversations/{id}
 { "id": "9c1e...", "started_at": "...", "messages": [ { "role": "user" | "assistant", ... } ] }
 ```
+
+`title` is derived from the first user message — there is no separate title to keep in
+step with anything.
 
 ## Corpus
 
@@ -425,7 +445,6 @@ will be asked at the gate — and *"the agent picked it"* is not an answer.
 | | Why |
 |---|---|
 | **A settings page** | Configuration is environment variables. Do not build a UI for it |
-| **A conversation list / history browser** | One conversation at a time. The data is stored; browsing it is a later feature |
 | Authentication, users, sessions | Not what this teaches |
 | Editing policy | The assistant reads; the Policy Office writes |
 | Deciding whether an exception is permitted | Judgement stays with humans, by design |

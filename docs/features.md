@@ -6,7 +6,6 @@ have 150 minutes and you will not finish everything.
 > ### Read this before you plan
 >
 > **F1 to F6 are the product.** Without all six there is no assistant.
-> **F7 onward are real features** you should reach for only once F1–F6 are deployed.
 >
 > **Build in order. Deploy as soon as F5 works.** A deployed increment beats an
 > undeployed improvement, every time — and the pipeline only completes if something ships.
@@ -20,8 +19,9 @@ F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──
                                                                    │
                                             F6 follow-up ◀─────────┘
                                             F7 corpus browser
+                                            F8 history
                                                    │
-                                        F8 …  F9 …  only after you have shipped
+                                        F9 …  F10 …  only after you have shipped
 ```
 
 ---
@@ -131,7 +131,7 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 |---|---|
 | **Covers** | REQ-C3 … REQ-C7, REQ-A3, REQ-U8 |
 | **Decisions** | **D8** — how many turns · **D9** — whether a follow-up re-retrieves |
-| **Done when** | A follow-up is answered correctly, and **New chat** starts clean |
+| **Done when** | A follow-up is answered correctly, and **Reset** starts clean |
 
 > ⚠️ **Retrieval still runs on every turn (REQ-C5).** It is tempting to skip it on a
 > follow-up because you already have passages. Do not. *"And what about above £500?"*
@@ -169,25 +169,44 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 
 ---
 
+# F8 — History
+
+**Should have.** Every exchange is already stored with its model, prompt version and the
+policy versions that answered it. Storing that and never showing it means the only person
+who can check what the assistant said is someone with database access.
+
+`/history` lists past conversations, newest first. Opening one shows its turns and lets
+you carry on from where it stopped.
+
+| | |
+|---|---|
+| **Covers** | REQ-C8, REQ-C9, REQ-A6, REQ-U13, REQ-U14 |
+| **Done when** | You can leave a conversation, come back to it from `/history`, and ask a follow-up that still has its context |
+
+> The title is the first question, truncated. Do not add a title column — a second
+> source of truth that has to be kept in step with the conversation, for no gain.
+
+---
+
 # Beyond the critical path
 
 **Only after F5 is deployed and your URL answers.** Each is genuinely useful and
 genuinely optional.
 
-### F8 — Was this helpful
+### F9 — Was this helpful
 Capture a judgement against a `message_id`. Success measure S4 in the brief depends on it.
 
-### F9 — A personal-data guardrail
+### F10 — A personal-data guardrail
 Flag a question that appears to contain personal or client data before it reaches the
 model. **Decide what "personal data" means and write it down** — that definition is the
 feature, the regex is not.
 
-### F10 — Audit export
+### F11 — Audit export
 Download a complete record of a conversation — every question, answer, citation with its
 policy version, model, prompt version, timestamp. **This is what makes the product
 defensible to an auditor.**
 
-### F11 — Answer confidence
+### F12 — Answer confidence
 Show how well-grounded an answer is. Harder than it looks: retrieval score is not
 confidence, and presenting it as such would be a misleading interface. If you build it,
 be able to defend what the number means.
@@ -199,7 +218,6 @@ be able to defend what the number means.
 | | Why |
 |---|---|
 | **A settings page** | Configuration is environment variables. Explicitly out of scope |
-| **A conversation list** | One at a time. The data is stored; browsing it is a later feature |
 | Authentication | Not what this teaches |
 | Streaming responses | Nice, not needed, complicates every downstream piece |
 | Re-ranking, hybrid search, query expansion | Only if retrieval is measurably failing — and measure first |
