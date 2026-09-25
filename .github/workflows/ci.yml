@@ -231,14 +231,28 @@ jobs:
         with:
           python-version: "3.12"
 
-      # "It works on my machine" is not a release.                    [M04.5]
-      # Skips only until the first deploy gives us a domain to point at; once
-      # API_URL is set this becomes a hard gate on every release.
-      - name: smoke test
+      # Ask Railway where THIS table's API lives. A single repository-wide
+      # API_URL cannot be right for five tables, and a stale one is worse than
+      # none -- it fails the release of a deployment that is perfectly healthy.
+      - name: resolve this table's url
+        id: url
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          if [ -z "${{ vars.API_URL }}" ]; then
-            echo "API_URL is not set yet - skipping the smoke test."
-            echo "Set it as a repository variable once the backend has a domain."
-            exit 0
+          DOMAIN="$(railway variables --service "${{ steps.table.outputs.api }}" --json                     | python -c 'import json,sys;print(json.load(sys.stdin).get("RAILWAY_PUBLIC_DOMAIN",""))')"
+          if [ -z "$DOMAIN" ]; then
+            echo "::error::api-table-${{ steps.table.outputs.n }} has no public domain."
+            echo "::error::Run: railway domain --service ${{ steps.table.outputs.api }}"
+            exit 1
           fi
-          python ci/smoke.py "${{ vars.API_URL }}"
+          echo "api=https://$DOMAIN" >> "$GITHUB_OUTPUT"
+          echo "table ${{ steps.table.outputs.n }} api: https://$DOMAIN"
+
+      # "It works on my machine" is not a release.                    [M04.5]
+      #
+      # railway up --detach returns as soon as the upload is accepted, but the
+      # build and health check take a minute or two. The smoke test has to be
+      # patient enough to outlast a cold build, or it fails a release that was
+      # about to succeed -- which is worse than not checking at all.
+      - name: smoke test
+        run: python ci/smoke.py "${{ steps.url.outputs.api }}"

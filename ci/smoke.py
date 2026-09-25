@@ -11,8 +11,12 @@ import time
 import urllib.request
 import json
 
-ATTEMPTS = 10
-PAUSE = 6
+# A Railway build from cold takes 90 to 150 seconds, and `railway up --detach`
+# returns long before that. Being impatient here fails releases that were about
+# to succeed, which teaches a table to distrust the check -- the opposite of the
+# point. Five minutes of patience, then a real verdict.
+ATTEMPTS = 30
+PAUSE = 10
 
 
 def main(base_url: str) -> int:
