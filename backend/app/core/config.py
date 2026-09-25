@@ -51,7 +51,7 @@ class Settings:
     llm_timeout_seconds: int = int(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
     llm_max_retries: int = int(os.getenv("LLM_MAX_RETRIES", "3"))
 
-    # Your decision -- PRD section 9, D0. The Qdrant collection is created at
+    # Your decision -- PRD section 10, D0. The Qdrant collection is created at
     # whatever dimension you index with, so these two must agree.
     embedding_model_slug: str = os.getenv(
         "EMBEDDING_MODEL_SLUG", "openai/text-embedding-3-small"
@@ -69,7 +69,21 @@ class Settings:
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    min_score: float = float(os.getenv("MIN_SCORE", "0.30"))
+
+    # --- Chunking (D1) and retrieval breadth (D3) --------------------------
+    # Sections are the unit. A section longer than CHUNK_MAX_TOKENS is split on
+    # paragraph boundaries with an overlap, so a clause never loses the sentence
+    # that qualified it.
+    chunk_max_tokens: int = int(os.getenv("CHUNK_MAX_TOKENS", "400"))
+    chunk_min_tokens: int = int(os.getenv("CHUNK_MIN_TOKENS", "40"))
+    chunk_overlap_tokens: int = int(os.getenv("CHUNK_OVERLAP_TOKENS", "60"))
+
+    retrieve_top_k: int = int(os.getenv("RETRIEVE_TOP_K", "6"))
+
+    # Where the policy documents live. Read at request time for /corpus, so
+    # there is no second copy in the database to fall out of step.
+    corpus_dir: str = os.getenv("CORPUS_DIR", "corpus")
 
     @property
     def database_configured(self) -> bool:

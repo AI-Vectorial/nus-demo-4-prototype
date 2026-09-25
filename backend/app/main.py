@@ -16,8 +16,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
-from app.core import database
+from app.api import ask, corpus, health
+from app.core import database, models  # noqa: F401 - models registers the tables
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
 ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
@@ -28,6 +28,45 @@ ALLOWED_ORIGINS = [
     for origin in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
     if origin.strip()
 ]
+
+def _index_if_empty() -> None:
+    """Index the corpus on first boot, if nothing is indexed yet.
+
+    A deployment whose collection is empty cannot answer anything, and the
+    Qdrant instance is only reachable from inside Railway's private network --
+    so there is no way to index it from a laptop after the fact.
+
+    This does NOT do the work for anybody. It calls ingest(), which is the
+    function being built; before that exists, or if it raises, the collection
+    simply stays empty and /healthz says so. It runs only when the count is
+    zero, so it costs one call on every later restart and never re-embeds.
+
+    Deliberately synchronous. It takes a few seconds on a corpus this size, and
+    serving requests against an empty index would only produce refusals that
+    look like a broken product.
+    """
+    try:
+        from app.retrieve import get_vector_store
+
+        store = get_vector_store()
+        store.ensure_ready()
+        if store.count() > 0:
+            print(f"corpus: {store.count()} passages already indexed")
+            return
+    except Exception as error:  # noqa: BLE001 - reported, never fatal
+        print(f"corpus: vector store unavailable ({type(error).__name__})")
+        return
+
+    try:
+        from app.ingest import ingest
+
+        result = ingest()
+        print(f"corpus: indexed {result}")
+    except ImportError:
+        print("corpus: empty, and ingestion is not built yet")
+    except Exception as error:  # noqa: BLE001 - reported, never fatal
+        print(f"corpus: indexing failed ({type(error).__name__}: {error})")
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -43,6 +82,17 @@ async def lifespan(_: FastAPI):
     """
     ok, detail = database.ensure_database()
     print(f"database: {detail}")
+    if ok:
+        # Only once the database exists. Create_all is additive and idempotent,
+        # so a restart costs nothing and a fresh database comes up ready.
+        try:
+            with database.session_scope() as session:
+                database.Base.metadata.create_all(session.get_bind())
+            print("database: tables ready")
+        except Exception as error:  # noqa: BLE001 - reported, never fatal
+            print(f"database: tables unavailable ({type(error).__name__})")
+
+    _index_if_empty()
     yield
 
 
@@ -62,12 +112,8 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
-
-# Your routers are mounted here.
-#
-#   app.include_router(ask.router)    F5 -- the endpoint that makes it a product
-#
-# See docs/features.md for what to build and in what order.
+app.include_router(ask.router)  # F5/F6 -- ask, and the conversation behind it
+app.include_router(corpus.router)  # F7 -- browse the corpus, read from disk
 
 
 @app.get("/")

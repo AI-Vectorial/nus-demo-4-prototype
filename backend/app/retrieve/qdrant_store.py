@@ -47,6 +47,17 @@ class QdrantVectorStore:
         )
         log.info("created Qdrant collection %s (dim=%d)", self.collection, self.dim)
 
+    def recreate(self) -> None:
+        """Drop the collection and build it again, empty (REQ-I5).
+
+        Deleting rather than emptying, because the dimension is fixed at
+        creation: changing EMBEDDING_DIMENSIONS is exactly when --force is run.
+        """
+        if self._client.collection_exists(self.collection):
+            self._client.delete_collection(self.collection)
+            log.info("deleted Qdrant collection %s", self.collection)
+        self.ensure_ready()
+
     def upsert(self, passages: list[Passage]) -> int:
         if not passages:
             return 0
