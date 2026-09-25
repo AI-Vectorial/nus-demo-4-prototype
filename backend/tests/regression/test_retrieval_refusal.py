@@ -202,3 +202,60 @@ def test_a_blank_question_costs_nothing(
 def test_both_outcomes_are_immutable(model_type: type) -> None:
     """A retrieval result is a record of what happened, not a scratchpad."""
     assert model_type.__dataclass_params__.frozen  # type: ignore[attr-defined]
+
+
+# ---------------------------------------------------------------------------
+# A follow-up is embedded WITH the turns before it.
+#
+# Found by deploying and asking one: "And what about above 500 pounds?" was
+# refused, because on its own it carries no policy vocabulary at all. The
+# answer was one row further down the table the previous question had already
+# found. Retrieval still runs on every turn (REQ-C5) -- what changed is the
+# text it runs on.
+# ---------------------------------------------------------------------------
+
+
+def test_a_follow_up_is_embedded_with_the_conversation():
+    from app.retrieve.service import _contextualise
+
+    history = [
+        ("user", "What is the approval threshold for a travel expense claim?"),
+        ("assistant", "Claims of 75 pounds or more require line-manager approval."),
+    ]
+    query = _contextualise("And what about above 500 pounds?", history)
+
+    assert "approval threshold" in query, "the earlier question must be carried"
+    assert "above 500 pounds" in query, "the current question must still be there"
+
+
+def test_only_user_turns_are_carried():
+    """The assistant's answer summarises passages already found.
+
+    Carrying it would drag every query back toward those same passages, so a
+    follow-up could never reach a section the first answer missed.
+    """
+    from app.retrieve.service import _contextualise
+
+    history = [
+        ("user", "What is the approval threshold?"),
+        ("assistant", "UNIQUEANSWERTOKEN appears only here."),
+    ]
+    query = _contextualise("And above 500?", history)
+
+    assert "UNIQUEANSWERTOKEN" not in query
+
+
+def test_a_first_question_is_embedded_alone():
+    from app.retrieve.service import _contextualise
+
+    assert _contextualise("What is the threshold?", None) == "What is the threshold?"
+    assert _contextualise("What is the threshold?", []) == "What is the threshold?"
+
+
+def test_the_question_is_not_embedded_twice():
+    """Callers differ on whether history already contains the current turn."""
+    from app.retrieve.service import _contextualise
+
+    query = _contextualise("Same question", [("user", "Same question")])
+
+    assert query.count("Same question") == 1

@@ -133,6 +133,7 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-C3** | A follow-up question is answered **with the recent turns in context** |
 | **REQ-C4** | How many turns is configurable (`CONTEXT_MESSAGES`), default **5** |
 | **REQ-C5** | **Retrieval still runs on every turn.** Context informs the answer; it never replaces the search |
+| **REQ-C7** | A follow-up is **embedded together with the questions before it**, not on its own |
 | **REQ-C6** | **New chat** starts a fresh conversation with no prior context |
 
 > **REQ-C5 is the trap.** It is tempting to skip retrieval on a follow-up because "we
@@ -141,6 +142,18 @@ Each has an id. Your acceptance criteria should reference them.
 > answer from the wrong section.
 >
 > An easy mistake to make and a hard one to notice, because the answer still looks right.
+>
+> ⚠️ **REQ-C7 is the other half of it, and it bites in the opposite direction.** Run
+> retrieval on the follow-up *alone* and *"and what about above £500?"* embeds to
+> nothing — no policy vocabulary, no match, refused. The answer was one row further down
+> the table the previous question already found.
+>
+> **Retrieval runs on the conversation; the answer is composed for the question asked.**
+> Carry the user turns only — carrying the assistant's answers drags every query back
+> toward the passages already found, so a follow-up could never reach a section the
+> first answer missed.
+>
+> *(Both halves were found by deploying the reference build and asking a follow-up.)*
 
 ## Generation
 
@@ -373,7 +386,7 @@ will be asked at the gate — and *"the agent picked it"* is not an answer.
 | **D6** | **What happens when two policies conflict** | The corpus contains a genuine conflict. Surface both, pick one, or refuse — a governance decision, not a coding one |
 | **D7** | **How citations are grouped** | Three passages from one document — one citation or three? |
 | **D8** | **How much conversation a follow-up sees** | Too little and "what about above £500?" is meaningless; too much and old turns drag the answer off course |
-| **D9** | **Whether a follow-up re-retrieves** | REQ-C5 says it must. Be able to say why that is right |
+| **D9** | **Whether a follow-up re-retrieves, and on what text** | REQ-C5 says it must re-retrieve; REQ-C7 says it must do so on the conversation, not the fragment. Be able to say why both are right |
 
 > **D6 is the one worth arguing about.** Conflicting policy is a problem Aldermere
 > already has. Resolving it in code means your software decides which policy wins. That

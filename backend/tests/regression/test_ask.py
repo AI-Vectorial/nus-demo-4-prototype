@@ -73,7 +73,7 @@ class FakePipeline:
         self.questions: list[str] = []
         self.histories: list[list[tuple[str, str]] | None] = []
 
-    def retrieve(self, question: str) -> object:
+    def retrieve(self, question: str, history=None) -> object:
         self.questions.append(question)
         return self.result
 

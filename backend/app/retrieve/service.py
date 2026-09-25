@@ -28,8 +28,45 @@ __all__ = ["Grounded", "Insufficient", "RetrievalResult", "retrieve"]
 FALLBACK_OWNER = "the Policy Office"
 
 
-def retrieve(question: str) -> RetrievalResult:
+def _contextualise(question: str, history: list[tuple[str, str]] | None) -> str:
+    """The text to embed: the conversation, not just the latest fragment.
+
+    Only the USER turns are carried. Including the assistant's answers drags
+    the query toward whatever it happened to say, which is a summary of the
+    passages already found -- so retrieval would keep re-finding them and a
+    follow-up could never reach a section the first answer missed.
+
+    Trimmed to settings.context_messages (D8), oldest first, so a long
+    conversation does not slowly pull every query back toward its opening
+    question.
+    """
+    if not history:
+        return question
+
+    asked = [text for role, text in history if role == "user" and text.strip()]
+    # The current question may already be the last entry, depending on the
+    # caller; do not embed it twice.
+    if asked and asked[-1].strip() == question.strip():
+        asked = asked[:-1]
+    if not asked:
+        return question
+
+    recent = asked[-settings.context_messages :]
+    return chr(10).join([*recent, question])
+
+
+def retrieve(question: str, history: list[tuple[str, str]] | None = None) -> RetrievalResult:
     """Find the passages that answer a question, or say why none do.
+
+    `history` is the recent turns, oldest first. A follow-up is embedded WITH
+    the questions that came before it, because on its own it usually carries no
+    policy vocabulary at all -- "and what about above 500 pounds?" embeds to
+    nothing near the corpus and is refused, even though the answer is one row
+    further down the table the previous question already found.
+
+    Retrieval still runs on every turn (REQ-C5). What changes is the text it
+    runs ON: the conversation, not the fragment. The answer is still composed
+    for the question actually asked.
 
     Searches unfiltered and applies MIN_SCORE (REQ-R2, REQ-R4) here, so a
     refusal can report the score it rejected -- the evidence behind D2 -- and
@@ -45,7 +82,9 @@ def retrieve(question: str) -> RetrievalResult:
             reason="No question was asked.", best_score=0.0, owner_hint=None
         )
 
-    embedding = embed([asked])[0]
+    # Embed the conversation, not just the latest fragment. Grounded still
+    # carries the question actually asked, so the answer is composed for it.
+    embedding = embed([_contextualise(asked, history)])[0]
     # min_score=0.0 deliberately: the near miss is what a refusal is made of.
     hits = get_vector_store().search(
         embedding, limit=settings.retrieve_top_k, min_score=0.0

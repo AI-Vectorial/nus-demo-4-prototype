@@ -61,9 +61,12 @@ def ask(payload: AskRequest) -> AskResponse:
     # REQ-C5 / D9: retrieval runs on EVERY turn, follow-up included. "And what
     # about above 500?" needs a different row of the same table; reusing the
     # previous turn's passages gives a confident answer from the wrong section,
-    # and it still looks right. Context informs the answer, never replaces the
-    # search.
-    result = retrieve(payload.question)
+    # and it still looks right.
+    #
+    # The history goes in because a follow-up on its own carries no policy
+    # vocabulary -- embedded alone it matches nothing and is refused. Retrieval
+    # runs on the conversation; the answer is composed for the question asked.
+    result = retrieve(payload.question, turn.history or None)
 
     model: str | None = None
     prompt_version: str | None = None
