@@ -12,7 +12,7 @@ Build what the approved plan says. Nothing else.
 
 ## Output
 
-Working code, passing tests, committed to `table-N/build`.
+Working code, passing tests, committed to `work/table-N`.
 
 ## The gate
 
@@ -83,4 +83,4 @@ reaching F5 with none of them. The pipeline is what is being assessed.
 - [ ] `ruff check` and `bandit -r app/ -ll` are clean
 - [ ] No literal model name, URL, dimension or threshold in code
 - [ ] No test was skipped, weakened or deleted to get here
-- [ ] Work is committed to `table-N/build`
+- [ ] Work is committed to `work/table-N`

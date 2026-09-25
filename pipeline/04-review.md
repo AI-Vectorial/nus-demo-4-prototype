@@ -10,7 +10,7 @@ never looked for is not.
 
 ## Inputs
 
-The diff on `table-N/build` · `tickets/T1-plan.md` · `docs/PRD.md`
+The diff on `work/table-N` · `tickets/T1-plan.md` · `docs/PRD.md`
 
 ## Output
 

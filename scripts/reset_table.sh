@@ -9,7 +9,7 @@
 #   the Postgres database   dropped and recreated, empty
 #   the Qdrant collection   deleted -- the next ingest recreates it, at whatever
 #                           dimension that table's embedding model needs
-#   the branch              table-N reset to main, table-N/build deleted
+#   the branch              table-N reset to main, work/table-N deleted
 #
 set -euo pipefail
 

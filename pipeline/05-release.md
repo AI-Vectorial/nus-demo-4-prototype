@@ -6,7 +6,7 @@
 
 ## Inputs
 
-`tickets/T1-review.md` · a green build on `table-N/build`
+`tickets/T1-review.md` · a green build on `work/table-N`
 
 ## Output
 
@@ -31,7 +31,7 @@ It must answer:
   - Exactly how to reverse it, as commands
   - What we cannot reverse, if anything
 
-Then open a pull request from table-N/build into table-N. The
+Then open a pull request from work/table-N into table-N. The
 description should link the ticket, the plan and the review record.
 
 Do not merge. A human approves.
@@ -52,7 +52,7 @@ deliverable, not the difficulty.
 ## The pull request
 
 ```
-table-N/build  ──▶  table-N
+work/table-N  ──▶  table-N
 ```
 
 **Opening the PR does not deploy.** CI runs the checks, a human approves, and the merge

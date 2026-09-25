@@ -1,7 +1,7 @@
 # T1 — Review record
 
 **Stage:** 04 review
-**Branch:** table-N/build
+**Branch:** work/table-N
 **Reviewed:** <when>
 
 *Five passes, run separately. Every finding gets a decision.*

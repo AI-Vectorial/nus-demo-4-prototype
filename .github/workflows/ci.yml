@@ -10,9 +10,13 @@ name: pipeline
 #   pull_request  ->  the checks, on every table's PR
 #   push          ->  the deploy, after a merge into a table branch
 #
-# A push to table-N/build never deploys. Only a merge into table-N does, and
+# A push to work/table-N never deploys. Only a merge into table-N does, and
 # that merge needs a human. If a push could deploy, the gate would be
 # bypassable -- and the gate is the module.
+#
+# Work branches are work/table-N, NOT table-N/build: git cannot hold both
+# refs/heads/table-3 and refs/heads/table-3/build, because the first is a file
+# and the second would need it to be a directory.
 on:
   push:
     branches: [main, "table-[1-5]"]

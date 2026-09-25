@@ -1,7 +1,7 @@
 # T1 — Release plan
 
 **Stage:** 05 release
-**Releasing:** table-N/build -> table-N -> api-table-N + web-table-N
+**Releasing:** work/table-N -> table-N -> api-table-N + web-table-N
 
 ---
 
