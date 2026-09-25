@@ -129,7 +129,7 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 
 | | |
 |---|---|
-| **Covers** | REQ-C3 … REQ-C6, REQ-A3, REQ-U8 |
+| **Covers** | REQ-C3 … REQ-C7, REQ-A3, REQ-U8 |
 | **Decisions** | **D8** — how many turns · **D9** — whether a follow-up re-retrieves |
 | **Done when** | A follow-up is answered correctly, and **New chat** starts clean |
 
@@ -139,6 +139,12 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 > confident answer from the wrong section.
 >
 > Easy to get wrong, hard to notice — the answer still looks right.
+>
+> ⚠️ **And the opposite mistake costs you the feature entirely.** Retrieve on the
+> follow-up *alone* and *"and what about above £500?"* matches nothing — it contains no
+> policy vocabulary — so it refuses. **Embed the conversation, answer the question.**
+> User turns only: the assistant's answers summarise passages already found, and
+> carrying them stops a follow-up ever reaching a new section.
 
 ---
 
