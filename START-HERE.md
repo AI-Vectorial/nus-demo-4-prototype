@@ -14,9 +14,13 @@ Everything is already running. You do not need to configure anything.
 | **Your app** | `https://web-table-N-production.up.railway.app` |
 | **Your API** | `https://api-table-N-production.up.railway.app` |
 | **Already running** | port 3000 the app, port 8000 the API |
+| **Also running** | Postgres and Qdrant, in your Codespace. Yours alone |
 
 **Your API key is already in your environment.** So are your database and your
-vector store — nobody else can reach them, and you cannot reach anybody else's.
+vector store — both running beside you in this Codespace, so you can index the
+corpus and watch retrieval work without deploying anything.
+
+Nobody else can reach them, and you cannot reach anybody else's.
 
 ---
 

@@ -1,9 +1,11 @@
 {
   "name": "M04 Policy Assistant",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
+  // Compose rather than a bare Dockerfile, so Postgres and Qdrant come up
+  // beside the workspace. A table can then run ingestion and see retrieval
+  // work without deploying first.
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/nus-demo-4-prototype",
 
   // Both services start automatically. An agent edit is visible on refresh in
   // about two seconds -- that loop is what makes the feature feel like theirs.
@@ -34,6 +36,9 @@
         "GitHub.copilot",
         "GitHub.copilot-chat"
       ],
+      // The first thing a table should see is the page telling them where to
+      // start, not an empty editor.
+      "openFiles": ["START-HERE.md"],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "python.testing.pytestEnabled": true,
@@ -42,8 +47,9 @@
     }
   },
 
+  // Everything else -- the stores, the API key -- comes from docker-compose
+  // and from the repository's Codespaces secrets. A table configures nothing.
   "remoteEnv": {
-    "TABLE": "${localEnv:TABLE}",
     "API_URL": "http://localhost:8000"
   }
 }
