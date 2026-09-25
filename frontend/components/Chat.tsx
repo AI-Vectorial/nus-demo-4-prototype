@@ -1,90 +1,239 @@
 "use client";
 
-import { useEffect, useState } from "react";
+/**
+ * The assistant. F5, and F6's half of the conversation.
+ *
+ * Two states: an empty one that invites a question (REQ-U1), and a thread with
+ * a composer pinned under it. The conversation id returned by the first answer
+ * rides on every question after it (REQ-U8); New chat drops it (REQ-C6).
+ */
 
-type Health = {
-  status: string;
-  build: string;
-  environment: string;
-  dependencies: Record<string, string>;
-};
+import { useEffect, useRef, useState } from "react";
+
+import Answer from "./Answer";
+import Degraded from "./Degraded";
+import Refusal from "./Refusal";
+import Shell from "./Shell";
+import { PersonIcon, SendIcon } from "./Icons";
+import { ApiError, askWithConversation } from "@/lib/api";
+import type { AskResponse } from "@/lib/types";
+
+/** The three the demo is built around: an answer, a refresh cycle, a conflict. */
+const SUGGESTIONS = [
+  "What is the approval threshold for a travel expense claim?",
+  "How often do we refresh KYC for a high-risk client?",
+  "How long do we keep client correspondence?",
+];
+
+type Turn =
+  | { kind: "question"; id: number; text: string }
+  | { kind: "response"; id: number; response: AskResponse }
+  | { kind: "error"; id: number; message: string };
 
 export default function Chat({ apiUrl }: { apiUrl: string }) {
-  const [health, setHealth] = useState<Health | null>(null);
-  const [reachable, setReachable] = useState<boolean | null>(null);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [question, setQuestion] = useState("");
+  const [pending, setPending] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  const nextId = useRef(0);
+  const threadEnd = useRef<HTMLDivElement>(null);
+
+  const started = turns.length > 0 || pending;
 
   useEffect(() => {
-    fetch(`${apiUrl}/healthz`)
-      .then((r) => r.json())
-      .then((data: Health) => {
-        setHealth(data);
-        setReachable(true);
-      })
-      .catch(() => setReachable(false));
-  }, [apiUrl]);
+    threadEnd.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [turns, pending]);
+
+  async function submit(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || pending) return;
+
+    setQuestion("");
+    // REQ-U9: the rail narrows when the conversation begins -- and only then,
+    // so that reopening it mid-conversation sticks.
+    if (turns.length === 0) setCollapsed(true);
+    setTurns((current) => [
+      ...current,
+      { kind: "question", id: nextId.current++, text: trimmed },
+    ]);
+    setPending(true);
+
+    try {
+      const response = await askWithConversation(apiUrl, trimmed, conversationId);
+      setConversationId(response.conversation_id);
+      setTurns((current) => [
+        ...current,
+        { kind: "response", id: nextId.current++, response },
+      ]);
+    } catch (error) {
+      // A transport failure, not a refusal. REQ-U5 needs the two to read
+      // differently, so this renders as neither an answer nor a refusal card.
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "Something went wrong while asking.";
+      setTurns((current) => [
+        ...current,
+        { kind: "error", id: nextId.current++, message },
+      ]);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  function newChat() {
+    setTurns([]);
+    setConversationId(null);
+    setQuestion("");
+    setCollapsed(false);
+  }
+
+  function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    void submit(question);
+  }
+
+  const firstQuestion = turns.find((turn) => turn.kind === "question");
+  const title = firstQuestion?.kind === "question" ? firstQuestion.text : "New chat";
 
   return (
-    <main className="wrap">
-      <header>
-        <h1>Policy Assistant</h1>
-        <p className="lede">
-          Ask a question about internal policy. Answers cite the sections they came
-          from.
-        </p>
-      </header>
+    <Shell
+      collapsed={collapsed}
+      onToggleCollapsed={() => setCollapsed((value) => !value)}
+      onNewChat={newChat}
+      topbar={started ? <h1 className="topbar-title">{title}</h1> : undefined}
+    >
+      {started ? (
+        <>
+          <div className="thread-scroll">
+            <div className="thread" aria-live="polite">
+              {turns.map((turn) => (
+                <TurnView key={turn.id} turn={turn} />
+              ))}
+              {pending && (
+                // REQ-U7. Four seconds of nothing reads as broken.
+                <div className="msg assistant">
+                  <p className="pending">Searching the policy corpus…</p>
+                </div>
+              )}
+              <div ref={threadEnd} />
+            </div>
+          </div>
 
-      {/* Step 1: the conversation shell exists but does not yet answer.
-          Retrieval and generation arrive in step 3, built through the pipeline. */}
-      <section className="chat" aria-label="Conversation">
-        <div className="placeholder">
-          <strong>The scaffold.</strong> The surface is here; it does not answer yet.
-          The corpus is indexed and waiting, the stores are connected — retrieval,
-          refusal and generation are yours to build.
-          <br />
-          <br />
-          Read <code>docs/PRD.md</code> for what must be true, and{" "}
-          <code>docs/features.md</code> for what to build first. Then open{" "}
-          <code>pipeline/01-shape.md</code>.
+          <div className="composer-bar">
+            <form className="ask-form" onSubmit={onSubmit}>
+              <label className="sr-only" htmlFor="question">
+                Ask a follow-up
+              </label>
+              <input
+                id="question"
+                className="field"
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                placeholder="Ask a follow-up"
+                autoComplete="off"
+              />
+              <SendButton disabled={!question.trim() || pending} />
+            </form>
+          </div>
+        </>
+      ) : (
+        <div className="empty">
+          <h1 className="empty-title">What does the policy say?</h1>
+          <p className="lede">
+            Aldermere&rsquo;s policy corpus, answered in plain language. Every answer
+            shows the sections it came from.
+          </p>
+
+          <form className="ask-form" onSubmit={onSubmit}>
+            <label className="sr-only" htmlFor="question">
+              Your question
+            </label>
+            <input
+              id="question"
+              className="field"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder="Ask about travel, KYC, retention or outsourcing"
+              autoComplete="off"
+              autoFocus
+            />
+            <SendButton disabled={!question.trim() || pending} />
+          </form>
+
+          <ul className="chips">
+            {SUGGESTIONS.map((suggestion) => (
+              <li key={suggestion}>
+                <button
+                  type="button"
+                  className="chip"
+                  onClick={() => void submit(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-      </section>
-
-      <form
-        className="composer"
-        onSubmit={(e) => e.preventDefault()}
-        aria-label="Ask a question"
-      >
-        <input
-          type="text"
-          placeholder="What is the approval threshold for a travel expense claim?"
-          disabled
-          aria-label="Your question"
-        />
-        <button type="submit" disabled>
-          Ask
-        </button>
-      </form>
-
-      {/*
-        Your components go here.
-
-          <Answer />      F5 -- the composed answer and its citations
-          <Refusal />     F3 -- visibly different from an answer, and from an error
-          <Degraded />    F4 -- the kill switch, shown honestly
-
-        docs/features.md has the order. Build F1-F5, deploy, then choose.
-      */}
-
-      <footer>
-        {reachable === null && <span className="mono dim">checking API…</span>}
-        {reachable === false && (
-          <span className="mono bad">API unreachable at {apiUrl}</span>
-        )}
-        {reachable && health && (
-          <span className="mono dim">
-            api {health.status} · build {health.build} · {health.environment}
-          </span>
-        )}
-      </footer>
-    </main>
+      )}
+    </Shell>
   );
+}
+
+function SendButton({ disabled }: { disabled: boolean }) {
+  return (
+    <button type="submit" className="send" disabled={disabled} aria-label="Ask">
+      <SendIcon />
+    </button>
+  );
+}
+
+function TurnView({ turn }: { turn: Turn }) {
+  if (turn.kind === "question") {
+    return (
+      <div className="msg user">
+        <p className="bubble-user">{turn.text}</p>
+        <span className="avatar" aria-hidden="true">
+          <PersonIcon />
+        </span>
+      </div>
+    );
+  }
+
+  if (turn.kind === "error") {
+    return (
+      <div className="msg assistant">
+        <p className="error-line">{turn.message} Try asking again.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="msg assistant">
+      <div className="msg-assistant">
+        <Outcome response={turn.response} />
+      </div>
+    </div>
+  );
+}
+
+function Outcome({ response }: { response: AskResponse }) {
+  switch (response.outcome) {
+    case "answered":
+      return <Answer response={response} />;
+    case "refused":
+      return <Refusal reason={response.answer ?? ""} />;
+    case "degraded":
+      return <Degraded citations={response.citations} />;
+    default:
+      // The outcome is explicit by contract (PRD section 5). If an unknown one
+      // arrives, say so rather than guessing which of the three it meant.
+      return (
+        <p className="error-line">
+          The API returned an outcome this interface does not recognise.
+        </p>
+      );
+  }
 }
