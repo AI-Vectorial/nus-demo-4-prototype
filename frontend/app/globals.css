@@ -728,6 +728,68 @@ body {
 .no-answer { margin: 0.45rem 0 0; font-size: 0.8rem; color: var(--text-dim); }
 
 /* ---------------------------------------------------------------------------
+   History. F8, REQ-U13.
+
+   The same card as the corpus list, because it is the same job: a row you
+   scan, recognise and open. One product, one row.
+   --------------------------------------------------------------------------- */
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem;
+  color: inherit;
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.history-row:hover { border-color: var(--accent); }
+
+/* A document thumbnail is page-shaped; a conversation is not. */
+.history-row .thumb { flex-basis: 42px; height: 42px; }
+
+.history-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* The API truncates at 80 characters, which still wraps to two lines on a
+   phone. One row, one line -- so the row stays scannable. */
+.history-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-meta { font-size: 0.82rem; color: var(--text-dim); }
+
+/* Nothing stored yet is not an error, and must not read as one. */
+.history-empty {
+  padding: 2.25rem 1rem;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.history-empty p { margin: 0 0 0.5rem; color: var(--text-dim); }
+
+.history-empty a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------------------
    REQ-U10. Phone width. The bar stays one row -- it holds a name and two
    words, which fit; only the padding gives way.
    --------------------------------------------------------------------------- */
@@ -739,8 +801,10 @@ body {
     gap: 0.5rem;
   }
 
-  .topbar-actions { gap: 0.35rem; }
-  .bar-action { padding: 0.35rem 0.55rem; }
+  /* Three actions rather than two, on a bar that is already one row. The
+     padding gives way before the words do. */
+  .topbar-actions { gap: 0.3rem; }
+  .bar-action { padding: 0.35rem 0.45rem; }
 
   .empty-title { font-size: 1.6rem; }
   .bubble-user { max-width: 86%; }
@@ -778,4 +842,38 @@ body {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* REQ-U15. A citation is a link to the section it names -- a citation nobody
+   can follow is a claim, not a source. The row already carries the border and
+   the superseded styling, so the link only has to fill it and stay legible. */
+.citation-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: inherit;
+}
+
+.citation-link:hover {
+  background: var(--surface-tint);
+}
+
+.citation.superseded .citation-link:hover {
+  background: transparent;
+  filter: brightness(0.98);
+}
+
+.citation-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* The padding moved onto the link so the whole row is a target. */
+.citations .citation:has(.citation-link) {
+  padding: 0;
 }

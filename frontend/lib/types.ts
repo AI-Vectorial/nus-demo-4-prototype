@@ -43,16 +43,33 @@ export interface AskResponse {
 
 /** One turn of a stored conversation -- GET /conversations/{id}. */
 export interface ConversationMessage {
+  id: string;
   role: "user" | "assistant";
   content: string | null;
   outcome?: Outcome | null;
   citations?: Citation[];
+  latency_ms?: number | null;
 }
 
 export interface Conversation {
   id: string;
   started_at: string;
   messages: ConversationMessage[];
+}
+
+/**
+ * A row of GET /conversations -- REQ-A6, REQ-C8.
+ *
+ * `title` is the first question, truncated by the API. There is no title to
+ * store, so there is none to keep in step with the conversation.
+ */
+export interface ConversationSummary {
+  id: string;
+  started_at: string;
+  /** When the thread was last touched. The list is ordered on this. */
+  last_at: string;
+  title: string;
+  message_count: number;
 }
 
 /** A heading and its text, as GET /corpus/{id} serves them. */

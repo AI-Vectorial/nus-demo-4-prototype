@@ -75,6 +75,22 @@ class ConversationOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ConversationSummaryOut(BaseModel):
+    """One row of GET /conversations -- REQ-A6, REQ-C8.
+
+    `title` is derived from the first user message, never stored. A title
+    column would be a second source of truth to keep in step with the
+    conversation, for no gain -- the first question is already the thing a
+    reader recognises the thread by.
+    """
+
+    id: str
+    started_at: datetime
+    last_at: datetime
+    title: str
+    message_count: int
+
+
 class CorpusSectionOut(BaseModel):
     """A section of a policy document, and its text."""
 

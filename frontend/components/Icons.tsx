@@ -60,3 +60,13 @@ export function PersonIcon() {
     </svg>
   );
 }
+
+/** A conversation, in the history list. The shape a thread takes everywhere. */
+export function ChatIcon() {
+  return (
+    <svg {...base} className="icon">
+      <path d="M20 12a7 7 0 0 1-7 7H8l-4 3v-4.3A7 7 0 0 1 4 12a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7z" />
+      <path d="M9 11h6M9 14h3" />
+    </svg>
+  );
+}

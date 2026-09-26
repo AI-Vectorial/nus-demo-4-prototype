@@ -21,11 +21,17 @@ import logging
 import time
 from dataclasses import dataclass, field
 
-from fastapi import APIRouter, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.api.schemas import AskRequest, AskResponse, CitationOut, ConversationOut
+from app.api.schemas import (
+    AskRequest,
+    AskResponse,
+    CitationOut,
+    ConversationOut,
+    ConversationSummaryOut,
+)
 from app.core.config import settings
 from app.core.database import session_scope
 from app.core.models import Conversation, Message, MessageCitation, new_id, now
@@ -34,6 +40,10 @@ from app.retrieve.store import Hit
 log = logging.getLogger(__name__)
 
 router = APIRouter(tags=["ask"])
+
+# How much of the first question a row carries. Long enough to tell two
+# policy questions apart, short enough to stay one line on a phone.
+TITLE_LENGTH = 80
 
 
 @dataclass
@@ -121,6 +131,66 @@ def ask(payload: AskRequest) -> AskResponse:
     )
 
 
+@router.get("/conversations", response_model=list[ConversationSummaryOut])
+def list_conversations(
+    limit: int = Query(default=50, ge=1, le=200),
+) -> list[ConversationSummaryOut]:
+    """Past conversations, newest first -- REQ-A6, REQ-C8.
+
+    The count is an inner join rather than a left one, so a conversation with
+    no turns never reaches Python to be filtered out (REQ-U14). An empty row
+    is real: /ask opens the conversation before it stores anything, and a
+    write that fails after that leaves one behind. It is not something a
+    reader can open, so it is not something the list should offer.
+    """
+    with session_scope() as db:
+        counts = (
+            select(
+                Message.conversation_id.label("conversation_id"),
+                func.count(Message.id).label("message_count"),
+            )
+            .group_by(Message.conversation_id)
+            .subquery()
+        )
+        # Correlated rather than another join: the first USER message, which is
+        # the question the thread started from. Joining would need a second
+        # aggregate to pick one row per conversation.
+        first_question = (
+            select(Message.content)
+            .where(Message.conversation_id == Conversation.id, Message.role == "user")
+            .order_by(Message.created_at)
+            .limit(1)
+            .scalar_subquery()
+        )
+
+        rows = db.execute(
+            select(
+                Conversation.id,
+                Conversation.started_at,
+                Conversation.last_at,
+                first_question.label("title"),
+                counts.c.message_count,
+            )
+            .join(counts, counts.c.conversation_id == Conversation.id)
+            # last_at, not started_at: the list is ordered by when a thread was
+            # last touched, which is what "newest" means to someone looking for
+            # the one they were just in.
+            .order_by(Conversation.last_at.desc())
+            .limit(limit)
+        ).all()
+
+    return [
+        ConversationSummaryOut(
+            id=row.id,
+            started_at=row.started_at,
+            last_at=row.last_at,
+            title=_title(row.title),
+            message_count=row.message_count,
+        )
+        for row in rows
+    ]
+
+
 @router.get("/conversations/{conversation_id}", response_model=ConversationOut)
 def get_conversation(conversation_id: str) -> ConversationOut:
     """A conversation and its turns -- REQ-A3."""
@@ -131,6 +201,23 @@ def get_conversation(conversation_id: str) -> ConversationOut:
         # Built inside the session: the messages and their citations are loaded
         # while there is still a connection to load them with.
         return ConversationOut.model_validate(conversation)
+
+
+def _title(question: str | None) -> str:
+    """The first question, on one line and short enough to scan.
+
+    Whitespace is collapsed because a question pasted out of an email arrives
+    with newlines in it, and a row is one line high.
+    """
+    text = " ".join((question or "").split())
+    if not text:
+        # Only reachable if a conversation somehow holds no user turn. A blank
+        # row is unreadable; say what it is instead.
+        return "Untitled conversation"
+    if len(text) <= TITLE_LENGTH:
+        return text
+    # The ellipsis counts toward the length, so the row never exceeds it.
+    return text[: TITLE_LENGTH - 1].rstrip() + chr(0x2026)
 
 
 # --- the two halves of a turn ---------------------------------------------

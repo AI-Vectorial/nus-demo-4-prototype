@@ -8,6 +8,7 @@
 import type {
   AskResponse,
   Conversation,
+  ConversationSummary,
   CorpusDocument,
   CorpusListItem,
   Health,
@@ -76,6 +77,21 @@ export function askWithConversation(
     method: "POST",
     body: JSON.stringify({ question, conversation_id: conversationId }),
   });
+}
+
+/**
+ * Past conversations, newest first -- REQ-A6.
+ *
+ * `limit` is the API's page size, left to its default here. The history screen
+ * shows a page, not an archive; a reader looking for something older is better
+ * served by a search than by a longer list.
+ */
+export function getConversations(
+  apiUrl: string,
+  limit?: number,
+): Promise<ConversationSummary[]> {
+  const query = limit === undefined ? "" : `?limit=${encodeURIComponent(limit)}`;
+  return request<ConversationSummary[]>(apiUrl, `/conversations${query}`);
 }
 
 export function getConversation(apiUrl: string, id: string): Promise<Conversation> {

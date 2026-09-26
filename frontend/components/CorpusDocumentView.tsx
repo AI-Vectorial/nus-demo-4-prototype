@@ -26,10 +26,13 @@ export default function CorpusDocumentView({
   apiUrl,
   id,
   version,
+  section,
 }: {
   apiUrl: string;
   id: string;
   version?: string;
+  /** A heading, arrived at from a citation -- REQ-U15. */
+  section?: string;
 }) {
   const [doc, setDoc] = useState<CorpusDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,11 +83,36 @@ export default function CorpusDocumentView({
     return () => observer.disconnect();
   }, [doc]);
 
+  // Arriving from a citation: find the section it named and go there.
+  //
+  // Matched on the HEADING rather than an anchor, because the anchor carries
+  // the section's position in the document and a citation cannot know it --
+  // the two versions of the travel policy number their sections differently.
+  // A heading that no longer exists simply leaves the reader at the top, which
+  // is the right failure: the document is still shown, nothing is invented.
+  const arrivalSlug = (() => {
+    if (!doc || !section) return null;
+    const index = doc.sections.findIndex((s) => s.heading === section);
+    return index < 0 ? null : sectionSlug(doc.sections[index].heading, index);
+  })();
+
+  useEffect(() => {
+    if (!arrivalSlug) return;
+    // After paint -- the section element is not in the document before it.
+    const timer = window.setTimeout(() => {
+      window.document.getElementById(arrivalSlug)?.scrollIntoView({ block: "start" });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [arrivalSlug]);
+
   // Before anything has scrolled, the first section is the one being read.
   // Derived rather than seeded into state, so the effect above stays a
   // subscription and nothing re-renders just to pick a default.
+  // Arrival beats the default, and scrolling beats arrival -- so the rail is
+  // right the instant the page opens and keeps up once the reader moves.
   const activeSlug =
     active ??
+    arrivalSlug ??
     (doc && doc.sections.length > 0 ? sectionSlug(doc.sections[0].heading, 0) : null);
 
   return (
