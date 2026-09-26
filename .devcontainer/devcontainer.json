@@ -9,7 +9,9 @@
 
   // Both services start automatically. An agent edit is visible on refresh in
   // about two seconds -- that loop is what makes the feature feel like theirs.
-  "postCreateCommand": "cd frontend && npm install",
+  // Frontend deps, and the credential selection wired into every shell --
+  // not only the one that starts the servers.
+  "postCreateCommand": "cd frontend && npm install && grep -q credentials.sh ~/.bashrc || echo '. ${containerWorkspaceFolder}/.devcontainer/credentials.sh' >> ~/.bashrc",
   "postAttachCommand": "bash .devcontainer/start.sh",
 
   "forwardPorts": [3000, 8000],

@@ -1,5 +1,17 @@
 "use client";
 
+/**
+ * The page a table lands on before they have built anything.
+ *
+ * It says what is running, what is not, and where to start -- and it says the
+ * true thing. An earlier version claimed "the corpus is indexed and waiting",
+ * which was false: indexing it is F1, the first thing a table builds. A
+ * scaffold that misreports its own state teaches the wrong lesson on the first
+ * screen anyone sees.
+ *
+ * Replacing this with the real assistant is F5. Nothing here is precious.
+ */
+
 import { useEffect, useState } from "react";
 
 type Health = {
@@ -24,67 +36,80 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
   }, [apiUrl]);
 
   return (
-    <main className="wrap">
-      <header>
+    <main className="welcome">
+      <header className="welcome-head">
+        <p className="eyebrow">M04 · AI-Native Development Lifecycle</p>
         <h1>Policy Assistant</h1>
         <p className="lede">
-          Ask a question about internal policy. Answers cite the sections they came
-          from.
+          You are going to build this, and deploy it. A staff member at
+          Aldermere Bank asks a policy question in plain language; the assistant
+          answers <strong>only</strong> from the bank&rsquo;s policy corpus and
+          shows which sections it used. When the corpus cannot support an
+          answer, <strong>it says so and stops.</strong>
         </p>
       </header>
 
-      {/* Step 1: the conversation shell exists but does not yet answer.
-          Retrieval and generation arrive in step 3, built through the pipeline. */}
-      <section className="chat" aria-label="Conversation">
-        <div className="placeholder">
-          <strong>The scaffold.</strong> The surface is here; it does not answer yet.
-          The corpus is indexed and waiting, the stores are connected — retrieval,
-          refusal and generation are yours to build.
-          <br />
-          <br />
-          Read <code>docs/PRD.md</code> for what must be true, and{" "}
-          <code>docs/features.md</code> for what to build first. Then open{" "}
-          <code>pipeline/01-shape.md</code>.
-        </div>
+      <section className="card">
+        <h2>What is running</h2>
+        <ul className="status-list">
+          <li>
+            <span className="status-name">API</span>
+            <span className={reachable === false ? "status-bad" : "status-ok"}>
+              {reachable === null
+                ? "checking…"
+                : reachable
+                  ? "reachable on :8000"
+                  : `unreachable at ${apiUrl}`}
+            </span>
+          </li>
+          {health &&
+            Object.entries(health.dependencies).map(([name, detail]) => (
+              <li key={name}>
+                <span className="status-name">{name.replace(/_/g, " ")}</span>
+                <span
+                  className={
+                    detail.startsWith("down") ? "status-bad" : "status-ok"
+                  }
+                >
+                  {detail}
+                </span>
+              </li>
+            ))}
+        </ul>
+        <p className="note">
+          Postgres and Qdrant are running beside you in this Codespace, and they
+          are yours alone. <strong>The corpus is not indexed yet</strong> —
+          indexing it is the first thing you build.
+        </p>
       </section>
 
-      <form
-        className="composer"
-        onSubmit={(e) => e.preventDefault()}
-        aria-label="Ask a question"
-      >
-        <input
-          type="text"
-          placeholder="What is the approval threshold for a travel expense claim?"
-          disabled
-          aria-label="Your question"
-        />
-        <button type="submit" disabled>
-          Ask
-        </button>
-      </form>
+      <section className="card">
+        <h2>Where to start</h2>
+        <ol className="start-list">
+          <li>
+            <code>START-HERE.md</code> — ninety seconds, already open in your
+            editor
+          </li>
+          <li>
+            <code>docs/PRD.md</code> — what must be true. The contract.{" "}
+            <strong>§10 is the one to read twice</strong>
+          </li>
+          <li>
+            <code>pipeline/01-shape.md</code> — then follow the six stages in
+            order
+          </li>
+        </ol>
+        <p className="note">
+          Ten decisions in §10 are deliberately left to you.{" "}
+          <strong>You will be asked to defend them</strong>, and{" "}
+          <em>&ldquo;the agent chose it&rdquo;</em> is a failed answer.
+        </p>
+      </section>
 
-      {/*
-        Your components go here.
-
-          <Answer />      F5 -- the composed answer and its citations
-          <Refusal />     F3 -- visibly different from an answer, and from an error
-          <Degraded />    F4 -- the kill switch, shown honestly
-
-        docs/features.md has the order. Build F1-F5, deploy, then choose.
-      */}
-
-      <footer>
-        {reachable === null && <span className="mono dim">checking API…</span>}
-        {reachable === false && (
-          <span className="mono bad">API unreachable at {apiUrl}</span>
-        )}
-        {reachable && health && (
-          <span className="mono dim">
-            api {health.status} · build {health.build} · {health.environment}
-          </span>
-        )}
-      </footer>
+      <p className="footnote">
+        Aldermere Bank is fictional. This screen is scaffolding — replacing it
+        is F5.
+      </p>
     </main>
   );
 }

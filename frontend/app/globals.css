@@ -1,38 +1,44 @@
 :root {
-  color-scheme: light dark;
+  /* Module 3's light palette, unchanged -- a participant moving between
+     modules should see one product, not two. REQ-U11: light only. There is no
+     dark mode and no theme switch; a toggle is another state to get wrong on
+     every screen, and nobody asked for it. */
+  color-scheme: light;
 
-  --paper: #f1f4f3;
-  --surface: #ffffff;
-  --ink: #15211e;
-  --ink-2: #4a5754;
-  --ink-3: #7c8884;
-  --line: #d2dad7;
-  --jade: #0b6e51;
-  --rust: #993022;
+  --bg: #fafafc;
+  --panel: #ffffff;
+  --surface-tint: #eef1f3;
+  --input-bg: #dfe5e8;
+  --border: #dfe5e8;
+  --border-strong: #c8d2d6;
+  --divider: rgba(0, 0, 0, 0.05);
+  --text: #00141a;
+  --text-dim: #5b6b72;
+  --accent: #00ad6d;
+  --accent-soft: rgba(0, 173, 109, 0.12);
+  --accent-contrast: #ffffff;
+  --danger: #c0442f;
+  --danger-soft: rgba(192, 68, 47, 0.10);
+  --warn: #8a6516;
+  --warn-surface: #fdf6da;
+  --warn-border: #ecd894;
 
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius-lg: 16px;
+  --radius-xl: 12px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+
+  --sans: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #0b1210;
-    --surface: #121a18;
-    --ink: #e4ebe8;
-    --ink-2: #a5b1ad;
-    --ink-3: #77837f;
-    --line: #26332f;
-    --jade: #44c694;
-    --rust: #e27b69;
-  }
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--sans);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -56,25 +62,25 @@ h1 {
 
 .lede {
   margin: 0;
-  color: var(--ink-2);
+  color: var(--text-dim);
 }
 
 .chat {
   flex: 1;
   min-height: 14rem;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
   padding: 1.25rem;
 }
 
 .placeholder {
-  color: var(--ink-3);
+  color: var(--text-dim);
   font-size: 0.925rem;
   line-height: 1.6;
 }
 
-.placeholder strong { color: var(--ink-2); }
+.placeholder strong { color: var(--text-dim); }
 
 .composer {
   display: flex;
@@ -85,9 +91,9 @@ h1 {
   flex: 1;
   padding: 0.75rem 0.9rem;
   font: inherit;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
 }
 
@@ -98,7 +104,7 @@ h1 {
   font: inherit;
   font-weight: 600;
   color: #fff;
-  background: var(--jade);
+  background: var(--accent);
   border: 0;
   border-radius: 0.375rem;
   cursor: pointer;
@@ -106,16 +112,16 @@ h1 {
 
 .composer button:disabled { opacity: 0.4; cursor: not-allowed; }
 
-footer { padding-top: 0.5rem; border-top: 1px solid var(--line); }
+footer { padding-top: 0.5rem; border-top: 1px solid var(--border); }
 
 .mono { font-family: var(--mono); font-size: 0.75rem; }
-.dim { color: var(--ink-3); }
-.bad { color: var(--rust); }
+.dim { color: var(--text-dim); }
+.bad { color: var(--danger); }
 
 code {
   font-family: var(--mono);
   font-size: 0.85em;
-  background: var(--paper);
+  background: var(--bg);
   padding: 0.1em 0.3em;
   border-radius: 0.2em;
 }
@@ -130,8 +136,8 @@ code {
 .answer {
   padding: 1rem 1.15rem;
   border-radius: 10px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--panel);
+  border: 1px solid var(--border);
   line-height: 1.6;
 }
 
@@ -149,24 +155,24 @@ code {
   gap: 0.5rem;
   padding: 0.55rem 0.7rem;
   border-radius: 7px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   font-size: 0.85rem;
 }
 
 .citation .doc { font-weight: 600; }
-.citation .section { color: var(--ink-3); }
+.citation .section { color: var(--text-dim); }
 
 .citation .version {
   font-family: var(--mono);
   font-size: 0.78rem;
-  color: var(--ink-3);
+  color: var(--text-dim);
 }
 
 /* REQ-U4. A correct answer citing a withdrawn policy is the failure the
    product exists to prevent, so this must be impossible to miss. */
 .citation.superseded {
-  border-color: var(--rust);
-  background: color-mix(in srgb, var(--rust) 9%, transparent);
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 9%, transparent);
 }
 
 .citation.superseded .badge {
@@ -174,8 +180,8 @@ code {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--rust);
-  border: 1px solid var(--rust);
+  color: var(--danger);
+  border: 1px solid var(--danger);
   border-radius: 4px;
   padding: 0.1rem 0.35rem;
 }
@@ -185,20 +191,20 @@ code {
 .refusal {
   padding: 1rem 1.15rem;
   border-radius: 10px;
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--border);
   background: transparent;
   line-height: 1.6;
 }
 
 .refusal .lead { font-weight: 600; }
-.refusal .next { margin-top: 0.5rem; color: var(--ink-3); font-size: 0.9rem; }
+.refusal .next { margin-top: 0.5rem; color: var(--text-dim); font-size: 0.9rem; }
 
 /* REQ-U6. Visibly degraded -- never passages dressed up as an answer. */
 .degraded {
   padding: 0.7rem 0.9rem;
   border-radius: 8px;
-  border: 1px solid var(--rust);
-  background: color-mix(in srgb, var(--rust) 7%, transparent);
+  border: 1px solid var(--danger);
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
   font-size: 0.88rem;
   margin-bottom: 0.85rem;
 }
@@ -208,7 +214,7 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--ink-3);
+  color: var(--text-dim);
   font-size: 0.9rem;
 }
 
@@ -217,9 +223,129 @@ code {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  border: 2px solid var(--line);
+  border: 2px solid var(--border);
   border-top-color: transparent;
   animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------------------------------------------------------------------------
+   The welcome screen. Scaffolding -- F5 replaces it. It exists so the first
+   thing a table sees is true and points somewhere, rather than a blank page or
+   a claim about state that is not the case.
+   --------------------------------------------------------------------------- */
+
+.welcome {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 56px 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.welcome-head h1 {
+  margin: 6px 0 0;
+  font-size: 2rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.welcome .lede {
+  margin: 12px 0 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.welcome .card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+}
+
+.welcome .card h2 {
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.status-list,
+.start-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.start-list {
+  list-style: decimal;
+  padding-left: 20px;
+  color: var(--text);
+}
+
+.start-list li { padding-left: 4px; }
+
+.status-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.92rem;
+}
+
+.status-name {
+  min-width: 120px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.status-ok { color: var(--text-dim); }
+
+.status-bad {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.welcome .note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.welcome code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-tint);
+  color: var(--text);
+}
+
+.footnote {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-align: center;
+}
