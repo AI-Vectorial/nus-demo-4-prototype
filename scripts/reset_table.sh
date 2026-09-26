@@ -43,7 +43,19 @@ QKEY="$(railway variables --service qdrant --json 2>/dev/null \
 if [[ -n "$QURL" ]]; then
   CODE="$(curl -s -o /dev/null -w '%{http_code}' -X DELETE \
          "https://${QURL}/collections/${COLLECTION}" -H "api-key: ${QKEY}" --max-time 25)"
-  echo "  collection  ${COLLECTION} deleted (HTTP ${CODE})"
+  if [[ "$CODE" == "200" ]]; then
+    echo "  collection  ${COLLECTION} deleted"
+  else
+    # Railway's proxy assumes a service listens on $PORT; Qdrant listens on
+    # 6333, so the public domain answers 502 and this DELETE never lands.
+    # Repointing is the reliable equivalent: the API indexes from empty on its
+    # next boot, because it indexes whenever the collection count is zero.
+    STAMP="$(date +%H%M%S)"
+    railway variables --service "api-table-${N}" \
+      --set "QDRANT_COLLECTION=${COLLECTION}_${STAMP}" >/dev/null 2>&1 \
+      && echo "  collection  unreachable (HTTP ${CODE}); repointed to ${COLLECTION}_${STAMP}" \
+      || echo "  collection  SKIPPED (HTTP ${CODE}, and could not repoint the service)"
+  fi
 else
   echo "  collection  SKIPPED (qdrant has no public domain -- delete from the dashboard)"
 fi
@@ -51,9 +63,9 @@ fi
 # --- Branches ---------------------------------------------------------------
 if ! $DATA_ONLY; then
   git fetch origin --quiet
-  git push origin --delete "table-${N}/build" 2>/dev/null && \
-    echo "  branch      table-${N}/build deleted" || \
-    echo "  branch      table-${N}/build did not exist"
+  git push origin --delete "work/table-${N}" 2>/dev/null && \
+    echo "  branch      work/table-${N} deleted" || \
+    echo "  branch      work/table-${N} did not exist"
   git push origin "origin/main:refs/heads/table-${N}" --force-with-lease 2>/dev/null && \
     echo "  branch      table-${N} reset to main" || \
     echo "  branch      table-${N} NOT reset -- remove the ruleset bypass block first"
