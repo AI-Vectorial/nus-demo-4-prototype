@@ -9,7 +9,7 @@ document says *what* must be true of it.
 | **Stack** | **FastAPI** (Python 3.12) · **React** via Next.js · Postgres · Qdrant · OpenRouter |
 | **Brief** | [`project-brief.md`](project-brief.md) |
 | **Features** | [`features.md`](features.md) |
-| **UI target** | the eight screens you were shown — build to them |
+| **UI target** | the screens you were shown — build to them |
 | **Version** | 2.0 |
 
 > ### How to read this

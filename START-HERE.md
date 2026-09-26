@@ -65,12 +65,14 @@ F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──
                                                                   │
                                            F6 follow-up ◀─────────┘
                                            F7 corpus browser
+                                           F8 history
 ```
 
-Two routes: **`/`** the assistant, **`/corpus`** the documents. A left rail with
-**New chat** and **Corpus**, and nothing else.
+Four routes: **`/`** the assistant, **`/history`** past conversations,
+**`/corpus`** the documents, **`/corpus/[id]`** one of them. A **top bar** with
+three actions: **Reset**, **History**, **Corpus**.
 
-**No settings page. No conversation list.** Both are explicitly out of scope.
+**Light theme only. No settings page.** Both are explicitly out of scope.
 
 **Deploy the moment F5 works.** Do not wait to be finished.
 
