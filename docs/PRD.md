@@ -221,10 +221,16 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-U12** | Markdown in a policy section renders as **markup, not as literal characters** — tables as tables |
 | **REQ-U13** | `/history` lists past conversations; opening one shows it and allows a follow-up |
 | **REQ-U14** | A conversation with no turns is never listed |
+| **REQ-U15** | **A citation opens the section it names** in the corpus browser |
 
 > **REQ-U2 is a product decision, not a layout one.** The brief's assumption A3 is that
 > *showing the source is what makes the answer trustworthy*. Hiding citations behind a
 > tab tests a different assumption.
+>
+> **REQ-U15 is what makes a citation a source.** One nobody can follow is a claim.
+> Link by **heading**, not by anchor: the anchor carries a section's position in its
+> document, a citation cannot know it, and the two versions of the travel policy number
+> their sections differently — 4.2 in one is 4.1 in the other.
 >
 > ⚠️ **REQ-U12 is not cosmetic.** The corpus is written in Markdown and its tables carry
 > the numbers — the approval thresholds, the accommodation caps, the retention periods.

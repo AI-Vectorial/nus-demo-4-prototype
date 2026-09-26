@@ -156,8 +156,8 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 
 | | |
 |---|---|
-| **Covers** | REQ-B1 … REQ-B6, REQ-A4, REQ-U12 |
-| **Done when** | You can open a cited document and **read** the section it came from |
+| **Covers** | REQ-B1 … REQ-B6, REQ-A4, REQ-U12, REQ-U15 |
+| **Done when** | **Clicking a citation** opens the document at the section it named, and you can read it |
 
 > Read from `backend/corpus/` (REQ-B5). Copying the documents into the database gives you
 > two sources of truth and a bug waiting to happen.
