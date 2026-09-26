@@ -8,7 +8,7 @@ Build what the approved plan says. Nothing else.
 
 ## Inputs
 
-`tickets/T1-*.md` · `tickets/T1-plan.md` **(approved)** · `docs/PRD.md`
+`tickets/T1.md` · `tickets/T1-F*.md` · `tickets/T1-plan.md` **(approved)** · `docs/PRD.md`
 
 ## Output
 
@@ -38,6 +38,11 @@ Rules:
   - Stop and ask if the plan turns out to be wrong
   - Never weaken or skip a test to get a green build
   - Configuration comes from the environment, not from literals
+
+When a feature is finished, before starting the next one: set its
+child ticket's Status to done and paste in the output that shows its
+"Done when" line is satisfied. A ticket marked done with nothing
+behind it is a claim, not a record.
 
 Start with the first item in the plan.
 ```

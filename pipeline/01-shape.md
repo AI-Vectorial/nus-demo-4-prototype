@@ -40,9 +40,18 @@ Do NOT write acceptance criteria for me. Instead:
    we are done. After each answer, play it back as a single
    pass-or-fail statement and ask me to confirm the wording.
 
-4. When I confirm we have enough, write tickets/T1-<name>.md using
-   pipeline/templates/ticket.md, with MY wording in the acceptance
-   criteria.
+4. When I confirm we have enough, write:
+
+   tickets/T1.md -- the epic, using pipeline/templates/ticket.md, with
+   MY wording in the acceptance criteria.
+
+   tickets/T1-F1-ingest.md through T1-F5-ask-and-ui.md -- one child per
+   feature, using pipeline/templates/feature-ticket.md. Each carries its
+   requirement ids from features.md, a single pass-or-fail "Done when",
+   and the section 10 decisions it depends on. Status starts at todo.
+
+   The epic holds the acceptance criteria. The children hold the
+   tracking -- do not duplicate the criteria into them.
 
 Stop after step 1 and wait for me.
 ```
