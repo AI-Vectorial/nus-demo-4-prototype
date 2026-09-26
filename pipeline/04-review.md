@@ -49,6 +49,20 @@ removed the decision — and the decision is what is being assessed.
 
 ---
 
+## Warm up first — ten minutes
+
+**Before you review your own code**, run the five passes on somebody else's:
+`docs/review-example/README.md`.
+
+It is short, it is not yours, and **it contains real defects**. Its tests pass.
+
+Reviewing your own work is hard because you already believe it works — you just
+watched it work. Ten minutes on a controlled example tells you what finding
+something actually feels like, before you turn the method on code you are
+attached to.
+
+---
+
 ## The five passes
 
 | | Looks for |
