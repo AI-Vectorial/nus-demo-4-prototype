@@ -215,7 +215,7 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-U6** | Degraded mode is visibly degraded — never passages shown as if they were an answer |
 | **REQ-U7** | A pending state shows while waiting |
 | **REQ-U8** | A follow-up can be asked without losing the conversation above it |
-| **REQ-U9** | A **top bar** on every route, with exactly two actions: **Reset** and **Corpus** |
+| **REQ-U9** | A **top bar** on every route, with exactly three actions: **Reset**, **History**, **Corpus** |
 | **REQ-U10** | It works at phone width |
 | **REQ-U11** | **Light theme only.** No dark mode, no theme switch |
 | **REQ-U12** | Markdown in a policy section renders as **markup, not as literal characters** — tables as tables |

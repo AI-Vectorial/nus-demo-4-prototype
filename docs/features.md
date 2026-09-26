@@ -108,7 +108,7 @@ versioned file.
 **Must have. This is the one that makes it a product.**
 
 `POST /ask` tying F1–F4 together, the turn written to Postgres, and an interface that
-renders all three outcomes — with the left rail from the UI target.
+renders all three outcomes — with the top bar from the UI target.
 
 | | |
 |---|---|
