@@ -24,6 +24,20 @@
 
 # The prompt
 
+## First, thirty seconds
+
+```bash
+git checkout -b work/table-N      # your number. Skip if you are already on it
+git branch --show-current         # must print work/table-N
+```
+
+⚠️ **`table-N` is protected — you cannot push to it.** Everything you build
+lands on `work/table-N` and reaches `table-N` through a pull request at stage
+05. Starting on the wrong branch works perfectly until minute 125, when the
+push is rejected.
+
+---
+
 ```
 Read docs/project-brief.md, docs/PRD.md and docs/features.md.
 

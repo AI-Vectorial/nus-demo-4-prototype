@@ -48,6 +48,10 @@ ask them one at a time, and do not start the plan until I have replied.
 
 You may not choose any of these for me. If I say "you decide", give me
 your recommendation and ask me to confirm it.
+
+Present the decisions and stop. Do not preface them by telling me what
+you have or have not decided, and do not explain the rules back to me
+-- I wrote them. Just the list.
 ```
 
 **The agent must not proceed past this point without answers.** If it writes a plan
