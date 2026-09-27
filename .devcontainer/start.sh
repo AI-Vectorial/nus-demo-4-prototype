@@ -29,6 +29,10 @@ echo "starting backend on :8000"
 (cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 \
   > /tmp/backend.log 2>&1 &)
 
+# -H 0.0.0.0 lives in package.json's dev script. Next binds to localhost by
+# default, which answers `curl localhost:3000` from inside the container and is
+# invisible to the Codespaces port forwarder -- so the browser gets a 502 while
+# every check from the terminal says the server is fine.
 echo "starting frontend on :3000"
 (cd frontend && npm run dev > /tmp/frontend.log 2>&1 &)
 
