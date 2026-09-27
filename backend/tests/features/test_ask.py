@@ -251,3 +251,14 @@ def test_healthz_answers_when_postgres_and_qdrant_are_down(monkeypatch):
 
 def test_passage_fixture_is_what_these_tests_assume(passages: list[Passage]):
     assert passages[0].section == "4.2 Approval thresholds"
+
+
+def test_an_unset_decision_is_a_503_naming_the_variable(db, loaded_store, model, monkeypatch):
+    monkeypatch.setattr(ask_api, "settings", replace(settings, _min_score=None,
+                                                     _retrieve_top_k="3"))
+    client = _client(db, loaded_store, model)
+    response = _ask(client)
+    app.dependency_overrides = {}
+
+    assert response.status_code == 503
+    assert "MIN_SCORE" in response.json()["detail"]

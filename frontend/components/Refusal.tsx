@@ -1,17 +1,20 @@
 /**
  * When the corpus cannot support an answer. F3.
  *
- * SHELL -- renders nothing until you implement it.
- *
- * REQ-U5: a refusal must look different from an answer AND different from an
- * error. It is not a failure -- it is the product working correctly, and it is
- * the behaviour the brief says we would defend hardest.
- *
- * D5 is yours: what it says. "I don't know" is not enough; the user needs to
- * know where to go instead.
+ * REQ-U5: different from an answer AND from an error -- this is the product
+ * working correctly. D5: the API's message says what is not covered, lists
+ * each policy's owning team, and points anything else at Compliance.
  */
 
+import Prose from "./Prose";
+
 export default function Refusal({ reason }: { reason: string }) {
-  void reason;
-  return null;
+  return (
+    <div className="refusal" role="status">
+      <p className="lead">Not covered by policy — no answer given</p>
+      <div className="next">
+        <Prose text={reason} />
+      </div>
+    </div>
+  );
 }

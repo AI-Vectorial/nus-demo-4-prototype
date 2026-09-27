@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
 from app.core import database
-from app.core.config import settings
+from app.core.config import ConfigurationError, settings
 from app.features.ask import ConversationNotFound, ask
 from app.generate import ProviderError, embed, generate
 from app.ingest.__main__ import CORPUS_DIR
@@ -96,6 +96,10 @@ def post_ask(
         )
     except ConversationNotFound as error:
         raise HTTPException(status_code=404, detail="conversation not found") from error
+    except ConfigurationError as error:
+        # A team decision is unset on this deployment. Say which one, rather
+        # than a bare 500 -- the value is a variable name, never a secret.
+        raise HTTPException(status_code=503, detail=str(error)) from error
     except ProviderError as error:
         # Retrieval could not embed the question, so there is nothing to show --
         # not even degraded passages. An error, never dressed up as a refusal.
