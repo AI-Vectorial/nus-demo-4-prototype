@@ -35,20 +35,24 @@ routed to the nearest document's owner.
 
 ## D2 — evaluation scores
 
-*Filled in during stage 03.*
+Live index, 130 passages, `text-embedding-3-small`, `RETRIEVE_TOP_K=6`, 2026-09-27.
+Outcome is at `MIN_SCORE=0.35`. Produced by `python -m tests.eval.evaluation`.
 
-| Q | Question | Top score | Expected section in top 3? | Outcome |
+| Q | Question | Top score | Expected section in top 3? | Outcome at 0.35 |
 |---|---|---|---|---|
-| 1 | approval threshold | | | |
-| 2 | exactly £75 | | | |
-| 3 | business class | | | |
-| 4 | Singapore cap | | | |
-| 5 | high-risk refresh | | | |
-| 6 | 90 days overdue | | | |
-| 7 | EDD ownership % | | | |
-| 8 | correspondence retention | | | |
-| 9 | critical outsourcing approval | | | |
-| 10 | the conflict | | | |
-| 11 | partner's flight | | must refuse | |
-| 12 | cryptocurrency | | must refuse | |
-| 13 | parental leave | | must refuse | |
+| 1 | approval threshold | 0.831 | yes — rank 2 (rank 1 is superseded v3.0 §4.1) | grounded |
+| 2 | exactly £75 | 0.659 | yes — rank 1 | grounded |
+| 3 | business class | **0.526** | yes — rank 1 | grounded |
+| 4 | Singapore cap | 0.611 | yes — rank 1 | grounded |
+| 5 | high-risk refresh | 0.731 | yes — rank 2 | grounded |
+| 6 | 90 days overdue | 0.743 | yes — rank 1 | grounded |
+| 7 | EDD ownership % | 0.535 | yes — rank 1 | grounded |
+| 8 | correspondence retention | 0.750 | yes — ranks 2 (§4.1), 1 (§4.2) | grounded |
+| 9 | critical outsourcing approval | 0.691 | yes — rank 1 | grounded |
+| 10 | the conflict | 0.621 | yes — both: §6.4 rank 2, §4.1 rank 3 | grounded |
+| 11 | partner's flight | **0.510** | must refuse | **grounded — FAILS** |
+| 12 | cryptocurrency | 0.491 | must refuse | **grounded — FAILS** |
+| 13 | parental leave | 0.257 | must refuse | insufficient |
+
+**Lowest answerable top score: 0.526 (Q3). Highest out-of-scope: 0.510 (Q11). Gap: 0.016.**
+0.35 does not meet the D2 condition. **Awaiting the team's decision.**
