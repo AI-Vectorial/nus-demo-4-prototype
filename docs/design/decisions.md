@@ -55,4 +55,32 @@ Outcome is at `MIN_SCORE=0.35`. Produced by `python -m tests.eval.evaluation`.
 | 13 | parental leave | 0.257 | must refuse | insufficient |
 
 **Lowest answerable top score: 0.526 (Q3). Highest out-of-scope: 0.510 (Q11). Gap: 0.016.**
-0.35 does not meet the D2 condition. **Awaiting the team's decision.**
+0.35 does not meet the D2 condition.
+
+### Widening the gap — what is embedded
+
+Retrieval was changed, not the threshold and not the corpus. Three versions of the text
+embedded per passage, each re-indexed with `--force` and run against all thirteen:
+
+| Embedded text | Answerable in top 3 | Lowest answerable | Highest out-of-scope | Gap |
+|---|---|---|---|---|
+| title — section + text | 10 / 10 | 0.526 (Q3) | 0.510 (Q11) | 0.016 |
+| text only | **8 / 10** (Q5, Q10 fail) | 0.554 (Q7) | 0.492 (Q12) | 0.062 |
+| **section + text** — kept | **10 / 10** | **0.547 (Q5)** | **0.471 (Q12)** | **0.076** |
+
+Section + text, per question:
+
+| Q | Top score | Expected in top 3 | | Q | Top score | Must refuse |
+|---|---|---|---|---|---|---|
+| 1 | 0.716 | rank 1 | | 11 | 0.436 | |
+| 2 | 0.727 | rank 1 | | 12 | **0.471** | |
+| 3 | 0.573 | rank 1 | | 13 | 0.276 | |
+| 4 | 0.680 | rank 2 (rank 1 superseded v3.0) | | | | |
+| 5 | **0.547** | rank 2 | | | | |
+| 6 | 0.599 | rank 1 | | | | |
+| 7 | 0.606 | rank 1 | | | | |
+| 8 | 0.716 | ranks 2, 1 | | | | |
+| 9 | 0.614 | rank 1 | | | | |
+| 10 | 0.578 | both — ranks 2, 3 | | | | |
+
+**Awaiting the team's confirmation of the threshold.**

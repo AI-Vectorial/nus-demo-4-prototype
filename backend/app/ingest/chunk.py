@@ -58,8 +58,14 @@ class Chunk:
 
     @property
     def embedding_text(self) -> str:
-        """What is embedded: the passage, anchored to where it came from."""
-        return f"{self.document_title} — {self.section}\n\n{self.text}"
+        """What is embedded: the section heading and its text.
+
+        Measured against EVALUATION.md (docs/design/decisions.md): prefixing the
+        document title as well pulled out-of-scope questions toward whichever
+        policy shared their topic, narrowing the refusal gap to 0.016; the text
+        alone lost two expected sections from the top three.
+        """
+        return f"{self.section}\n\n{self.text}"
 
 
 def approx_tokens(text: str) -> int:

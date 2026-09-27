@@ -181,14 +181,15 @@ def test_force_recreates_the_collection_and_re_embeds_everything(sample_corpus, 
     assert len(model.embed_calls[-1]) == result.indexed
 
 
-def test_the_passage_is_embedded_with_its_title_and_section(sample_corpus, store, model):
+def test_the_passage_is_embedded_with_its_section_heading_not_its_title(
+    sample_corpus, store, model
+):
     ingest(sample_corpus, store=store, embed=model.embed,
            max_tokens=MAX_TOKENS, overlap_tokens=OVERLAP_TOKENS)
 
     embedded = model.embed_calls[-1]
-    assert any(
-        text.startswith("Travel and Expense Policy — 4.2 Approval thresholds") for text in embedded
-    )
+    assert any(text.startswith("4.2 Approval thresholds\n\nClaims of 75") for text in embedded)
+    assert not any(text.startswith("Travel and Expense Policy") for text in embedded)
 
 
 # --- batching: REQ-I6 --------------------------------------------------------
