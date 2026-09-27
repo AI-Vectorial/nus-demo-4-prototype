@@ -7,7 +7,7 @@ in the team's words. Anything still open is marked **Open**.
 |---|---|---|---|
 | **D0** | Embedding model and dimensions | `text-embedding-3-small`, 1536 | Verified working. 3072 doubles cost and storage for a five-document corpus that is not hard to search. Re-indexing later is one command. |
 | **D1** | Chunk size and overlap | Section-first, `CHUNK_MAX_TOKENS=400`, `CHUNK_OVERLAP_TOKENS=60`. Only a section over 400 splits, on paragraph boundaries | Policy is already written in numbered sections, and a citation to "4.2 Approval thresholds" is something a human can verify. |
-| **D2** | Refusal threshold | `MIN_SCORE=0.35`, tuned against `EVALUATION.md`. Set below the lowest true answerable score rather than midway to the refusals | The model is a second line of defence — it declines when passages do not answer. A threshold set to catch everything refuses valid rephrasings. |
+| **D2** | Refusal threshold | **`MIN_SCORE=0.51`** — midway in the measured gap between the lowest answerable score (0.547) and the highest out-of-scope score (0.471). *Initially 0.35; see below* | Team's original reason for 0.35: the model is a second line of defence, and a threshold set to catch everything refuses valid rephrasings. 0.35 failed Q11 and Q12 on the live index. The team asked for the agent's recommendation and **confirmed 0.51**, 2026-09-27: it passes all thirteen with ~0.037 margin each side, and the refusal decision stays in code. |
 | **D3** | Passages retrieved | `RETRIEVE_TOP_K=6` | Enough for an answer spanning two sections; few enough that the weakest is still relevant. |
 | **D4** | Superseded policies | Shown, flagged loudly | The corpus indexes them so "has this changed?" is answerable. An answer citing a withdrawn policy is the failure we exist to prevent, so it has to be impossible to miss. |
 | **D5** | What a refusal says | Say what is not covered, and name the owning team | "I don't know" leaves the user where they started. Every document names an owner in its front matter. |
@@ -83,4 +83,4 @@ Section + text, per question:
 | 9 | 0.614 | rank 1 | | | | |
 | 10 | 0.578 | both — ranks 2, 3 | | | | |
 
-**Awaiting the team's confirmation of the threshold.**
+**Confirmed by the team: `MIN_SCORE=0.51`.** Known risk: thirteen questions is a small sample; a heavily reworded question could still land on the wrong side.
