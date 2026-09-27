@@ -25,12 +25,16 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
   } catch {
-    throw new ApiError(`Could not reach the API at ${apiUrl}.`);
+    throw new ApiError("Could not reach the assistant.");
   }
 
   if (!response.ok) {
+    const detail = await response
+      .json()
+      .then((body: { detail?: unknown }) => (typeof body.detail === "string" ? body.detail : ""))
+      .catch(() => "");
     throw new ApiError(
-      `The API returned ${response.status} for ${path}.`,
+      `The service returned ${response.status}${detail ? `: ${detail}` : ""}.`,
       response.status,
     );
   }
