@@ -66,14 +66,54 @@ class Settings:
     # replaces the search.
     context_messages: int = int(os.getenv("CONTEXT_MESSAGES", "5"))
 
-    # Below this, retrieval is treated as having found nothing and the
-    # assistant refuses rather than composing an answer from weak matches.
-    # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # The team's PRD section 10 decisions. Captured raw and parsed on use, with
+    # no default: an unset value fails the request that needs it, loudly, rather
+    # than the app picking a number nobody defended. The app still loads, so
+    # /healthz answers -- NFR-5. The values and the reasons: docs/design/decisions.md
+    _min_score: str | None = field(default_factory=lambda: os.getenv("MIN_SCORE"))
+    _chunk_max_tokens: str | None = field(default_factory=lambda: os.getenv("CHUNK_MAX_TOKENS"))
+    _chunk_overlap_tokens: str | None = field(
+        default_factory=lambda: os.getenv("CHUNK_OVERLAP_TOKENS")
+    )
+    _retrieve_top_k: str | None = field(default_factory=lambda: os.getenv("RETRIEVE_TOP_K"))
 
     @property
     def database_configured(self) -> bool:
         return bool(self.database_url)
+
+    # Below this, retrieval is treated as having found nothing and the
+    # assistant refuses rather than composing an answer from weak matches. D2.
+    @property
+    def min_score(self) -> float:
+        return float(_required("MIN_SCORE", self._min_score))
+
+    # A section longer than this splits, on paragraph boundaries. D1.
+    @property
+    def chunk_max_tokens(self) -> int:
+        return int(_required("CHUNK_MAX_TOKENS", self._chunk_max_tokens))
+
+    # How much of a split section's end the next piece repeats. D1.
+    @property
+    def chunk_overlap_tokens(self) -> int:
+        return int(_required("CHUNK_OVERLAP_TOKENS", self._chunk_overlap_tokens))
+
+    # How many passages a question retrieves before the threshold is applied. D3.
+    @property
+    def retrieve_top_k(self) -> int:
+        return int(_required("RETRIEVE_TOP_K", self._retrieve_top_k))
+
+
+class ConfigurationError(RuntimeError):
+    """A value the team must choose has not been set in the environment."""
+
+
+def _required(name: str, raw: str | None) -> str:
+    if raw is None or not raw.strip():
+        raise ConfigurationError(
+            f"{name} is not set. It is a team decision with no default -- "
+            "see docs/design/decisions.md."
+        )
+    return raw
 
 
 settings = Settings()
