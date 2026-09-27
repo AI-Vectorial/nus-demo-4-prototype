@@ -68,8 +68,20 @@ fi
 
 # --- the frontend -----------------------------------------------------------
 CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 localhost:3000 2>/dev/null || echo 000)"
-[[ "$CODE" == "200" ]] && ok "frontend        HTTP 200 on :3000" \
-                       || bad "frontend        HTTP ${CODE} on :3000"
+if [[ "$CODE" == "200" ]]; then
+  # Answering on loopback is not enough. Next binds to localhost unless told
+  # otherwise, and a loopback-only listener is invisible to the Codespaces port
+  # forwarder -- the terminal says 200 while the browser gets a 502.
+  if ss -ltn 2>/dev/null | grep -q "0.0.0.0:3000\|\*:3000\|:::3000"; then
+    ok "frontend        HTTP 200, reachable from the browser"
+  else
+    bad "frontend        HTTP 200 on loopback only -- the browser will get 502"
+    note "pkill -f 'next dev'; cd frontend && nohup npm run dev > /tmp/frontend.log 2>&1 &"
+  fi
+else
+  bad "frontend        HTTP ${CODE} on :3000"
+  note "cd frontend && nohup npm run dev > /tmp/frontend.log 2>&1 &"
+fi
 
 # --- the agent --------------------------------------------------------------
 command -v claude >/dev/null && ok "claude code     installed" \
