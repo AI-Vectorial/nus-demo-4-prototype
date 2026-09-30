@@ -10,14 +10,21 @@ build first. START-HERE.md is your first two minutes.
 
 from __future__ import annotations
 
+import logging
 import os
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
-from app.core import database
+from app.api import ask, health
+from app.core import database, models
+from app.generate import embed
+from app.ingest import ingest
+from app.retrieve import get_vector_store
+
+log = logging.getLogger(__name__)
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
 ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
@@ -43,7 +50,27 @@ async def lifespan(_: FastAPI):
     """
     ok, detail = database.ensure_database()
     print(f"database: {detail}")
+    print(f"tables: {models.ensure_tables()}")
+    threading.Thread(target=_index_if_empty, name="index-if-empty", daemon=True).start()
     yield
+
+
+def _index_if_empty() -> None:
+    """Index the corpus on first boot, in the background (build decision B).
+
+    A deployment starts with an empty collection and there is no route from a
+    workspace to it, so the service fills its own. Only when empty: later
+    starts find the passages and do nothing. In the background, so /healthz
+    answers at once. A failure -- the model provider down, say -- is logged
+    and the service keeps serving; the next start tries again.
+    """
+    try:
+        store = get_vector_store()
+        if store.count():
+            return
+        print(f"vector store empty: indexed {ingest(store, embed)} passages")
+    except Exception:  # noqa: BLE001 - reported; the service must keep serving
+        log.exception("indexing on startup failed; will retry on next start")
 
 
 app = FastAPI(
@@ -62,12 +89,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
-
-# Your routers are mounted here.
-#
-#   app.include_router(ask.router)    F5 -- the endpoint that makes it a product
-#
-# See docs/features.md for what to build and in what order.
+app.include_router(ask.router)
 
 
 @app.get("/")
