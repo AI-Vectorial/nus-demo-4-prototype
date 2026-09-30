@@ -1,17 +1,22 @@
 /**
  * The composed answer. F5.
  *
- * SHELL -- renders nothing until you implement it. The styles it needs already
- * exist in app/globals.css.
- *
- * REQ-U2: citations are visible WITHOUT further interaction. The brief assumes
- * that showing the source is what makes the answer trustworthy, so hiding them
- * behind a tab tests a different assumption.
+ * REQ-U2: citations are visible WITHOUT further interaction -- they render
+ * directly beneath the answer, not behind a tab.
  */
 
 import type { AskResponse } from "@/lib/types";
+import Citations from "./Citations";
+import Prose from "./Prose";
 
 export default function Answer({ response }: { response: AskResponse }) {
-  void response;
-  return null;
+  return (
+    <section className="answer" aria-label="Answer">
+      <Prose text={response.answer ?? ""} />
+      <Citations citations={response.citations} />
+      <p className="notice">
+        What the policy says — not a decision. Exceptions and judgement calls go to a person.
+      </p>
+    </section>
+  );
 }

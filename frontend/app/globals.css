@@ -47,8 +47,7 @@ body {
 .wrap {
   max-width: 46rem;
   margin: 0 auto;
-  padding: 3.5rem 1.5rem 2rem;
-  min-height: 100vh;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -168,20 +167,29 @@ code {
   color: var(--text-dim);
 }
 
-/* REQ-U4. A correct answer citing a withdrawn policy is the failure the
-   product exists to prevent, so this must be impossible to miss. */
-.citation.superseded {
-  border-color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 9%, transparent);
+.citation .status {
+  font-size: 0.72rem;
+  color: var(--text-dim);
 }
+
+/* REQ-U4, criterion 28: a "Superseded" label in the PRD warning colours.
+   Impossible to miss, and distinct from the danger red an error uses. */
+.citation.superseded {
+  color: var(--warn);
+  border-color: var(--warn-border);
+  background: var(--warn-surface);
+}
+
+.citation.superseded .section,
+.citation.superseded .version { color: var(--warn); }
 
 .citation.superseded .badge {
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--danger);
-  border: 1px solid var(--danger);
+  color: var(--warn);
+  border: 1px solid var(--warn);
   border-radius: 4px;
   padding: 0.1rem 0.35rem;
 }
@@ -231,121 +239,121 @@ code {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------------------------------------------------------------------------
-   The welcome screen. Scaffolding -- F5 replaces it. It exists so the first
-   thing a table sees is true and points somewhere, rather than a blank page or
-   a claim about state that is not the case.
+   F5 -- the top bar, the empty state, the conversation.
    --------------------------------------------------------------------------- */
 
-.welcome {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 56px 24px 72px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.welcome-head h1 {
-  margin: 6px 0 0;
-  font-size: 2rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--text);
-}
-
-.eyebrow {
-  margin: 0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.welcome .lede {
-  margin: 12px 0 0;
-  font-size: 1rem;
-  line-height: 1.65;
-  color: var(--text-dim);
-}
-
-.welcome .card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 22px 24px;
-}
-
-.welcome .card h2 {
-  margin: 0 0 14px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.status-list,
-.start-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-}
-
-.start-list {
-  list-style: decimal;
-  padding-left: 20px;
-  color: var(--text);
-}
-
-.start-list li { padding-left: 4px; }
-
-.status-list li {
+/* REQ-U9: every route, exactly three actions. */
+.topbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: baseline;
-  font-size: 0.92rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
 }
 
-.status-name {
-  min-width: 120px;
-  font-weight: 600;
+.topbar .brand {
+  font-weight: 650;
   color: var(--text);
-  text-transform: capitalize;
+  text-decoration: none;
+  letter-spacing: -0.01em;
 }
 
-.status-ok { color: var(--text-dim); }
+.topbar .actions { display: flex; gap: 0.4rem; }
 
-.status-bad {
-  color: var(--danger);
-  font-weight: 600;
-}
-
-.welcome .note {
-  margin: 16px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-  font-size: 0.88rem;
-  line-height: 1.6;
-  color: var(--text-dim);
-}
-
-.welcome code {
-  font-family: var(--mono);
-  font-size: 0.86em;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-tint);
+.topbar .actions a,
+.topbar .actions button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.8rem;
   color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.footnote {
+.topbar .actions a:hover,
+.topbar .actions button:hover { background: var(--surface-tint); }
+
+/* REQ-U1: centred, inviting a question. */
+.empty {
+  min-height: calc(100vh - 4rem);
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.empty .composer { margin-top: 0.5rem; text-align: left; }
+
+.conversation .composer {
+  position: sticky;
+  bottom: 0;
+  padding: 0.75rem 0 1rem;
+  background: var(--bg);
+}
+
+.turn { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.question {
+  align-self: flex-end;
+  max-width: 85%;
   margin: 0;
+  padding: 0.6rem 0.9rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.prose p { margin: 0 0 0.6rem; }
+.prose p:last-child { margin-bottom: 0; }
+.prose ul { margin: 0 0 0.6rem; padding-left: 1.2rem; }
+
+.answer .notice {
+  margin: 0.85rem 0 0;
   font-size: 0.8rem;
   color: var(--text-dim);
-  text-align: center;
+}
+
+.refusal .lead { margin: 0 0 0.5rem; }
+
+.degraded-result .found {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* REQ-U5: an error is neither an answer nor a refusal. */
+.error {
+  padding: 1rem 1.15rem;
+  border-radius: 10px;
+  border: 2px solid var(--danger);
+  background: var(--danger-soft);
+}
+
+.error p { margin: 0 0 0.4rem; overflow-wrap: anywhere; }
+.error .lead { font-weight: 700; color: var(--danger); }
+.error .next { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+
+.coming-soon a { color: var(--accent); }
+
+.citation, .answer, .refusal { overflow-wrap: anywhere; }
+
+/* REQ-U10: phone width. */
+@media (max-width: 480px) {
+  .topbar { padding: 0.6rem 1rem; }
+  .wrap, .empty { padding-left: 1rem; padding-right: 1rem; }
+  .composer button { padding: 0.75rem 1rem; }
+  .question { max-width: 100%; }
 }

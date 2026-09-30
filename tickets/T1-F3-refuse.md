@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F3 refuse
 **Covers:** REQ-R2, REQ-R3, REQ-R4, REQ-R6
-**Status:** `in progress`
+**Status:** `done`
 
 ## Done when
 
@@ -53,4 +53,6 @@ At `MIN_SCORE=0.517`: Q11 – Q13 refuse, Q1 – Q10 are grounded (table in
 covers criteria 8, 9, 10 and 12, including a fresh process with `MIN_SCORE=1.01` in which
 all thirteen refuse.
 
-**Still open:** criterion 11 (refused `/ask` under 1.5 s) needs the endpoint — measured in F5.
+**Criterion 11**, measured through the live local `/ask` in F5: five refusals of Q11 took
+1.34 s (first, cold), 0.81, 0.53, 0.76, 0.72 s — all under 1.5 s. Also asserted in
+`tests/features/test_f5_ask.py::test_a_refusal_is_fast`.

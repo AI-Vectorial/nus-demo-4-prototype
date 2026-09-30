@@ -31,7 +31,9 @@ export interface AskResponse {
   /** The composed answer, or the reason for a refusal. null when degraded. */
   answer: string | null;
   citations: Citation[];
-  exchange_id: string;
+  /** PRD section 5: null on the first question, sent back on every one after. */
+  conversation_id: string;
+  message_id: string;
   latency_ms: number;
 }
 

@@ -29,8 +29,15 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
   }
 
   if (!response.ok) {
+    let detail = "";
+    try {
+      const body = (await response.json()) as { detail?: unknown };
+      if (typeof body.detail === "string") detail = ` ${body.detail}`;
+    } catch {
+      // No readable body: the status alone is the message.
+    }
     throw new ApiError(
-      `The API returned ${response.status} for ${path}.`,
+      `The API returned ${response.status} for ${path}.${detail}`,
       response.status,
     );
   }
@@ -49,10 +56,14 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
  * outcome: "refused" with 200. Treating it as a failure would render the
  * product's defining behaviour as a bug.
  */
-export function ask(apiUrl: string, question: string): Promise<AskResponse> {
+export function ask(
+  apiUrl: string,
+  question: string,
+  conversationId: string | null,
+): Promise<AskResponse> {
   return request<AskResponse>(apiUrl, "/ask", {
     method: "POST",
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, conversation_id: conversationId }),
   });
 }
 
