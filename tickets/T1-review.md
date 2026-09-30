@@ -41,7 +41,16 @@ expiry. It is not written to Qdrant or to logs.
 
 ## Pass 3 — Maintainability
 
-*Not yet run.*
+*Would someone else understand this next month? Duplication, swallowed errors, dead code.*
+
+Findings F16 – F24, decided 2026-09-30 (team: "go with your recommendations", then **"confirm"**). Checked and clean:
+
+- **No swallowed errors.** The diff adds two broad `except Exception` blocks —
+  `core/models.py` (table creation) and `main.py` (startup index) — and both report what
+  failed (`/healthz` detail; `log.exception`) in the scaffold's own idiom. The one
+  frontend `catch {}` (`lib/api.ts`) falls back to the HTTP status and says so.
+- **Every chosen value is explained where it is set** — `config.py` carries the D1, D2 and
+  D3 reasoning next to each default, and points at the ticket holding the measurements.
 
 ## Pass 4 — Provenance and IP
 
@@ -223,6 +232,99 @@ deciding to. Not committed; not followed.
 log names) and delete the two untracked files.
 **Agent's recommendation:** FIX.
 **Decision:** FIXED — to be applied after pass 5: `agentRules: false`, and the two untracked files deleted.
+
+### F16 — The team's chosen values are written in two places
+**Pass:** 3
+**Severity:** low
+**Where:** `backend/app/core/config.py:75-84`, `backend/.env.example:42-47`
+**What:** `MIN_SCORE=0.517`, `CHUNK_MAX_TOKENS=512`, `CHUNK_OVERLAP_TOKENS=0` and
+`RETRIEVE_TOP_K=5` are both the defaults in `config.py` and the values in `.env.example`.
+Someone changing one could miss the other. `config.py` is what runs; `.env.example` is
+documentation.
+**Agent's recommendation:** ACCEPTED — `config.py` is the single source and says why; `.env.example` mirrors it for people setting up locally.
+**Decision:** ACCEPTED — `config.py` is the single source that runs, and says why; `.env.example` mirrors it for local setup.
+
+### F17 — Embedding is batched twice
+**Pass:** 3
+**Severity:** low
+**Where:** `backend/app/ingest/pipeline.py:70`, `backend/app/generate/client.py:110`
+**What:** Ingest splits the corpus into `EMBEDDING_BATCH_SIZE` batches, and `embed()` batches
+again inside. Harmless — each inner call is one batch — but a reader will wonder which one
+counts. It is done in ingest so criterion 6 can be tested with the fake model, and nothing
+says so.
+**Fix:** a two-line comment in `pipeline.py` saying why.
+**Agent's recommendation:** FIX.
+**Decision:** FIXED — to be applied after pass 5: a comment in `pipeline.py` saying why ingest batches.
+
+### F18 — The evaluation set is copied into code
+**Pass:** 3
+**Severity:** low
+**Where:** `backend/app/retrieve/evaluate.py:44`
+**What:** The 13 questions and expected sections are copied from the protected
+`corpus/EVALUATION.md`. If that file changes, the copy will not. The module docstring says
+so, and a test checks there are 13 with 10 answerable.
+**Agent's recommendation:** ACCEPTED — parsing prose Markdown for expected sections would be more fragile than the copy.
+**Decision:** ACCEPTED — parsing prose Markdown for expected sections would be more fragile than a checked copy.
+
+### F19 — Table creation reaches into the database module's private engine
+**Pass:** 3
+**Severity:** low
+**Where:** `backend/app/core/models.py:73-76`
+**What:** `ensure_tables()` uses `database._engine`, a private name, from another module.
+**Fix:** move `ensure_tables()` into `core/database.py`, beside the engine and
+`ensure_database()`.
+**Agent's recommendation:** FIX.
+**Decision:** FIXED — to be applied after pass 5: `ensure_tables()` moves into `core/database.py`.
+
+### F20 — The outcome name is worked out by a chain of conditions
+**Pass:** 3
+**Severity:** low
+**Where:** `backend/app/api/ask.py:122`
+**What:** `"answered" if … else "degraded" if … else "refused"` — anything that is not the
+first two becomes `refused`, so a fourth outcome added later would be silently mislabelled.
+**Fix:** each outcome type (`Answered`, `Refused`, `Degraded`) carries its own name.
+**Agent's recommendation:** FIX.
+**Decision:** FIXED — to be applied after pass 5: each outcome type carries its own name.
+
+### F21 — Dead code left over from the scaffold
+**Pass:** 3
+**Severity:** low
+**Where:** `frontend/lib/api.ts` (`health()`, no callers), `frontend/lib/types.ts` (`Health`),
+`frontend/app/globals.css:67-118` (`.chat`, `.placeholder`, `footer`, `.mono`, `.dim`, `.bad`, unused)
+**What:** The welcome screen that used them was replaced in F5.
+**Fix:** delete them.
+**Agent's recommendation:** FIX.
+**Decision:** FIXED — to be applied after pass 5: the unused function, type and styles deleted.
+
+### F22 — Tests read the fake store's private dictionary
+**Pass:** 3
+**Severity:** low
+**Where:** `backend/tests/features/test_f1_ingest.py`, `test_f4_generate.py`
+**What:** Tests use `store._passages` to see everything stored. They would break if the fake
+changed how it holds passages.
+**Agent's recommendation:** ACCEPTED — the fake is ours, test-only, and one file.
+**Decision:** ACCEPTED — the fake is ours and test-only.
+
+### F23 — A test helper re-implements what the fake model already does
+**Pass:** 3
+**Severity:** low
+**Where:** `backend/tests/features/test_f5_ask.py:94`
+**What:** `_EmbedsButCannotWrite` makes embedding work and generation fail — which
+`FakeModel(fail_after=…)` already does, as the F4 tests use it. It is also defined after the
+test that uses it, with imports inside its methods.
+**Fix:** use `FakeModel` the way `test_f4_generate.py` does, and delete the helper.
+**Agent's recommendation:** FIX.
+**Decision:** FIXED — to be applied after pass 5: the helper replaced with `FakeModel(fail_after=…)`.
+
+### F24 — Reset reaches the chat through a browser event
+**Pass:** 3
+**Severity:** low
+**Where:** `frontend/components/TopBar.tsx:12-21`, `frontend/components/Chat.tsx`
+**What:** The top bar tells the chat to clear by firing a window event rather than through
+React. It works and is commented at both ends, but the link is invisible unless you read
+both files.
+**Agent's recommendation:** ACCEPTED — the event is named once and imported by the listener, so a search finds both ends; a React context would be more machinery for one button.
+**Decision:** ACCEPTED — the event is named once and imported by the listener; a context would be more machinery for one button.
 
 ---
 
