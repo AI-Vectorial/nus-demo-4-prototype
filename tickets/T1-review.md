@@ -78,7 +78,26 @@ Finding F25, decided 2026-09-30 (team: "go with your recommendations", then **"c
 
 ## Pass 5 — Production fitness
 
-*Not yet run.*
+*What happens when Qdrant is down, when the model times out? Is failure observable?*
+
+Findings F26 – F31, decided 2026-09-30 (team: "go with your recommendations", then **"confirm"**). Tested live, each in an isolated process against the real code:
+
+```
+Qdrant down    /ask -> 500 in  2.1s  "Internal Server Error"
+               /healthz -> ok, vector_store: down (unreachable: ResponseHandlingException)
+Postgres down  /ask -> 500 in 14.1s  "Internal Server Error"   <- the model was called first
+               /healthz -> ok, database: down (unreachable: InterfaceError)
+```
+
+Already covered elsewhere: provider fully down (F1); model failing while search works →
+`degraded` (criterion 18); `GENERATION_ENABLED=false` (criteria 17, 19, 29b); half-built first
+index (F2).
+
+**Railway wiring, checked:** `scripts/provision_railway.sh` sets the web service's
+`API_URL` to the API's public domain and the API's `ALLOWED_ORIGINS` to the web domain, and
+per-table `DATABASE_NAME` / `QDRANT_COLLECTION`. In production `NODE_ENV=production`, so the
+dev-only `/api` rewrite is off and the page calls `API_URL` directly. The backend image now
+contains `corpus/` (build decision A).
 
 ---
 
@@ -357,6 +376,77 @@ approved commercial agreement" as a dependency owned by Procurement. Nothing in 
 records which terms apply — and those terms govern what happens to the question text (F10).
 **Agent's recommendation:** ACCEPTED — record the models and the open Procurement dependency in the dependency table and the release plan; nothing to change in code.
 **Decision:** ACCEPTED — both models recorded in the dependency table; the open Procurement dependency is named in the release plan. No code change.
+
+### F26 — Qdrant down gives a bare "Internal Server Error"
+**Pass:** 5
+**Severity:** medium
+**Where:** `backend/app/retrieve/qdrant_store.py` (`search`), `backend/app/api/ask.py`
+**What:** The failure is visible — the page shows the error box, `/healthz` names Qdrant,
+the log has the traceback — but the user is told only "The API returned 500", while a
+model outage gets a clear 503 "Policy search is unavailable".
+**Fix:** `qdrant_store.search` raises a domain error (keeping the client library inside that
+one module), and `/ask` turns it into the same 503.
+**Agent's recommendation:** FIX.
+**Decision:** FIXED — to be applied: a domain error from the store, turned into the same 503 as a model outage.
+
+### F27 — With Postgres down, the answer is paid for and then thrown away
+**Pass:** 5
+**Severity:** medium
+**Where:** `backend/app/api/ask.py` (the `with sessions.begin()` block)
+**What:** A first question does not touch the database until the end, so with Postgres
+down the model is called (≈ 10 s and a paid call) and the answer is then lost to a 500 —
+14.1 s measured. Related: when continuing a conversation, a database connection is held
+open for the whole model call, so more than ten slow requests at once would exhaust the
+pool (5 + 5 overflow) and queue.
+**Fix:** check the conversation — which also proves the database is up — in a short
+transaction first, release the connection while retrieving and generating, then write the
+question and reply together in one short transaction (plan P1 still holds).
+**Agent's recommendation:** FIX.
+**Decision:** FIXED — to be applied: check the conversation and the database first, hold no connection during the model call, write question and reply together at the end.
+
+### F28 — An unreachable model takes about three minutes to degrade
+**Pass:** 5
+**Severity:** medium
+**Where:** `backend/app/generate/client.py` (`_call`), `LLM_TIMEOUT_SECONDS=60`, `LLM_MAX_RETRIES=3`
+**What:** Computed from the configuration, not measured: a model that hangs is waited on
+60 s, three times, before `/ask` degrades — about 3 minutes of "Searching the policies…".
+Rate limiting adds 5 + 10 + 15 s of waits. The degraded result arrives, but too late to be
+the "still working" the brief promises; a proxy may cut the request first.
+**Options:** (a) accept and record it; (b) lower the timeout and retries — e.g. 20 s and one
+attempt, against a slowest observed answer of 10.6 s. (b) changes values PRD §8 lists
+(`LLM_TIMEOUT_SECONDS=60`) and would need setting on Railway, so it is a decision, not a fix.
+**Agent's recommendation:** ACCEPTED — record the worst case in the release plan; revisit with real latency data.
+**Decision:** ACCEPTED — the timeout values stay at PRD §8's 60 s and 3 attempts; the ~3-minute worst case is recorded in the release plan, to revisit with real latency data.
+
+### F29 — `/healthz` says "ok" even when the app cannot answer
+**Pass:** 5
+**Severity:** low
+**Where:** `backend/app/api/health.py` (scaffold), `ci/smoke.py` (protected)
+**What:** By design (NFR-5), `/healthz` returns `status: ok` with Qdrant or Postgres down, and
+names the one that is down. So Railway's health check and the CI smoke test would pass a
+deployment with an empty index or a dead database. Criterion 37 — a person reading
+`/healthz` on the live site — is the check that closes it.
+**Agent's recommendation:** ACCEPTED — deliberate, and stage 06 reads the dependencies, not just the status.
+**Decision:** ACCEPTED — deliberate (NFR-5); stage 06 reads the dependencies, not just the status.
+
+### F30 — While the first index builds, questions are refused as if not covered
+**Pass:** 5
+**Severity:** low
+**Where:** `backend/app/main.py` (`_index_if_empty`)
+**What:** For about ten seconds after the first deploy, the collection is empty or partly
+filled, and a question is refused exactly like a question the corpus does not cover.
+**Agent's recommendation:** ACCEPTED — first boot only; stage 06 starts only once `/healthz` shows 130 passages.
+**Decision:** ACCEPTED — first boot only; stage 06 starts once `/healthz` shows 130 passages.
+
+### F31 — Nothing watches latency, refusal rate or cost
+**Pass:** 5
+**Severity:** low
+**Where:** —
+**What:** The brief §9 obliges monitoring of "answer latency, cost and refusal rate". Every
+reply is stored with `outcome`, `latency_ms`, `model` and `prompt_version`, so the numbers
+can be queried — but nothing reports or alerts on them.
+**Agent's recommendation:** DEFERRED — the data is recorded; a report or alert is later work.
+**Decision:** DEFERRED — the data is recorded per reply; a report or alert is later work.
 
 ---
 
