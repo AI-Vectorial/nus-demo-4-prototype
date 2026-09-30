@@ -10,6 +10,11 @@ import Chat from "@/components/Chat";
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const apiUrl = process.env.API_URL ?? "http://localhost:8000";
+  // In development the page talks to its own origin and next.config.ts
+  // forwards /api to the API -- see the comment there.
+  const apiUrl =
+    process.env.NODE_ENV === "development"
+      ? "/api"
+      : (process.env.API_URL ?? "http://localhost:8000");
   return <Chat apiUrl={apiUrl} />;
 }
