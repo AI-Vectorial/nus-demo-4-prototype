@@ -2,7 +2,7 @@
 
 **Stage:** 02 plan
 **Ticket:** [tickets/T1.md](T1.md)
-**Status:** AWAITING APPROVAL
+**Status:** APPROVED
 
 ---
 
@@ -78,7 +78,7 @@ the evaluation set.
 
 | | |
 |---|---|
-| **Decision** | |
-| **By** | |
-| **When** | |
-| **If rejected, what would make it acceptable** | |
+| **Decision** | APPROVED |
+| **By** | facilitator |
+| **When** | 2026-09-30 09:15 UTC |
+| **If rejected, what would make it acceptable** | n/a |
