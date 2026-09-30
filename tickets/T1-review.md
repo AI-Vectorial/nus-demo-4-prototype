@@ -54,7 +54,27 @@ Findings F16 – F24, decided 2026-09-30 (team: "go with your recommendations", 
 
 ## Pass 4 — Provenance and IP
 
-*Not yet run.*
+*Every dependency: where from, what licence? Anything copied from elsewhere?*
+
+Finding F25, decided 2026-09-30 (team: "go with your recommendations", then **"confirm"**). Checked and clean:
+
+- **No dependency was added on this branch.** `requirements.txt`, `requirements-dev.txt`,
+  `package.json` and `package-lock.json` are unchanged against `origin/table-2`. Two were
+  avoided on purpose: PyYAML (front matter parsed by hand — `ingest/loader.py`) and
+  `tiktoken` (plan P2 — tokens approximated). No Markdown library either (`Prose.tsx`).
+- **`python ci/check_licences.py`: PASS — 59 dependencies, all permissive.** Direct
+  dependencies are in the table below.
+- **Every import in the new code** is the standard library, the app itself, or a package
+  already in `requirements.txt` (`fastapi`, `pydantic`, `sqlalchemy`, `qdrant_client`, `openai`).
+- **Nothing copied from outside.** No licence headers, copyright lines or source URLs in the
+  diff. The prompt (`answer.md`) and refusal (`refusal.md`) were written for this project.
+  The one copy is internal: the evaluation set, from `corpus/EVALUATION.md` (F18).
+- **Provenance of the code itself:** every file in this diff was written by an AI coding
+  agent (Claude) at the team's direction, against the approved plan, and reviewed by the
+  team in these five passes. Recorded here because a reviewer asking "who wrote this?"
+  deserves a straight answer.
+- **Fonts:** Space Grotesk is named in the CSS but not bundled or downloaded; the system
+  fallback renders. Nothing to license.
 
 ## Pass 5 — Production fitness
 
@@ -326,15 +346,56 @@ both files.
 **Agent's recommendation:** ACCEPTED — the event is named once and imported by the listener, so a search finds both ends; a React context would be more machinery for one button.
 **Decision:** ACCEPTED — the event is named once and imported by the listener; a context would be more machinery for one button.
 
+### F25 — The models and the provider's terms are not recorded anywhere
+**Pass:** 4
+**Severity:** low
+**Where:** `backend/app/core/config.py` (`LLM_MODEL`, `EMBEDDING_MODEL_SLUG`)
+**What:** The product sends every question to two models through OpenRouter:
+`openai/gpt-oss-120b` (open weights, Apache-2.0) and `openai/text-embedding-3-small`
+(OpenAI's terms, reached through OpenRouter's). The brief lists "a model provider with an
+approved commercial agreement" as a dependency owned by Procurement. Nothing in the repo
+records which terms apply — and those terms govern what happens to the question text (F10).
+**Agent's recommendation:** ACCEPTED — record the models and the open Procurement dependency in the dependency table and the release plan; nothing to change in code.
+**Decision:** ACCEPTED — both models recorded in the dependency table; the open Procurement dependency is named in the release plan. No code change.
+
 ---
 
 ## Dependencies
 
 *Pass 4.*
 
+*No dependency added on this branch. Direct dependencies as shipped; the CI licence check
+covers all 59, transitive included.*
+
 | Package | Version | Licence | Permissive? |
 |---|---|---|---|
-| | | | |
+| **Backend, runtime** | | | |
+| fastapi | 0.115.6 | MIT | yes |
+| uvicorn | 0.34.0 | BSD | yes |
+| pydantic | 2.10.5 | MIT | yes |
+| SQLAlchemy | 2.0.36 | MIT | yes |
+| pg8000 | 1.31.2 | BSD-3-Clause | yes — replaced LGPLv3 `psycopg` |
+| qdrant-client | 1.12.1 | Apache-2.0 | yes |
+| openai | 1.59.6 | Apache-2.0 | yes |
+| jinja2 | 3.1.5 | BSD | yes |
+| python-multipart | 0.0.20 | Apache-2.0 | yes |
+| **Backend, dev and CI only** | | | |
+| pytest | 8.3.4 | MIT | yes |
+| httpx | 0.28.1 | BSD | yes |
+| bandit | 1.8.0 | Apache-2.0 | yes |
+| ruff | 0.9.2 | MIT | yes |
+| pip-licenses | 5.0.0 | MIT | yes |
+| **Frontend, runtime** | | | |
+| next | 16.3.6 | MIT | yes |
+| react | 19.0.0 | MIT | yes |
+| react-dom | 19.0.0 | MIT | yes |
+| **Frontend, dev only** | | | |
+| typescript | 5.7.3 | Apache-2.0 | yes |
+| eslint | 9.18.0 | MIT | yes |
+| eslint-config-next | 16.3.6 | MIT | yes |
+| **Models, called at runtime (not packages)** | | | |
+| `openai/gpt-oss-120b` via OpenRouter | — | open weights, Apache-2.0; OpenRouter's terms | see F25 |
+| `openai/text-embedding-3-small` via OpenRouter | — | OpenAI's terms, via OpenRouter | see F25 |
 
 ## Summary
 
