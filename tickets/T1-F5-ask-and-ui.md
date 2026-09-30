@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F5 ask + UI
 **Covers:** REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1 .. REQ-U7, REQ-U9 .. REQ-U11
-**Status:** `in progress`
+**Status:** `done`
 
 ## Done when
 
@@ -58,8 +58,31 @@ assistant  answered  openai/gpt-oss-120b answer-v1  4591   2 citations
 **For review:** answered p50 6.9 s locally against NFR-1's 5 s — almost all of it is the
 model call. Not one of our criteria; raised, not fixed.
 
+## Criteria 25 – 33 — watched by the team, 2026-09-30
+
+No browser in the Codespace, so these were checked by the team in the Codespace's editor
+preview, not asserted in CI. Team reported **"all pass"** for 25 – 33, including:
+
+- Q1 answered with the v3.1 figures (£75 / £500 / £2,500), five citations beneath it, the
+  two v3.0 citations labelled **Superseded** in the warning colours (27, 28)
+- Q11 → the dashed "Not covered by the policy corpus" box with the four owners (29a)
+- `GENERATION_ENABLED=false` → the "No answer could be composed" banner and sections found,
+  no answer text (29b)
+- API stopped → the solid-red "Error — no answer, and no refusal" box (29c)
+
+## Getting the team a browser that could reach the app — for review
+
+The page's JavaScript called `http://localhost:8000`, which in a browser means the
+viewer's own machine. On the team's network `*.app.github.dev` did not resolve at all
+(`DNS_PROBE_FINISHED_NXDOMAIN`), and VS Code desktop's forwarding of 8000 did not reach it
+either, so every question showed the error state. With the team's agreement: in
+development only, the page now calls `/api` on its own origin and `next.config.ts`
+forwards it to the API inside the Codespace (`db193dd`). Production is unchanged.
+
+Along the way, Next.js 16's dev server generated `frontend/AGENTS.md` and
+`frontend/CLAUDE.md` on its own. Left untracked; not followed; raised for review.
+
 ## Still to do
 
-- **Criteria 25 – 33 — the team, in a browser.** No browser in the Codespace, so these are
-  watched, not asserted.
-- Deploy, then criteria 34 – 37 on the live URL.
+- Deploy (stage 05), then criteria 34 – 37 and the manual criterion 20 on the live URL
+  (stage 06).
