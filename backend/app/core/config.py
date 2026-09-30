@@ -71,6 +71,15 @@ class Settings:
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
     min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
 
+    # D1 -- one passage per section. The cap is a safety net: the largest
+    # section in the corpus is ~195 words, so nothing splits today. Tokens are
+    # approximated as characters / 4 (plan P2), so no tokenizer dependency.
+    chunk_max_tokens: int = int(os.getenv("CHUNK_MAX_TOKENS", "512"))
+    chunk_overlap_tokens: int = int(os.getenv("CHUNK_OVERLAP_TOKENS", "0"))
+
+    # D3 -- headroom above the top three the evaluation set checks.
+    retrieve_top_k: int = int(os.getenv("RETRIEVE_TOP_K", "5"))
+
     @property
     def database_configured(self) -> bool:
         return bool(self.database_url)

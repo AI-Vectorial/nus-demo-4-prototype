@@ -47,6 +47,12 @@ class QdrantVectorStore:
         )
         log.info("created Qdrant collection %s (dim=%d)", self.collection, self.dim)
 
+    def recreate(self) -> None:
+        if self._client.collection_exists(self.collection):
+            self._client.delete_collection(self.collection)
+            log.info("dropped Qdrant collection %s", self.collection)
+        self.ensure_ready()
+
     def upsert(self, passages: list[Passage]) -> int:
         if not passages:
             return 0
