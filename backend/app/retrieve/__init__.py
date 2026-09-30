@@ -7,9 +7,19 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from app.retrieve.retrieve import Grounded, Insufficient, Retrieval, retrieve
 from app.retrieve.store import Hit, Passage, VectorStore
 
-__all__ = ["Hit", "Passage", "VectorStore", "get_vector_store"]
+__all__ = [
+    "Grounded",
+    "Hit",
+    "Insufficient",
+    "Passage",
+    "Retrieval",
+    "VectorStore",
+    "get_vector_store",
+    "retrieve",
+]
 
 
 @lru_cache(maxsize=1)

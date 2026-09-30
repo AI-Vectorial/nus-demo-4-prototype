@@ -68,8 +68,11 @@ class Settings:
 
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
-    # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # D2 -- measured with `python -m app.retrieve.evaluate` against
+    # text-embedding-3-small: lowest answerable top score 0.533 (Q3), highest
+    # out-of-scope 0.501 (Q11); 0.517 is the midpoint. Re-measure if the
+    # embedding model, chunking or embedded text changes. tickets/T1-F3-refuse.md
+    min_score: float = float(os.getenv("MIN_SCORE", "0.517"))
 
     # D1 -- one passage per section. The cap is a safety net: the largest
     # section in the corpus is ~195 words, so nothing splits today. Tokens are
