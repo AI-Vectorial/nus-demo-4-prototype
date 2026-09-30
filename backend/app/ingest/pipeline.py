@@ -49,6 +49,13 @@ def _pieces(documents: list[Document], max_tokens: int, overlap_tokens: int):
                 yield doc, section, text
 
 
+def planned_passages(corpus_dir: Path = CORPUS_DIR) -> int:
+    """How many passages the corpus produces -- without embedding anything."""
+    documents = load_corpus(corpus_dir)
+    return sum(1 for _ in _pieces(documents, settings.chunk_max_tokens,
+                                  settings.chunk_overlap_tokens))
+
+
 def ingest(
     store: VectorStore,
     embed: Embed,
@@ -67,6 +74,8 @@ def ingest(
     else:
         store.ensure_ready()
 
+    # embed() batches internally too. Batching here as well is what lets
+    # criterion 6 (REQ-I6) be tested against the fake model, which does not.
     for start in range(0, len(pieces), batch_size):
         batch = pieces[start : start + batch_size]
         vectors = embed([_embedded_text(doc, section, text) for doc, section, text in batch])

@@ -43,6 +43,15 @@ class Hit:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
+class StoreUnavailable(RuntimeError):
+    """The vector store could not be reached.
+
+    Raised instead of the client library's own errors, so callers can handle
+    an outage without importing the library -- which would breach the
+    boundary this module exists to hold.
+    """
+
+
 @runtime_checkable
 class VectorStore(Protocol):
     """What the application needs from a vector store. Nothing more."""

@@ -64,23 +64,6 @@ h1 {
   color: var(--text-dim);
 }
 
-.chat {
-  flex: 1;
-  min-height: 14rem;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-}
-
-.placeholder {
-  color: var(--text-dim);
-  font-size: 0.925rem;
-  line-height: 1.6;
-}
-
-.placeholder strong { color: var(--text-dim); }
-
 .composer {
   display: flex;
   gap: 0.6rem;
@@ -110,12 +93,6 @@ h1 {
 }
 
 .composer button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-footer { padding-top: 0.5rem; border-top: 1px solid var(--border); }
-
-.mono { font-family: var(--mono); font-size: 0.75rem; }
-.dim { color: var(--text-dim); }
-.bad { color: var(--danger); }
 
 code {
   font-family: var(--mono);

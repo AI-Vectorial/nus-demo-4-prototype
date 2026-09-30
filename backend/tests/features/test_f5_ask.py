@@ -12,7 +12,7 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, event, func, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -81,27 +81,14 @@ def test_a_refused_response_matches_the_contract(api):
     assert body["citations"] == []
 
 
-def test_a_degraded_response_matches_the_contract(api):
-    app.dependency_overrides[ask_api.get_model] = lambda: _EmbedsButCannotWrite()
+def test_a_degraded_response_matches_the_contract(api, model):
+    model.fail_after = len(model.embed_calls) + 1  # embedding works, generation fails
 
     body = _ask(api)
 
     assert body["outcome"] == "degraded"
     assert body["answer"] is None
     assert body["citations"]
-
-
-class _EmbedsButCannotWrite:
-    def __init__(self):
-        from tests.fixtures.fake_model import FakeModel
-        self._model = FakeModel()
-
-    def embed(self, texts):
-        return self._model.embed(texts)
-
-    def generate(self, *args, **kwargs):
-        from app.generate import ProviderError
-        raise ProviderError("down (fake)", retryable=True)
 
 
 def test_an_empty_question_is_rejected(api):
@@ -122,6 +109,59 @@ def test_a_search_outage_is_a_503_and_writes_nothing(api, db, failing_model):
 
     assert response.status_code == 503
     assert _count(db, Message) == 0
+
+
+class _UnreachableStore:
+    def search(self, embedding, limit=5, min_score=0.0):
+        from app.retrieve.store import StoreUnavailable
+        raise StoreUnavailable("vector store unreachable (fake)")
+
+
+def test_a_vector_store_outage_is_a_503_and_writes_nothing(api, db, model):
+    """Review F26 -- the same clear 503 as a model outage, not a bare 500."""
+    app.dependency_overrides[ask_api.get_store] = lambda: _UnreachableStore()
+
+    response = api.post("/ask", json={"question": ANSWERABLE})
+
+    assert response.status_code == 503
+    assert "unavailable" in response.json()["detail"]
+    assert not model.was_called
+    assert _count(db, Message) == 0
+
+
+def test_a_database_outage_is_a_503_before_any_model_call(api, model):
+    """Review F27 -- no record possible, so no paid model call either."""
+    unreachable = create_engine("sqlite:////nonexistent-dir/for-this-test/x.db")
+    app.dependency_overrides[ask_api.get_sessions] = lambda: sessionmaker(bind=unreachable)
+    before = len(model.embed_calls)
+
+    response = api.post("/ask", json={"question": ANSWERABLE})
+
+    assert response.status_code == 503
+    assert "record" in response.json()["detail"]
+    assert not model.was_called
+    assert len(model.embed_calls) == before
+
+
+def test_no_database_connection_is_held_while_the_model_writes(api, db, model):
+    """Review F27 -- follow-ups must not pin a pooled connection for the model call."""
+    first = _ask(api)
+    open_connections = [0]
+    event.listen(db.kw["bind"], "checkout", lambda *a: open_connections.__setitem__(
+        0, open_connections[0] + 1))
+    event.listen(db.kw["bind"], "checkin", lambda *a: open_connections.__setitem__(
+        0, open_connections[0] - 1))
+    held = []
+    original = model.generate
+
+    def generate(*args, **kwargs):
+        held.append(open_connections[0])
+        return original(*args, **kwargs)
+
+    model.generate = generate
+    _ask(api, conversation_id=first["conversation_id"])
+
+    assert held == [0]
 
 
 # --------------------------------------------------------------- criterion 16
@@ -232,16 +272,33 @@ def test_an_empty_store_is_indexed_on_startup(store, model, monkeypatch):
     assert store.count() > 0
 
 
-def test_a_filled_store_is_left_alone_on_startup(loaded_store, model, monkeypatch):
+def test_a_complete_store_is_left_alone_on_startup(store, model, monkeypatch):
     from app import main
-    monkeypatch.setattr(main, "get_vector_store", lambda: loaded_store)
+    from app.ingest import ingest
+    ingest(store, model.embed)
+    monkeypatch.setattr(main, "get_vector_store", lambda: store)
     monkeypatch.setattr(main, "embed", model.embed)
     before = len(model.embed_calls)
 
     main._index_if_empty()
 
     assert len(model.embed_calls) == before
-    assert loaded_store.count() == 3
+
+
+def test_a_half_built_index_is_completed_on_startup(store, model, monkeypatch):
+    """Review F2 -- a first boot that stopped part-way is finished by the next one."""
+    from app import main
+    from app.ingest import ingest, planned_passages
+    ingest(store, model.embed)
+    full = store.count()
+    for passage_id in list(store._passages)[: full // 2]:
+        del store._passages[passage_id]
+    monkeypatch.setattr(main, "get_vector_store", lambda: store)
+    monkeypatch.setattr(main, "embed", model.embed)
+
+    main._index_if_empty()
+
+    assert store.count() == full == planned_passages()
 
 
 def test_a_failed_startup_index_does_not_stop_the_service(store, failing_model, monkeypatch):

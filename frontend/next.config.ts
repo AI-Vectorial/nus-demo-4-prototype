@@ -5,6 +5,11 @@ const config: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
 
+  // Next's dev server otherwise writes AGENTS.md and CLAUDE.md into this
+  // directory: instructions for coding agents, arriving as a side effect of a
+  // tool upgrade rather than a decision anyone made (review F15).
+  agentRules: false,
+
   // Development only. In a browser-based Codespace the page can reach port
   // 3000 but not the API's port, so the dev server forwards /api/* to the API
   // inside the Codespace. Production never uses this: there the page calls

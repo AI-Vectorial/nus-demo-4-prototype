@@ -15,6 +15,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, StringConstraints
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import sessionmaker
 
 from app import generate as model_client
@@ -23,9 +24,11 @@ from app.core.config import settings
 from app.core.models import Conversation, Message, MessageCitation
 from app.features.ask import Answered, Degraded, Refused, answer_question
 from app.generate import ProviderError
-from app.retrieve import Hit, VectorStore, get_vector_store
+from app.retrieve import Hit, StoreUnavailable, VectorStore, get_vector_store
 
 router = APIRouter(tags=["ask"])
+
+_NO_RECORD = "The record of this exchange cannot be written right now, so no answer was given."
 
 
 class AskRequest(BaseModel):
@@ -94,51 +97,67 @@ def ask(
     started = time.monotonic()
     asked_at = datetime.now(UTC)
 
-    with sessions.begin() as db:
-        if body.conversation_id is None:
-            conversation = Conversation(started_at=asked_at)
-            db.add(conversation)
-        else:
-            conversation = db.get(Conversation, body.conversation_id)
-            if conversation is None:
+    # Before paying for a model call, make sure the answer can be recorded --
+    # and, for a follow-up, that the conversation exists. The connection is
+    # returned straight away, so none is held while the model writes (review F27).
+    try:
+        with sessions() as db:
+            if body.conversation_id is None:
+                db.connection()
+            elif db.get(Conversation, body.conversation_id) is None:
                 raise HTTPException(404, "No such conversation.")
+    except DBAPIError as error:
+        raise HTTPException(503, _NO_RECORD) from error
 
-        try:
-            outcome = answer_question(body.question, store, model.embed, model.generate,
-                                      min_score=min_score)
-        except ProviderError as error:
-            # The question could not even be embedded, so there is nothing
-            # retrieved to degrade to. An error, not a refusal -- and nothing
-            # is recorded, because nothing was answered.
-            raise HTTPException(503, "Policy search is unavailable. Try again shortly.") \
-                from error
+    try:
+        outcome = answer_question(body.question, store, model.embed, model.generate,
+                                  min_score=min_score)
+    except (ProviderError, StoreUnavailable) as error:
+        # The question could not be searched, so there is nothing retrieved to
+        # degrade to. An error, not a refusal -- and nothing is recorded,
+        # because nothing was answered.
+        raise HTTPException(503, "Policy search is unavailable. Try again shortly.") \
+            from error
 
-        latency_ms = int((time.monotonic() - started) * 1000)
-        citations = [] if isinstance(outcome, Refused) else [_citation(h)
-                                                             for h in outcome.citations]
-        answered = isinstance(outcome, Answered)
-        reply = Message(
-            role="assistant",
-            outcome=("answered" if answered
-                     else "degraded" if isinstance(outcome, Degraded) else "refused"),
-            content=None if isinstance(outcome, Degraded) else outcome.text,
-            model=outcome.model if answered else None,
-            prompt_version=outcome.prompt_version if answered else None,
-            latency_ms=latency_ms,
-            citations=[MessageCitation(**c.model_dump()) for c in citations],
-        )
-        conversation.messages.extend([
-            Message(role="user", content=body.question, created_at=asked_at),
-            reply,
-        ])
-        conversation.last_at = datetime.now(UTC)
-        db.flush()
+    latency_ms = int((time.monotonic() - started) * 1000)
+    citations = [] if isinstance(outcome, Refused) else [_citation(h)
+                                                         for h in outcome.citations]
+    answered = isinstance(outcome, Answered)
+    reply = Message(
+        role="assistant",
+        outcome=outcome.name,
+        content=None if isinstance(outcome, Degraded) else outcome.text,
+        model=outcome.model if answered else None,
+        prompt_version=outcome.prompt_version if answered else None,
+        latency_ms=latency_ms,
+        citations=[MessageCitation(**c.model_dump()) for c in citations],
+    )
 
-        return AskResponse(
-            outcome=reply.outcome,
-            answer=reply.content,
-            citations=citations,
-            conversation_id=conversation.id,
-            message_id=reply.id,
-            latency_ms=latency_ms,
-        )
+    # The question and its reply, together, in one short transaction (plan P1).
+    try:
+        with sessions.begin() as db:
+            if body.conversation_id is None:
+                conversation = Conversation(started_at=asked_at)
+                db.add(conversation)
+            else:
+                conversation = db.get(Conversation, body.conversation_id)
+                if conversation is None:
+                    raise HTTPException(404, "No such conversation.")
+            conversation.messages.extend([
+                Message(role="user", content=body.question, created_at=asked_at),
+                reply,
+            ])
+            conversation.last_at = datetime.now(UTC)
+            db.flush()
+            conversation_id = conversation.id
+    except DBAPIError as error:
+        raise HTTPException(503, _NO_RECORD) from error
+
+    return AskResponse(
+        outcome=outcome.name,
+        answer=reply.content,
+        citations=citations,
+        conversation_id=conversation_id,
+        message_id=reply.id,
+        latency_ms=latency_ms,
+    )

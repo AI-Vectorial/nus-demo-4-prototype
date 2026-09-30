@@ -128,7 +128,7 @@ forever, with nothing saying why.
 **Fix:** compare the stored count to the number of passages the corpus produces (no model
 call needed) and re-run the idempotent ingest when they differ.
 **Agent's recommendation:** FIX — small, and it is the path the live deploy depends on.
-**Decision:** FIXED — to be applied after pass 5: re-run the idempotent ingest on startup when the stored count differs from the corpus.
+**Decision:** FIXED — startup now compares the stored count with `planned_passages()` and re-runs the idempotent ingest when they differ (`main.py`, `ingest/pipeline.py`). Test: `test_a_half_built_index_is_completed_on_startup`. Live: 30 of 130 passages deleted from the local index → "vector store holds 100 of 130 passages: indexed 130"; a second start did nothing.
 
 ### F3 — An empty model reply is shown as an answer
 **Pass:** 1
@@ -139,7 +139,7 @@ outcome is `answered` with empty text: an empty answer box above citations, reco
 answered.
 **Fix:** treat an empty or whitespace-only reply as `degraded`.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied after pass 5: an empty or whitespace-only reply becomes `degraded`.
+**Decision:** FIXED — an empty or whitespace-only reply returns `Degraded` and logs a warning (`features/ask.py`). Test: `test_an_empty_model_reply_degrades_instead_of_answering`.
 
 ### F4 — Citations list every passage the model was given, not only the ones it used
 **Pass:** 1
@@ -257,7 +257,7 @@ conversation is read.
 anyone with the address call the local API on the table's key. The Codespace has since
 restarted; the setting should be confirmed Private or org-only.
 **Agent's recommendation:** FIXED — the team confirms in the Ports tab that no port is Public.
-**Decision:** FIXED — to be confirmed by the team in the Ports tab after pass 5.
+**Decision:** FIXED — *awaiting the team's confirmation in the Ports tab that no port is Public.*
 
 ### F15 — Next.js writes instructions for AI agents into the repo
 **Pass:** 2
@@ -270,7 +270,7 @@ deciding to. Not committed; not followed.
 **Fix:** set `agentRules: false` in `frontend/next.config.ts` (the option the dev server's own
 log names) and delete the two untracked files.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied after pass 5: `agentRules: false`, and the two untracked files deleted.
+**Decision:** FIXED — `agentRules: false` in `frontend/next.config.ts`; both files deleted. After restarting the dev server they were not recreated.
 
 ### F16 — The team's chosen values are written in two places
 **Pass:** 3
@@ -293,7 +293,7 @@ counts. It is done in ingest so criterion 6 can be tested with the fake model, a
 says so.
 **Fix:** a two-line comment in `pipeline.py` saying why.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied after pass 5: a comment in `pipeline.py` saying why ingest batches.
+**Decision:** FIXED — comment added above the batching loop in `ingest/pipeline.py`.
 
 ### F18 — The evaluation set is copied into code
 **Pass:** 3
@@ -313,7 +313,7 @@ so, and a test checks there are 13 with 10 answerable.
 **Fix:** move `ensure_tables()` into `core/database.py`, beside the engine and
 `ensure_database()`.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied after pass 5: `ensure_tables()` moves into `core/database.py`.
+**Decision:** FIXED — `ensure_tables()` moved into `core/database.py`, beside the engine; `models.py` holds only the models.
 
 ### F20 — The outcome name is worked out by a chain of conditions
 **Pass:** 3
@@ -323,7 +323,7 @@ so, and a test checks there are 13 with 10 answerable.
 first two becomes `refused`, so a fourth outcome added later would be silently mislabelled.
 **Fix:** each outcome type (`Answered`, `Refused`, `Degraded`) carries its own name.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied after pass 5: each outcome type carries its own name.
+**Decision:** FIXED — `Answered`, `Refused` and `Degraded` each carry a `name`; `/ask` uses it (`features/ask.py`, `api/ask.py`).
 
 ### F21 — Dead code left over from the scaffold
 **Pass:** 3
@@ -333,7 +333,7 @@ first two becomes `refused`, so a fourth outcome added later would be silently m
 **What:** The welcome screen that used them was replaced in F5.
 **Fix:** delete them.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied after pass 5: the unused function, type and styles deleted.
+**Decision:** FIXED — `health()` and `Health` removed from `frontend/lib`; `.chat`, `.placeholder`, `footer`, `.mono`, `.dim`, `.bad` removed from `globals.css`. Typecheck, lint and build clean.
 
 ### F22 — Tests read the fake store's private dictionary
 **Pass:** 3
@@ -353,7 +353,7 @@ changed how it holds passages.
 test that uses it, with imports inside its methods.
 **Fix:** use `FakeModel` the way `test_f4_generate.py` does, and delete the helper.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied after pass 5: the helper replaced with `FakeModel(fail_after=…)`.
+**Decision:** FIXED — the helper is gone; the degraded contract test uses `FakeModel(fail_after=…)`, as the F4 tests do.
 
 ### F24 — Reset reaches the chat through a browser event
 **Pass:** 3
@@ -387,7 +387,7 @@ model outage gets a clear 503 "Policy search is unavailable".
 **Fix:** `qdrant_store.search` raises a domain error (keeping the client library inside that
 one module), and `/ask` turns it into the same 503.
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied: a domain error from the store, turned into the same 503 as a model outage.
+**Decision:** FIXED — `qdrant_store.search` raises the domain `StoreUnavailable` (the client library stays inside that module); `/ask` returns 503 "Policy search is unavailable". Test: `test_a_vector_store_outage_is_a_503_and_writes_nothing`. Live: Qdrant down → 503 in 2.1 s (was a bare 500).
 
 ### F27 — With Postgres down, the answer is paid for and then thrown away
 **Pass:** 5
@@ -402,7 +402,7 @@ pool (5 + 5 overflow) and queue.
 transaction first, release the connection while retrieving and generating, then write the
 question and reply together in one short transaction (plan P1 still holds).
 **Agent's recommendation:** FIX.
-**Decision:** FIXED — to be applied: check the conversation and the database first, hold no connection during the model call, write question and reply together at the end.
+**Decision:** FIXED — `/ask` checks the database (and, for a follow-up, the conversation) in a short session first, holds no connection while retrieving and generating, then writes question and reply together (P1 kept); a database error is a 503. Tests: `test_a_database_outage_is_a_503_before_any_model_call`, `test_no_database_connection_is_held_while_the_model_writes` — both, with the F26 test, fail against the previous `ask.py` and pass now. Live: Postgres down → 503 in 1.5 s with no model call (was a 500 after 14.1 s and a paid call).
 
 ### F28 — An unreachable model takes about three minutes to degrade
 **Pass:** 5
@@ -491,11 +491,22 @@ covers all 59, transitive included.*
 
 | | |
 |---|---|
-| Findings | |
-| Fixed | |
-| Accepted | |
-| Deferred | |
+| Findings | **31** |
+| Fixed | **11** — F2, F3, F14 *(team to confirm)*, F15, F17, F19, F20, F21, F23, F26, F27 |
+| Accepted | **16** — F4, F5, F6, F8, F9, F10, F12, F13, F16, F18, F22, F24, F25, F28, F29, F30 |
+| Deferred | **4** — F1, F7, F11, F31 |
+
+**After the fixes, run as CI runs them:** scope check PASS · `pytest -q` 115 passed (110
+before; five new tests for F2, F3, F26, F27, each red before its fix) · `bandit -ll` clean ·
+`ruff` clean · licence check PASS, 59 permissive · frontend typecheck, lint and build clean ·
+`python -m app.retrieve.evaluate` exit 0, all 13 · live through port 3000: Q1 answered (£75,
+5 citations), Q2 in the same conversation, Q11 refused in 0.87 s.
+
+**To the release plan:** F1 (no degraded mode in a full provider outage), F10 (question
+retention — Privacy's Q3 is a blocker for real use), F11 (open, unmetered `/ask`), F25 (the
+Procurement dependency), F28 (≈ 3 minutes to degrade when the model hangs).
 
 **The one we accepted on purpose, and why:**
 
-<This is the question the release manager will ask.>
+*To be written by the team, in the team's words — this is the question the release manager
+will ask.*

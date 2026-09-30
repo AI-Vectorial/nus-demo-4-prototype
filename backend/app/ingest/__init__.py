@@ -6,6 +6,6 @@
 
 from __future__ import annotations
 
-from app.ingest.pipeline import CORPUS_DIR, ingest
+from app.ingest.pipeline import CORPUS_DIR, ingest, planned_passages
 
-__all__ = ["CORPUS_DIR", "ingest"]
+__all__ = ["CORPUS_DIR", "ingest", "planned_passages"]

@@ -10,10 +10,11 @@ from __future__ import annotations
 import logging
 
 from qdrant_client import QdrantClient
+from qdrant_client.http.exceptions import ResponseHandlingException, UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from app.core.config import settings
-from app.retrieve.store import Hit, Passage
+from app.retrieve.store import Hit, Passage, StoreUnavailable
 
 log = logging.getLogger(__name__)
 
@@ -76,13 +77,16 @@ class QdrantVectorStore:
         return len(passages)
 
     def search(self, embedding: list[float], limit: int = 5, min_score: float = 0.0) -> list[Hit]:
-        results = self._client.query_points(
-            collection_name=self.collection,
-            query=embedding,
-            limit=limit,
-            score_threshold=min_score or None,
-            with_payload=True,
-        ).points
+        try:
+            results = self._client.query_points(
+                collection_name=self.collection,
+                query=embedding,
+                limit=limit,
+                score_threshold=min_score or None,
+                with_payload=True,
+            ).points
+        except (ResponseHandlingException, UnexpectedResponse) as error:
+            raise StoreUnavailable(f"search failed: {type(error).__name__}") from error
 
         hits: list[Hit] = []
         for r in results:

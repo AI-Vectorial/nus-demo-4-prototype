@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import ClassVar, Literal
 
 from app.core.config import settings
 from app.generate import ProviderError
@@ -27,6 +28,7 @@ Generate = Callable[..., str]
 
 @dataclass(frozen=True)
 class Answered:
+    name: ClassVar[Literal["answered"]] = "answered"
     text: str
     citations: list[Hit]
     model: str
@@ -35,11 +37,13 @@ class Answered:
 
 @dataclass(frozen=True)
 class Refused:
+    name: ClassVar[Literal["refused"]] = "refused"
     text: str
 
 
 @dataclass(frozen=True)
 class Degraded:
+    name: ClassVar[Literal["degraded"]] = "degraded"
     citations: list[Hit]
 
 
@@ -81,6 +85,10 @@ def answer_question(
         text = generate(prompt.render(question, citations), system=prompt.system)
     except ProviderError as error:
         log.warning("generation unavailable, degrading: %s", error)
+        return Degraded(citations=citations)
+    if not text.strip():
+        # An empty box above citations would look like an answer. It is not one.
+        log.warning("model returned an empty reply, degrading")
         return Degraded(citations=citations)
 
     return Answered(text=text, citations=citations, model=settings.llm_model,

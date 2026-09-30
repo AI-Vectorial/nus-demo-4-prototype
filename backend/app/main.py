@@ -19,9 +19,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import ask, health
-from app.core import database, models
+from app.core import database
 from app.generate import embed
-from app.ingest import ingest
+from app.ingest import ingest, planned_passages
 from app.retrieve import get_vector_store
 
 log = logging.getLogger(__name__)
@@ -50,25 +50,28 @@ async def lifespan(_: FastAPI):
     """
     ok, detail = database.ensure_database()
     print(f"database: {detail}")
-    print(f"tables: {models.ensure_tables()}")
+    print(f"tables: {database.ensure_tables()}")
     threading.Thread(target=_index_if_empty, name="index-if-empty", daemon=True).start()
     yield
 
 
 def _index_if_empty() -> None:
-    """Index the corpus on first boot, in the background (build decision B).
+    """Index the corpus when the store does not hold it all (build decision B).
 
     A deployment starts with an empty collection and there is no route from a
-    workspace to it, so the service fills its own. Only when empty: later
-    starts find the passages and do nothing. In the background, so /healthz
-    answers at once. A failure -- the model provider down, say -- is logged
-    and the service keeps serving; the next start tries again.
+    workspace to it, so the service fills its own. A start that finds every
+    passage does nothing; one that finds fewer -- a first boot that stopped
+    part-way (review F2) -- runs the ingest again, which is idempotent. In the
+    background, so /healthz answers at once. A failure -- the model provider
+    down, say -- is logged and the service keeps serving; the next start
+    tries again.
     """
     try:
         store = get_vector_store()
-        if store.count():
+        have, want = store.count(), planned_passages()
+        if have == want:
             return
-        print(f"vector store empty: indexed {ingest(store, embed)} passages")
+        print(f"vector store holds {have} of {want} passages: indexed {ingest(store, embed)}")
     except Exception:  # noqa: BLE001 - reported; the service must keep serving
         log.exception("indexing on startup failed; will retry on next start")
 

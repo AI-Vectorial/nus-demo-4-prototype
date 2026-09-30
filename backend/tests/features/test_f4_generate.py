@@ -140,6 +140,16 @@ def test_an_unreachable_model_degrades_instead_of_failing(loaded_store, model):
     assert model.generate_calls
 
 
+def test_an_empty_model_reply_degrades_instead_of_answering(loaded_store, model):
+    """Review F3 -- an empty answer box is not an answer."""
+    model.answer = "   "
+
+    outcome = _ask(loaded_store, model)
+
+    assert isinstance(outcome, Degraded)
+    assert outcome.citations
+
+
 # --------------------------------------------------------------- criterion 19
 
 

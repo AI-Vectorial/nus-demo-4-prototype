@@ -5,7 +5,7 @@
  * so a component never has to interpret a fetch rejection.
  */
 
-import type { AskResponse, Health } from "./types";
+import type { AskResponse } from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -65,8 +65,4 @@ export function ask(
     method: "POST",
     body: JSON.stringify({ question, conversation_id: conversationId }),
   });
-}
-
-export function health(apiUrl: string): Promise<Health> {
-  return request<Health>(apiUrl, "/healthz");
 }

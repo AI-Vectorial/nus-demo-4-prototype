@@ -36,10 +36,3 @@ export interface AskResponse {
   message_id: string;
   latency_ms: number;
 }
-
-export interface Health {
-  status: string;
-  build: string;
-  environment: string;
-  dependencies: Record<string, string>;
-}

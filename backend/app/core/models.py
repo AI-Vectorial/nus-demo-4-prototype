@@ -12,7 +12,6 @@ from datetime import UTC, datetime
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core import database
 from app.core.database import Base
 
 
@@ -67,13 +66,3 @@ class MessageCitation(Base):
     status: Mapped[str] = mapped_column(Text)
     score: Mapped[float] = mapped_column(Float)
 
-
-def ensure_tables() -> str:
-    """Create the tables if they are missing. Never raises -- /healthz reports."""
-    if database._engine is None:
-        return "DATABASE_URL not set"
-    try:
-        Base.metadata.create_all(database._engine)
-    except Exception as exc:  # noqa: BLE001 - reported, not handled
-        return f"could not create: {type(exc).__name__}"
-    return "ready"
