@@ -257,7 +257,7 @@ conversation is read.
 anyone with the address call the local API on the table's key. The Codespace has since
 restarted; the setting should be confirmed Private or org-only.
 **Agent's recommendation:** FIXED — the team confirms in the Ports tab that no port is Public.
-**Decision:** FIXED — *awaiting the team's confirmation in the Ports tab that no port is Public.*
+**Decision:** FIXED — team confirmed 2026-10-01: nothing in the Ports tab is Public.
 
 ### F15 — Next.js writes instructions for AI agents into the repo
 **Pass:** 2
@@ -492,7 +492,7 @@ covers all 59, transitive included.*
 | | |
 |---|---|
 | Findings | **31** |
-| Fixed | **11** — F2, F3, F14 *(team to confirm)*, F15, F17, F19, F20, F21, F23, F26, F27 |
+| Fixed | **11** — F2, F3, F14, F15, F17, F19, F20, F21, F23, F26, F27 |
 | Accepted | **16** — F4, F5, F6, F8, F9, F10, F12, F13, F16, F18, F22, F24, F25, F28, F29, F30 |
 | Deferred | **4** — F1, F7, F11, F31 |
 
@@ -508,5 +508,7 @@ Procurement dependency), F28 (≈ 3 minutes to degrade when the model hangs).
 
 **The one we accepted on purpose, and why:**
 
-*To be written by the team, in the team's words — this is the question the release manager
-will ask.*
+**F4** — chosen by the team, 2026-10-01. Citations list every passage the model was given,
+including superseded ones the answer did not use. We kept it because it is honest about
+what the model saw: showing only the passages the model says it used would hand the model
+the decision about what counts as a source. The Superseded label makes the risk visible.
