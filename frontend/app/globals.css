@@ -878,187 +878,206 @@ body {
   padding: 0;
 }
 
+
 /* ---------------------------------------------------------------------------
    /about. The facilitator's page, and the only screen in this product read
    from the back of a room rather than from a desk.
 
    The palette is the product's, unchanged, so the room recognises the thing
-   they are about to build. What changes is size: type is set in clamp() so the
-   same page carries a projector at 1920 and a phone at 360, and nothing on it
-   falls below 15px, because the back row cannot lean in.
+   they are about to build. Two things differ. Type is set in clamp() so one
+   page carries a projector at 1920 and a phone at 360, and nothing falls below
+   15px because the back row cannot lean in. And the layout is a grid, not a
+   reading column -- an earlier version capped prose at 48rem inside a 62rem
+   page, which reads well on a laptop and leaves a third of a projector empty.
    --------------------------------------------------------------------------- */
 
 .about-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 4rem;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2.5rem) 4rem;
 }
 
-/* Wider than the 46rem the product pages use: at projection sizes a 46rem
-   column is four words a line. */
-.about { max-width: 62rem; margin: 0 auto; }
+.about {
+  max-width: 78rem;
+  margin: 0 auto;
+}
 
 .about-eyebrow {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  margin: 0;
+  font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
 .about-title {
-  margin: 0;
-  font-size: clamp(2rem, 5.4vw, 3.1rem);
-  font-weight: 600;
-  line-height: 1.06;
-  letter-spacing: -0.035em;
+  margin: 0.4rem 0 0;
+  font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: var(--text);
 }
 
+/* The lede keeps a measure. It is one paragraph, and a long line of 19px type
+   is genuinely hard to track from eight metres. */
 .about-lede {
-  margin: 0.8rem 0 0;
-  max-width: 44rem;
-  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
-  color: var(--text-dim);
+  margin: 1.1rem 0 0;
+  max-width: 54rem;
+  font-size: clamp(1.15rem, 2.1vw, 1.5rem);
+  line-height: 1.5;
+  color: var(--text);
 }
 
-.about-section { margin-top: clamp(2.4rem, 5vw, 3.6rem); }
+.about-section {
+  margin-top: clamp(2.6rem, 5vw, 4rem);
+  padding-top: clamp(2.6rem, 5vw, 4rem);
+  border-top: 1px solid var(--border);
+}
 
-/* A rule above every heading. On a projector the gap between sections is not
-   enough on its own -- the eye needs a line to find the new section from six
-   metres away. */
 .about-section > h2 {
-  margin: 0 0 0.9rem;
-  padding-top: 1.1rem;
-  border-top: 2px solid var(--border-strong);
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 640;
+  letter-spacing: -0.015em;
+  color: var(--text);
 }
 
-/* Prose is --text rather than --text-dim: the dim colour is a reading-distance
-   choice, and a projector in a lit room eats the difference. */
-.about-section > p {
-  margin: 0 0 0.8rem;
-  max-width: 48rem;
-  font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+.about-h3 {
+  margin: 2.2rem 0 1rem;
+  font-size: clamp(1.1rem, 1.9vw, 1.35rem);
+  font-weight: 620;
+  color: var(--text);
+}
+
+/* Prose is --text, not --text-dim: the dim colour is a reading-distance choice
+   and a lit room eats the difference. */
+.about-section > p,
+.about-sub {
+  margin: 0 0 0.85rem;
+  max-width: 62rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.15rem);
   line-height: 1.6;
   color: var(--text);
 }
 
-/* The sentence the facilitator says out loud while it is on screen. */
-.about-section > p.about-point {
-  font-size: clamp(1.1rem, 2vw, 1.3rem);
-  font-weight: 600;
+.about-point {
+  margin-top: 1.4rem;
+  font-size: clamp(1.12rem, 2vw, 1.35rem);
+  font-weight: 620;
 }
 
-.about-section > p.about-aside {
-  margin-top: 1.1rem;
+.about-aside {
+  margin-top: 1.2rem;
   color: var(--text-dim);
+  font-size: clamp(0.95rem, 1.3vw, 1.05rem);
 }
 
-/* Quoted from the repository, and set so that it reads as quoted. */
 .about-quote {
-  margin: 1.2rem 0;
-  padding: 1.1rem 1.4rem;
+  margin: 1.5rem 0;
+  padding: clamp(1rem, 2vw, 1.4rem) clamp(1.1rem, 2.4vw, 1.8rem);
   border-left: 5px solid var(--accent);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   background: var(--accent-soft);
-  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
-  font-weight: 500;
+  font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+  font-weight: 600;
   line-height: 1.4;
   color: var(--text);
 }
 
-/* ---------------------------------------------------------------------------
-   The recap. Three modules, two lines each -- enough to re-establish what the
-   room already knows, and not a line more.
-   --------------------------------------------------------------------------- */
+/* --- the card grids ------------------------------------------------------ */
 
-.recap {
+.grid {
   list-style: none;
-  margin: 1.2rem 0 0;
-  padding: 0;
   display: grid;
-  gap: 0.85rem;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: clamp(0.8rem, 1.6vw, 1.1rem);
+  margin: 1.4rem 0 0;
+  padding: 0;
 }
 
-.recap-item {
-  padding: 1.1rem 1.25rem;
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+
+.card {
+  padding: clamp(0.95rem, 1.8vw, 1.25rem);
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
 
-/* --accent on white is 2.9:1. It is the product's colour and it is fine on a
-   desk; on a projector in a lit room it is the first thing to disappear, so
-   every piece of text on this page is set in --text or --text-dim and the
-   accent is left to do the work it can do at any contrast -- a border, a fill
-   and the focus ring. */
-.recap-tag {
-  margin: 0;
-  font-size: 0.95rem;
+.card-tag {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.03em;
   color: var(--text-dim);
 }
 
-.recap-item h3 {
-  margin: 0.3rem 0 0.4rem;
-  font-size: clamp(1.1rem, 1.9vw, 1.28rem);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.card h3 {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+  font-weight: 630;
+  line-height: 1.25;
+  color: var(--text);
 }
 
-.recap-item > p:last-child {
+.card p {
   margin: 0;
-  font-size: clamp(1rem, 1.5vw, 1.1rem);
-  line-height: 1.55;
+  font-size: clamp(0.93rem, 1.3vw, 1.02rem);
+  line-height: 1.5;
   color: var(--text-dim);
 }
 
-/* ---------------------------------------------------------------------------
-   The six stages, and the two gates.
+.card-quote {
+  margin: 0 0 0.5rem;
+  font-style: italic;
+  font-weight: 560;
+  color: var(--text);
+}
 
-   The gates are what the module is about, so they are not a note beside the
-   flow -- they are steps in it, in the warning palette, with a border twice
-   the weight of a stage's. A reader scanning the column cannot get from 02 to
-   03, or from 05 to 06, without passing one.
-   --------------------------------------------------------------------------- */
+/* A feature that can be dropped for time. Dashed rather than dimmed, because
+   dropping it is a legitimate decision and not a lesser one. */
+.card-cut {
+  border-style: dashed;
+  border-color: var(--border-strong);
+  background: transparent;
+}
+
+.card-note {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* --- the six stages ------------------------------------------------------ */
 
 .stages {
-  position: relative;
   list-style: none;
   margin: 1.4rem 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-}
-
-/* The spine. Every card is opaque, so all that shows of this line is the
-   segment in each gap -- the connector between steps, drawn once. */
-.stages::before {
-  content: "";
-  position: absolute;
-  top: 1.5rem;
-  bottom: 1.5rem;
-  left: 2.3rem;
-  width: 2px;
-  background: var(--border-strong);
-  z-index: 0;
+  gap: 0.6rem;
 }
 
 .stage,
 .gate {
-  position: relative;
-  z-index: 1;
   display: flex;
-  align-items: center;
-  gap: 1.1rem;
-  padding: 1rem 1.25rem;
+  gap: clamp(0.9rem, 2vw, 1.4rem);
+  align-items: flex-start;
+  padding: clamp(0.95rem, 1.8vw, 1.3rem) clamp(1rem, 2vw, 1.5rem);
   border-radius: var(--radius-lg);
 }
 
@@ -1068,184 +1087,193 @@ body {
 }
 
 .stage-no {
-  flex: 0 0 auto;
-  min-width: 2.2ch;
-  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+  flex-shrink: 0;
+  min-width: 2.6rem;
+  font-family: var(--mono);
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
   font-weight: 700;
-  letter-spacing: -0.04em;
-  font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--text);
 }
 
-.stage-body { flex: 1; min-width: 0; }
-
 .stage-name {
-  margin: 0;
-  font-size: clamp(1.12rem, 2.1vw, 1.35rem);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  margin: 0 0 0.3rem;
+  font-size: clamp(1.1rem, 1.9vw, 1.3rem);
+  font-weight: 640;
+  color: var(--text);
 }
 
-.stage-gate {
-  margin: 0.15rem 0 0;
-  font-size: clamp(0.98rem, 1.5vw, 1.1rem);
+.stage-time {
+  margin-left: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.82em;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.stage-produces {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
+  font-weight: 550;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.stage-why,
+.gate-why {
+  margin: 0;
+  font-size: clamp(0.93rem, 1.3vw, 1.02rem);
   line-height: 1.5;
   color: var(--text-dim);
 }
 
-.stage-time {
-  flex: 0 0 auto;
-  font-size: 0.95rem;
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--text-dim);
-  background: var(--surface-tint);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  padding: 0.3rem 0.75rem;
-}
-
+/* The gate is a step in the flow, not a note beside it. Reading past one is
+   the failure mode, so it is heavier than a stage rather than lighter. */
 .gate {
   background: var(--warn-surface);
   border: 2px solid var(--warn-border);
 }
 
 .gate-mark {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 3px solid var(--warn);
   border-radius: 50%;
-  background: var(--panel);
-  border: 2px solid var(--warn-border);
-  color: var(--warn);
+  position: relative;
 }
 
-.gate-mark .icon { width: 1.4rem; height: 1.4rem; }
-
-.gate-body { flex: 1; min-width: 0; }
+.gate-mark::after {
+  content: "";
+  position: absolute;
+  inset: 0.45rem 0.25rem;
+  border-top: 3px solid var(--warn);
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
 
 .gate-label {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--warn);
 }
 
-/* The gate's own sentence is as large as a stage name and in full-strength
-   text: it is the line on the screen a facilitator points at. */
 .gate-text {
-  margin: 0.2rem 0 0;
-  font-size: clamp(1.05rem, 1.9vw, 1.22rem);
-  font-weight: 600;
-  line-height: 1.45;
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.05rem, 1.7vw, 1.2rem);
+  font-weight: 620;
+  line-height: 1.4;
   color: var(--text);
 }
 
-/* ---------------------------------------------------------------------------
-   The three rules from AGENTS.md.
-   --------------------------------------------------------------------------- */
+/* --- the three rules ----------------------------------------------------- */
 
 .rules {
   list-style: none;
-  margin: 1.2rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: clamp(0.8rem, 1.6vw, 1.1rem);
+  margin: 1.4rem 0 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
 }
 
 .rule {
   display: flex;
-  align-items: baseline;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  align-items: flex-start;
+  padding: clamp(0.95rem, 1.8vw, 1.25rem);
   background: var(--panel);
   border: 1px solid var(--border);
-  border-left: 5px solid var(--accent);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
 
 .rule-no {
-  flex: 0 0 auto;
-  font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-tint);
+  font-family: var(--mono);
+  font-size: 1rem;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-dim);
+  color: var(--text);
 }
 
-.rule-body { flex: 1; min-width: 0; }
-
 .rule-name {
-  margin: 0 0 0.25rem;
-  font-size: clamp(1.1rem, 2vw, 1.3rem);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  margin: 0 0 0.35rem;
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  font-weight: 630;
+  line-height: 1.3;
+  color: var(--text);
 }
 
 .rule-body p {
   margin: 0;
-  font-size: clamp(1rem, 1.5vw, 1.1rem);
-  line-height: 1.55;
+  font-size: clamp(0.93rem, 1.3vw, 1.02rem);
+  line-height: 1.5;
   color: var(--text-dim);
 }
 
-/* ---------------------------------------------------------------------------
-   The way out of this page is the thing it describes.
-   --------------------------------------------------------------------------- */
+/* --- the call to action and the footer ----------------------------------- */
 
 .about-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.4rem;
-  padding: 0.9rem 1.5rem;
-  font-size: clamp(1.05rem, 2vw, 1.25rem);
-  font-weight: 600;
-  color: var(--accent-contrast);
+  display: inline-block;
+  margin-top: 1.2rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: var(--radius-md);
   background: var(--accent);
-  border-radius: var(--radius-pill);
+  color: var(--accent-contrast);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  font-weight: 640;
   text-decoration: none;
 }
 
 .about-cta:hover { filter: brightness(0.93); }
 
 .about-foot {
-  margin-top: clamp(2.4rem, 5vw, 3.4rem);
-  padding-top: 1.1rem;
+  margin-top: clamp(2.6rem, 5vw, 4rem);
+  padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }
 
 .about-foot p {
-  margin: 0 0 0.35rem;
-  font-size: 0.98rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
   color: var(--text-dim);
 }
 
 .about-foot p:last-child { margin-bottom: 0; }
 
-/* A facilitator checks this page on a phone on the way into the room. The
-   stage row stops being three columns and becomes the number and the duration
-   on one line with the text beneath them -- the text is the part that cannot
-   afford to shrink. */
-@media (max-width: 640px) {
-  .about-scroll { padding: 1.5rem 1rem 3rem; }
+.about-foot code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-tint);
+}
 
-  .stage {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    row-gap: 0.4rem;
-    column-gap: 0.75rem;
+/* A phone holds one column of everything, and the stage number moves above the
+   text rather than beside it -- beside it, the body gets about four words. */
+@media (max-width: 640px) {
+  .grid-2,
+  .grid-3,
+  .grid-4,
+  .rules { grid-template-columns: 1fr; }
+
+  .stage { flex-direction: column; gap: 0.5rem; }
+
+  .stage-no {
+    font-size: 1.4rem;
+    min-width: 0;
   }
 
-  .stage-body { flex: 1 1 100%; order: 3; }
-
-  .stages::before { left: 1.9rem; }
-
-  .gate { gap: 0.85rem; padding: 0.9rem 1rem; }
-  .gate-mark { width: 2.2rem; height: 2.2rem; }
+  .gate { gap: 0.9rem; }
+  .gate-mark { width: 1.7rem; height: 1.7rem; border-width: 2px; }
 }

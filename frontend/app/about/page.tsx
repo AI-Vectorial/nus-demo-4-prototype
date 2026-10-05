@@ -7,192 +7,153 @@ import Shell from "@/components/Shell";
  * The facilitator's page. It is not part of the product.
  *
  * It exists on the reference deployment only, and it is projected to the room
- * in the minutes before the lab starts: where the programme has got to, what
- * the next 150 minutes are, and what "done" means before anyone opens a
- * Codespace. Participants never build this -- their branch does not carry it.
+ * in the minutes before the lab starts. Participants never build this -- their
+ * branch does not carry it.
  *
- * Nothing in the top bar points at it. A fourth action there measures 378px
- * at the bar's phone padding against the 360px a phone gives it, and the three
- * the product needs already come to 323px -- so the bar stays as it is and the
- * facilitator types the URL, which is what someone opening a page before a
- * room arrives is doing anyway.
+ * Nothing in the top bar points at it. A fourth action there measures 378px at
+ * the bar's phone padding against the 360px a phone gives it, and the three the
+ * product needs already come to 323px -- so the bar stays as it is and the
+ * facilitator types the URL.
  *
- * No `force-dynamic` here, unlike every other route. The other three read the
- * API location at request time because they talk to an API; this one states
- * what is already written in docs/ and AGENTS.md, so it is static, and a page
- * that needs nothing at request time should ask for nothing.
+ * Laid out in grids rather than one reading column. An earlier version capped
+ * prose at 48rem inside a 62rem page, which reads well on a laptop and wastes
+ * the right-hand third of a projector.
  *
- * Everything on it is quoted or paraphrased from the repository -- the brief,
- * PRD §1 and §12, AGENTS.md §1, pipeline/README.md and the stage files.
- * Nothing here is invented: a recap that has drifted contradicts the documents
- * the room is about to build from, and they will believe the screen.
+ * Everything here is quoted or paraphrased from the repository -- the brief,
+ * PRD §1 and §12, AGENTS.md §1, features.md and the stage files -- and the
+ * session titles come from the lab plan's coverage matrix. Nothing is invented:
+ * a recap that has drifted contradicts the documents the room is about to build
+ * from, and they will believe the screen.
  */
 
 export const metadata: Metadata = {
-  title: "M04 — AI-Native Development Lifecycle",
+  title: "Before we start — M04",
   description:
-    "Where the programme has got to, and what the next 150 minutes are.",
+    "Where we got to yesterday, and what the next 150 minutes are.",
 };
 
-type FlowStep =
-  | { kind: "stage"; no: string; name: string; time: string; gate: string }
-  | { kind: "gate"; text: string };
-
-/**
- * The six stages with their gate and their slot in the 150 minutes, and the
- * two human gates sitting in the flow rather than beside it -- the gates are
- * steps, not annotations, and reading past one is the failure mode.
- */
-const FLOW: readonly FlowStep[] = [
-  {
-    kind: "stage",
-    no: "01",
-    name: "Shape",
-    time: "15 min",
-    gate: "The team writes the acceptance criteria, in the team’s own words",
-  },
-  {
-    kind: "stage",
-    no: "02",
-    name: "Plan",
-    time: "25 min",
-    gate: "The agent proposes an implementation plan, and the team defends it",
-  },
-  {
-    kind: "gate",
-    text: "A human — the release manager — approves or rejects the plan. A rejected plan is revised and presented again.",
-  },
-  {
-    kind: "stage",
-    no: "03",
-    name: "Build",
-    time: "60 min",
-    gate: "Your own acceptance criteria pass — run, not asserted",
-  },
-  {
-    kind: "stage",
-    no: "04",
-    name: "Review",
-    time: "25 min",
-    gate: "Every finding has a decision — fixed, accepted or deferred — with a reason",
-  },
-  {
-    kind: "stage",
-    no: "05",
-    name: "Release",
-    time: "10 min",
-    gate: "A rollback exists, in writing, before anything merges",
-  },
-  {
-    kind: "gate",
-    text: "A human approves the pull request. Only then does it merge, and only then does it deploy.",
-  },
-  {
-    kind: "stage",
-    no: "06",
-    name: "Verify",
-    time: "15 min",
-    gate: "It answers a real question on your own live URL — watched, not reported",
-  },
+const M03: [string, string, string][] = [
+  ["M03.1", "What agentic AI is", "Who decides the next step. Read-only tool use against state-changing action, the agent loop, and when it terminates."],
+  ["M03.2", "Architecture patterns", "Supervisor and worker. Specialist roles. Agentic RAG as one agent with tools, applied to retrieval."],
+  ["M03.3", "Architecture deep dive", "State and memory, tool contracts and isolation, control flow, checkpoints, step budgets and timeouts."],
+  ["M03.4", "Risk and oversight", "Grounding and abstention thresholds. Approve, Notify, Automate. Audit evidence and reconstructing a decision."],
+  ["M03.5", "Security and containment", "Prompt injection through retrieved content. Tool reach and blast radius. Containment rather than prevention."],
+  ["M03.6", "The Glass Box lab", "A multi-agent KYC workflow, with every dial exposed and every outcome traceable."],
 ];
 
-/** AGENTS.md §1, with the one line of consequence that makes each one real. */
-const RULES = [
-  {
-    no: "1",
-    rule: "You may not edit protected files. Ever.",
-    why: "The specification, the pipeline, the checks and the policy corpus belong to the exercise — if one of them is wrong, your agent says so and stops rather than editing it.",
-  },
-  {
-    no: "2",
-    rule: "Decisions belong to the humans. You present; they choose.",
-    why: "The PRD leaves some things open on purpose, and an agent that settles them quietly has removed the lesson — at the plan gate, “the agent chose it” is a failed answer.",
-  },
-  {
-    no: "3",
-    rule: "Follow the stages in order. Do not run ahead.",
-    why: "Code written during planning turns the plan review into theatre, and the plan review is the point.",
-  },
-] as const;
+const M04: [string, string, string, string][] = [
+  ["M04.1", "Shaping the work", "If it doesn’t fit one page, the slice is too big", "And the question that comes before it: does AI belong in this runtime at all?"],
+  ["M04.2", "Criteria as executable", "A bounded contract, not an ambiguous request", "Acceptance criteria are the specification, and CI runs them."],
+  ["M04.3", "Permission boundaries", "The AI proposes; the human disposes", "Protected paths, a check that refuses the build, and a plan a human can reject."],
+  ["M04.4", "The five-pass review", "AI-generated tests can assert the bug", "Correctness, security, data, dependencies, maintainability — one pass at a time."],
+  ["M04.6", "The lab", "Five tables, five deployments", "Everything above, lived rather than described."],
+];
+
+const FEATURES: [string, string, string, boolean][] = [
+  ["F1", "Ingest", "Read five policy documents, split on section boundaries, embed, store.", false],
+  ["F2", "Retrieve", "Embed the question, search, return the closest passages with their scores.", false],
+  ["F3", "Refuse", "Below the threshold, decline — and do not call the model at all.", false],
+  ["F4", "Generate", "Compose from the retrieved passages only. Plus a kill switch.", false],
+  ["F5", "Ask and show", "The endpoint, the stored record, and an interface for every outcome.", false],
+  ["F6", "Follow-up", "“And what about above £500?” has to mean something.", true],
+  ["F7", "Corpus", "Browse the documents, so a citation can be checked rather than trusted.", true],
+  ["F8", "History", "Past conversations — because the record is half the point.", true],
+];
+
+type Step =
+  | { kind: "stage"; no: string; name: string; time: string; produces: string; why: string }
+  | { kind: "gate"; produces: string; why: string };
+
+const STAGES: Step[] = [
+  { kind: "stage", no: "01", name: "Shape", time: "15 min", produces: "The ticket, and acceptance criteria in your own words.", why: "The agent summarises what it believes you are building so you can correct it, then asks what done looks like — one question at a time. It does not write your criteria for you." },
+  { kind: "stage", no: "02", name: "Plan", time: "25 min", produces: "The implementation plan, and the decisions behind it.", why: "Ten decisions are deliberately left open: chunk size, the refusal threshold, what happens when two policies contradict each other. The agent presents them all, with trade-offs, and then stops." },
+  { kind: "gate", produces: "A human approves the plan — or rejects it.", why: "You will be asked why you chose what you chose. “The agent suggested it” is a failed answer, and a rejected plan goes back to stage 02." },
+  { kind: "stage", no: "03", name: "Build", time: "60 min", produces: "F1 through F8, committed to your work branch.", why: "Tests before code where you reasonably can. Stop and ask before adding a dependency. Nothing deploys at this stage — that comes later, and only through a gate." },
+  { kind: "stage", no: "04", name: "Review", time: "25 min", produces: "Five passes, with a decision recorded against every finding.", why: "Warm up on somebody else’s code first. It has a real defect in it and its tests all pass — which is exactly the point. Then turn the same five passes on your own work." },
+  { kind: "stage", no: "05", name: "Release", time: "10 min", produces: "One pull request carrying the code and the record together.", why: "The rollback is written before the merge, not after. The PR carries the ticket, the plan, the review record and the code — approved as one thing." },
+  { kind: "gate", produces: "A human approves the release. Then it merges, and deploys.", why: "This is the only path to a deployment. A push cannot deploy — if it could, the gate would be decoration." },
+  { kind: "stage", no: "06", name: "Verify", time: "15 min", produces: "It answers on your own URL.", why: "An answer with citations, a refusal, and the cited section opened in the corpus. Then the closing question: where did AI help, where did it risk something, and which control caught it?" },
+];
+
+const RULES: [string, string, string][] = [
+  ["1", "You may not edit protected files", "The PRD, the pipeline, the checks, the corpus. If one of them is wrong, say so — do not change it. CI refuses the build either way."],
+  ["2", "Decisions belong to the humans", "Some things are specified. Some are deliberately open, and those are not the agent’s to settle. It presents, you choose, it records your reason."],
+  ["3", "Follow the stages in order", "You will be able to see the whole solution at stage 01. Write it down and wait — coding during planning makes the plan review theatre."],
+];
 
 export default function AboutPage() {
   return (
     <Shell>
       <div className="about-scroll">
-        <article className="about">
-          <header className="about-head">
-            <p className="about-eyebrow">Module 04 · 150 minutes</p>
-            <h1 className="about-title">AI-Native Development Lifecycle</h1>
-            <p className="about-lede">
-              Six stages, two human gates, and one deployed increment on your
-              own URL.
-            </p>
-          </header>
+        <main className="about">
+          <p className="about-eyebrow">Module 04 · AI-Native Development Lifecycle</p>
+          <h1 className="about-title">Before we start</h1>
+          <p className="about-lede">
+            The next 150 minutes are not about whether an agent can write code.
+            It can. They are about what has to be true <em>around</em> an agent
+            before you would let its code reach production.
+          </p>
 
           <section className="about-section">
-            <h2>Where we have got to</h2>
-            <p>
-              Three modules behind us. Today leans on all three at once, so it
-              is worth saying out loud what each one left you with.
+            <h2>Where we got to yesterday</h2>
+            <p className="about-sub">
+              <strong>Module 03 — Agentic AI: Building &amp; Governing.</strong>{" "}
+              Six sessions, ending in the Glass Box lab.
             </p>
-            <ol className="recap">
-              <li className="recap-item">
-                <p className="recap-tag">M01</p>
-                <h3>Foundations</h3>
-                <p>
-                  The shared vocabulary: what these systems are, and where they
-                  do and do not belong. Today assumes it rather than revisits
-                  it.
-                </p>
-              </li>
-              <li className="recap-item">
-                <p className="recap-tag">M02</p>
-                <h3>RAG and model selection</h3>
-                <p>
-                  Grounding an answer in a corpus you control, and choosing a
-                  model deliberately. Today you build one of those systems, and
-                  the choices are yours to defend.
-                </p>
-              </li>
-              <li className="recap-item">
-                <p className="recap-tag">M03</p>
-                <h3>Agentic systems and governance</h3>
-                <p>
-                  What an agent is, and what has to sit around one before it is
-                  allowed to act. Today the agent under governance is the one
-                  writing your code.
-                </p>
-              </li>
-            </ol>
+            <ul className="grid grid-3">
+              {M03.map(([id, name, body]) => (
+                <li key={id} className="card">
+                  <span className="card-tag">{id}</span>
+                  <h3>{name}</h3>
+                  <p>{body}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="about-point">Two of those carry straight into today.</p>
+            <p>
+              <strong>M03.4</strong> gave you grounding and abstention — a system
+              that declines when the evidence is thin. <strong>M03.5</strong>{" "}
+              gave you containment — text arriving as data cannot be allowed to
+              instruct. Today the same instinct moves one level out: from
+              governing what an agent does at <em>runtime</em>, to governing what
+              an agent does to your <em>codebase</em>.
+            </p>
           </section>
 
           <section className="about-section">
             <h2>What today is</h2>
             <p>
-              Today is not a lesson in whether an agent can write code. It
-              can, and that is no longer the interesting part.
+              An agent will write most of the code you ship this afternoon. That
+              is not the interesting part. The interesting part is that it will
+              also settle decisions you should be making, reach for files it
+              should not touch, and write tests that assert its own bugs — unless
+              something stops it.
             </p>
-            <p className="about-point">
-              The question is the one that comes next: what has to be true
-              around an agent before you would let its code reach production?
-            </p>
-            <p>
-              The ticket you write, the plan you defend to a human, the review
-              record, the rollback stated before the merge — each one is part of
-              an answer to that question, and the lifecycle is what holds them
-              together.
+            <p className="about-point">Today you build the something.</p>
+            <ul className="grid grid-2">
+              {M04.map(([id, name, tagline, body]) => (
+                <li key={id} className="card">
+                  <span className="card-tag">{id}</span>
+                  <h3>{name}</h3>
+                  <p className="card-quote">“{tagline}”</p>
+                  <p>{body}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="about-aside">
+              M04.5 is on hold; its release content is carried by the lab itself.
             </p>
           </section>
 
           <section className="about-section">
             <h2>What you are building</h2>
             <p>
-              The <strong>Policy Assistant</strong> for{" "}
-              <strong>Aldermere Bank</strong>. Operations and front-office staff
-              hit a policy question in the middle of doing something else, and
-              policy lives in four places of which none is definitive. The
-              assistant answers the question in seconds, in plain language, and
-              shows exactly which policy section the answer came from.
+              The <strong>Policy Assistant</strong> for Aldermere Bank — a
+              fictional bank, with five invented policy documents. Operations and
+              front-office staff hit a policy question in the middle of doing
+              something else. The assistant answers it from the bank’s own
+              policies, in seconds, and shows exactly which section the answer
+              came from.
             </p>
             <blockquote className="about-quote">
               When the corpus cannot support an answer, it says so and stops.
@@ -200,45 +161,60 @@ export default function AboutPage() {
             <p>
               That line is the product. A confident answer the corpus cannot
               support is worse than the situation the bank has today, because it
-              carries an air of authority. A refusal is a good outcome. An
-              invention is not.
+              carries an air of authority.{" "}
+              <strong>A refusal is a good outcome. An invention is not.</strong>
+            </p>
+
+            <h3 className="about-h3">Eight features. One pull request.</h3>
+            <ul className="grid grid-4">
+              {FEATURES.map(([id, name, body, cuttable]) => (
+                <li key={id} className={cuttable ? "card card-cut" : "card"}>
+                  <span className="card-tag">{id}</span>
+                  <h3>{name}</h3>
+                  <p>{body}</p>
+                  {cuttable ? <span className="card-note">cuttable</span> : null}
+                </li>
+              ))}
+            </ul>
+            <p className="about-aside">
+              The corpus holds a deliberate conflict between two current
+              policies, one withdrawn version still sitting in the index, and a
+              plausible question nothing in it answers. All three are there so
+              the hard cases are real rather than hypothetical.
             </p>
           </section>
 
           <section className="about-section">
             <h2>The six stages</h2>
             <p>
-              Each stage has one job, one output and one gate. You do not begin
-              a stage until the previous stage’s gate has passed.
+              Each stage has a gate, and you do not begin one until the previous
+              gate has passed. <strong>Two of those gates are a person.</strong>
             </p>
             <ol className="stages">
-              {FLOW.map((step) =>
-                step.kind === "stage" ? (
-                  <li className="stage" key={step.no}>
-                    <span className="stage-no">{step.no}</span>
-                    <div className="stage-body">
-                      <h3 className="stage-name">{step.name}</h3>
-                      <p className="stage-gate">{step.gate}</p>
+              {STAGES.map((s, i) =>
+                s.kind === "gate" ? (
+                  <li key={i} className="gate">
+                    <span className="gate-mark" aria-hidden="true" />
+                    <div className="gate-body">
+                      <span className="gate-label">Human gate</span>
+                      <p className="gate-text">{s.produces}</p>
+                      <p className="gate-why">{s.why}</p>
                     </div>
-                    <span className="stage-time">{step.time}</span>
                   </li>
                 ) : (
-                  <li className="gate" key={step.text}>
-                    <span className="gate-mark">
-                      <GateIcon />
-                    </span>
-                    <div className="gate-body">
-                      <p className="gate-label">Human gate</p>
-                      <p className="gate-text">{step.text}</p>
+                  <li key={i} className="stage">
+                    <span className="stage-no">{s.no}</span>
+                    <div className="stage-body">
+                      <h3 className="stage-name">
+                        {s.name} <span className="stage-time">{s.time}</span>
+                      </h3>
+                      <p className="stage-produces">{s.produces}</p>
+                      <p className="stage-why">{s.why}</p>
                     </div>
                   </li>
                 ),
               )}
             </ol>
-            <p className="about-aside">
-              The two gates are the module. Everything between them is
-              engineering you already know how to do.
-            </p>
           </section>
 
           <section className="about-section">
@@ -249,87 +225,62 @@ export default function AboutPage() {
               feature-complete.
             </blockquote>
             <p>
-              A team that ships ingestion and retrieval but runs out of time
-              before generation has still shaped a ticket, defended a plan to a
+              A team that ships ingestion, retrieval and refusal but runs out of
+              time before history has still shaped a ticket, defended a plan to a
               human, built against their own acceptance criteria, reviewed in
-              five passes, written a rollback, and released through a gate. That
-              is the module.
+              five passes, written a rollback and released through a gate.{" "}
+              <strong>That is the module.</strong>
             </p>
             <p className="about-point">
               If time is short, cut scope. Never cut a stage.
             </p>
-            <p>A polished product with no review record is the worse outcome.</p>
+            <p>
+              F6, F7 and F8 are the scope that gets cut — and what you cut, you
+              cut from the interface too. A product that offers five features and
+              delivers five is finished. One that offers eight and delivers five
+              is not, and it is obvious to everyone you show it to.
+            </p>
           </section>
 
           <section className="about-section">
             <h2>The three rules</h2>
-            <p>
-              They are in <code className="md-code">AGENTS.md</code>. Your agent
-              reads them before it does anything else, and CI refuses any commit
-              that breaks the first one.
-            </p>
-            <ol className="rules">
-              {RULES.map((rule) => (
-                <li className="rule" key={rule.no}>
-                  <span className="rule-no" aria-hidden="true">
-                    {rule.no}
-                  </span>
+            <ul className="rules">
+              {RULES.map(([no, name, body]) => (
+                <li key={no} className="rule">
+                  <span className="rule-no">{no}</span>
                   <div className="rule-body">
-                    <h3 className="rule-name">{rule.rule}</h3>
-                    <p>{rule.why}</p>
+                    <h3 className="rule-name">{name}</h3>
+                    <p>{body}</p>
                   </div>
                 </li>
               ))}
-            </ol>
+            </ul>
           </section>
 
-          <section className="about-section">
+          <section className="about-section about-last">
             <h2>The target</h2>
             <p>
-              This deployment is the reference build — the same brief, the same
-              PRD, the same six stages. Ask it something the corpus covers, then
-              ask it something it does not.
+              This is a finished build of the same product, on the same scaffold
+              you are about to open. Ask it something. Then ask it something the
+              policies do not cover, and watch what it does.
             </p>
             <Link href="/" className="about-cta">
               Open the Policy Assistant
-              <span aria-hidden="true">→</span>
             </Link>
           </section>
 
           <footer className="about-foot">
             <p>
-              Aldermere Bank is fictional. Every name, policy, figure and
-              document in this project is invented.
+              This page exists on the reference build only, at <code>/about</code>.
+              No table’s branch carries it.
             </p>
             <p>
-              This page is <code className="md-code">/about</code> on the
-              reference build. It is not part of the product, and no table’s
-              branch carries it.
+              Aldermere Bank is fictional. Every policy, figure and name in it is
+              invented.
             </p>
           </footer>
-        </article>
+        </main>
       </div>
     </Shell>
-  );
-}
-
-/** A stop sign rather than a tick: the gate can reject, and that is the point. */
-function GateIcon() {
-  return (
-    <svg className="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M8.6 2.6h6.8L21.4 8.6v6.8L15.4 21.4H8.6L2.6 15.4V8.6L8.6 2.6Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 7.4v6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="16.6" r="1.2" fill="currentColor" />
-    </svg>
   );
 }
