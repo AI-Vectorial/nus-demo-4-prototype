@@ -9,7 +9,7 @@ document says *what* must be true of it.
 | **Stack** | **FastAPI** (Python 3.12) · **React** via Next.js · Postgres · Qdrant · OpenRouter |
 | **Brief** | [`project-brief.md`](project-brief.md) |
 | **Features** | [`features.md`](features.md) |
-| **UI target** | the eight screens you were shown — build to them |
+| **UI target** | the screens you were shown — build to them |
 | **Version** | 2.0 |
 
 > ### How to read this
@@ -56,17 +56,29 @@ question ──▶ embed ──▶ search Qdrant ──▶ enough?
 
 # 2. The screens
 
-Three routes. **No settings page. No conversation list.**
+Four routes. **No settings page.**
 
 | Route | What it is |
 |---|---|
 | **`/`** | The assistant. Empty state → ask → answer → follow-up |
+| **`/history`** | Past conversations, newest first. Open one to read it |
 | **`/corpus`** | The five documents, each with owner, version, effective date and status |
 | **`/corpus/[id]`** | One document, with its sections down the left and the text beside them |
 
-**A top bar runs across every route.** The product name on the left; on the right exactly
-two actions — **Reset** (clear the conversation) and **Corpus**. No sidebar, no collapsing
-rail, no hamburger.
+**A top bar runs across every route.** The product name on the left; on the right
+**Reset** (start a fresh conversation), and **History** and **Corpus** as those routes
+land. No sidebar, no collapsing rail, no hamburger.
+
+> **The bar advertises what exists, and nothing else.** A product showing a Corpus
+> button before `/corpus` is built reads as broken to whoever is shown it — and the
+> first thing anyone does with a new screen is press the thing they were not told
+> about.
+
+> **Why history is a screen and not just a table.** Every exchange is already stored with
+> the model, the prompt version and the policy versions that answered it — REQ-P1, and the
+> thing that makes the product defensible to an auditor. Storing that and never showing it
+> means the only person who can check what the assistant said is someone with database
+> access.
 
 > **Why no conversation list.** One conversation at a time is enough to demonstrate
 > follow-up, and a history browser is a feature you would build after shipping, not
@@ -136,6 +148,8 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-C5** | **Retrieval still runs on every turn.** Context informs the answer; it never replaces the search |
 | **REQ-C6** | **New chat** starts a fresh conversation with no prior context |
 | **REQ-C7** | A follow-up is **embedded together with the questions before it**, not on its own |
+| **REQ-C8** | Conversations are **listable**, newest first, each with enough to recognise it |
+| **REQ-C9** | Opening a past conversation shows its turns **and lets the user continue it** |
 
 > **REQ-C5 is the trap.** It is tempting to skip retrieval on a follow-up because "we
 > already have the passages". Do not. *"And what about above £500?"* needs different
@@ -191,6 +205,7 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-A2** | Every response validates against §5 |
 | **REQ-A3** | `GET /conversations/{id}` returns a conversation and its turns |
 | **REQ-A4** | `GET /corpus` and `GET /corpus/{id}` serve the documents |
+| **REQ-A6** | `GET /conversations` lists them, newest first, paginated |
 | **REQ-A5** | `/healthz` reports database, vector store and model reachability |
 
 ## The interface
@@ -205,14 +220,27 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-U6** | Degraded mode is visibly degraded — never passages shown as if they were an answer |
 | **REQ-U7** | A pending state shows while waiting |
 | **REQ-U8** | A follow-up can be asked without losing the conversation above it |
-| **REQ-U9** | A **top bar** on every route, with exactly two actions: **Reset** and **Corpus** |
+| **REQ-U9** | A **top bar** on every route, carrying **Reset** always, and **History** and **Corpus** as their routes land. **No action that goes nowhere** |
 | **REQ-U10** | It works at phone width |
 | **REQ-U11** | **Light theme only.** No dark mode, no theme switch |
 | **REQ-U12** | Markdown in a policy section renders as **markup, not as literal characters** — tables as tables |
+| **REQ-U13** | `/history` lists past conversations; opening one shows it and allows a follow-up |
+| **REQ-U14** | A conversation with no turns is never listed |
+| **REQ-U15** | **A citation opens the section it names** in the corpus browser |
 
 > **REQ-U2 is a product decision, not a layout one.** The brief's assumption A3 is that
 > *showing the source is what makes the answer trustworthy*. Hiding citations behind a
 > tab tests a different assumption.
+>
+> **REQ-U9 is a promise, not a layout.** Each action in the bar says a screen exists.
+> Ship one before its route does and the product is lying about itself in the first
+> place anyone looks. If a feature is cut, its action is cut with it — that is a
+> smaller product, not a broken one.
+>
+> **REQ-U15 is what makes a citation a source.** One nobody can follow is a claim.
+> Link by **heading**, not by anchor: the anchor carries a section's position in its
+> document, a citation cannot know it, and the two versions of the travel policy number
+> their sections differently — 4.2 in one is 4.1 in the other.
 >
 > ⚠️ **REQ-U12 is not cosmetic.** The corpus is written in Markdown and its tables carry
 > the numbers — the approval thresholds, the accommodation caps, the retention periods.
@@ -281,9 +309,17 @@ POST /ask
 ## Conversation
 
 ```http
+GET /conversations?limit=50
+[ { "id": "9c1e...", "started_at": "...", "last_at": "...",
+    "title": "What is the approval threshold...",   // the first question, truncated
+    "message_count": 4 } ]
+
 GET /conversations/{id}
 { "id": "9c1e...", "started_at": "...", "messages": [ { "role": "user" | "assistant", ... } ] }
 ```
+
+`title` is derived from the first user message — there is no separate title to keep in
+step with anything.
 
 ## Corpus
 
@@ -425,7 +461,6 @@ will be asked at the gate — and *"the agent picked it"* is not an answer.
 | | Why |
 |---|---|
 | **A settings page** | Configuration is environment variables. Do not build a UI for it |
-| **A conversation list / history browser** | One conversation at a time. The data is stored; browsing it is a later feature |
 | Authentication, users, sessions | Not what this teaches |
 | Editing policy | The assistant reads; the Policy Office writes |
 | Deciding whether an exception is permitted | Judgement stays with humans, by design |
@@ -437,15 +472,26 @@ will be asked at the gate — and *"the agent picked it"* is not an answer.
 
 # 12. Definition of done
 
-> **You are done when you have completed all six stages and deployed a working increment
-> to your own URL. Not when the product is feature-complete.**
+> **Build the whole product — F1 to F8 — and release it in one pull request at the end.
+> But you are done when you have completed all six stages and deployed that increment to
+> your own URL. Not when the product is feature-complete.**
 
-A team that ships ingestion and retrieval but runs out of time before generation has
-still shaped a ticket, defended a plan to a human, built against their own acceptance
-criteria, reviewed in five passes, written a rollback, and released through a gate.
-**That is the module.**
+F1–F8 is the target. It is not the definition of done, and the two are not the same
+thing. A team that ships F1–F5 and cuts F6, F7 and F8 for time has still shaped a
+ticket, defended a plan to a human, built against their own acceptance criteria,
+reviewed in five passes, written a rollback, and released through a gate. **That is the
+module.**
+
+**So: cut scope, never a stage.** F6, F7 and F8 are the scope that gets cut. The six
+stages are not available to cut, and a stage dropped to reach a feature is the one
+failure this exercise is built to catch.
 
 A polished product with no review record is the worse outcome.
+
+> **What you cut, you cut from the interface too.** The bar carries History and Corpus
+> only when those routes exist — REQ-U9. A product that offers five features and
+> delivers five is finished. One that offers eight and delivers five is not, and it is
+> obvious to everyone you show it to.
 
 ### The evidence
 

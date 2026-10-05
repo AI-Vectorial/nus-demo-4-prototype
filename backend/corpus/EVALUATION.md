@@ -104,8 +104,16 @@ to prevent.
 
 ### Q11 — Can I expense my partner's flight if they travel with me?
 **Why it refuses:** The Travel and Expense Policy is silent on family members, partners
-and dependants. Nothing in the corpus addresses it.
+and dependants. Nothing in the corpus *states* a rule.
 **A good refusal says:** the policy set does not cover this, and points at Group Finance.
+
+> ⚠️ **This one is inferable, not absent — and that is the point.** Given the whole
+> corpus, a careful reader answers *"no, because §2.1 only allows expenses necessary for
+> business"*. That is a fair inference for a human and the wrong move for an assistant:
+> the policy does not say, and an assistant that reasons to a rule Aldermere has not
+> written will state it as confidently as a real one.
+>
+> Recorded in `FICTION-AUDIT.md` rather than fixed.
 
 ### Q12 — What is our policy on cryptocurrency held by clients?
 **Why it refuses:** No document in the corpus addresses digital assets. Adjacent material

@@ -14,9 +14,13 @@ Everything is already running. You do not need to configure anything.
 | **Your app** | `https://web-table-N-production.up.railway.app` |
 | **Your API** | `https://api-table-N-production.up.railway.app` |
 | **Already running** | port 3000 the app, port 8000 the API |
+| **Also running** | Postgres and Qdrant, in your Codespace. Yours alone |
 
 **Your API key is already in your environment.** So are your database and your
-vector store — nobody else can reach them, and you cannot reach anybody else's.
+vector store — both running beside you in this Codespace, so you can index the
+corpus and watch retrieval work without deploying anything.
+
+Nobody else can reach them, and you cannot reach anybody else's.
 
 ---
 
@@ -57,18 +61,29 @@ The corpus is already written — five Aldermere Bank policy documents in
 `backend/corpus/`. **It is not indexed.** Indexing it is the first thing you build.
 
 ```
-F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──▶ F5 ask + UI ──▶ DEPLOY
-                                                                  │
-                                           F6 follow-up ◀─────────┘
-                                           F7 corpus browser
+F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──▶ F5 ask + UI
+                                                                 │
+                                ┌────────────────────────────────┘
+                                ▼
+         F6 follow-up ──▶ F7 corpus browser ──▶ F8 history    cuttable
+                                │
+                                ▼
+                     ONE PULL REQUEST ──▶ merged ──▶ DEPLOY
 ```
 
-Two routes: **`/`** the assistant, **`/corpus`** the documents. A left rail with
-**New chat** and **Corpus**, and nothing else.
+**The whole product is the target — all eight, in one pull request at stage 05.**
+Deploy is the last thing that happens.
 
-**No settings page. No conversation list.** Both are explicitly out of scope.
+Four routes: **`/`** the assistant, **`/history`** past conversations,
+**`/corpus`** the documents, **`/corpus/[id]`** one of them. A **top bar**
+carrying **Reset**, plus **History** and **Corpus** once those routes exist —
+**never a button that goes nowhere.** It is what makes a half-built product look
+half-built.
 
-**Deploy the moment F5 works.** Do not wait to be finished.
+**Light theme only. No settings page.** Both are explicitly out of scope.
+
+**Short on time? Cut F8, then F7, then F6** — and take their buttons out with
+them. A smaller product that is whole beats a bigger one with holes.
 
 ---
 
@@ -77,10 +92,12 @@ Two routes: **`/`** the assistant, **`/corpus`** the documents. A left rail with
 > **All six stages completed, and a working increment deployed to your own URL.
 > Not a finished chatbot.**
 
-A team that ships ingestion and retrieval but runs out of time before generation
-has still shaped a ticket, defended a plan to a human, built against their own
-acceptance criteria, reviewed in five passes, written a rollback and released
-through a gate.
+You are aiming at F1–F8. You are **marked** on the six stages. The two are not
+the same thing, and when they pull against each other the stages win.
+
+A team that ships F1–F5 and cuts the rest has still shaped a ticket, defended a
+plan to a human, built against their own acceptance criteria, reviewed in five
+passes, written a rollback and released through a gate.
 
 **That is the whole exercise.** A polished chatbot with no review record is the
 worse outcome — so if you are running short, **cut scope, never a stage.**
