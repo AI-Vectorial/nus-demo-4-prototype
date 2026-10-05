@@ -14,6 +14,15 @@
   "postCreateCommand": "cd frontend && npm install && grep -q credentials.sh ~/.bashrc || echo '. ${containerWorkspaceFolder}/.devcontainer/credentials.sh' >> ~/.bashrc",
   "postAttachCommand": "bash .devcontainer/start.sh",
 
+  // The GitHub CLI, explicitly. Stage 05 has the agent open the pull request
+  // with `gh pr create`, and the base python image does not carry gh -- an
+  // agent discovering that at minute 125 has nowhere to go, because the one
+  // thing it needs is the thing it cannot install without the network it is
+  // about to use.
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
   "forwardPorts": [3000, 8000],
   "portsAttributes": {
     "3000": {
