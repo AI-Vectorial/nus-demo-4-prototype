@@ -32,14 +32,24 @@ It must answer:
   - What we cannot reverse, if anything
   - Which features are in it, and which we cut
 
-Then open ONE pull request from work/table-N into table-N, carrying
-everything we built. The description should link the ticket, the plan
-and the review record, and say what we cut and why.
+Then commit everything, push, and open ONE pull request from
+work/table-N into table-N:
 
-Before you open it: confirm the top bar offers no action whose route
-we did not build.
+  git add -A
+  git commit -m "T1: <what shipped>"
+  git push -u origin work/table-N
+  gh pr create --base table-N --head work/table-N \
+       --title "T1: <what shipped>" \
+       --body-file tickets/T1-release.md
 
-Do not merge. A human approves.
+The description should link the ticket, the plan and the review record,
+and say which features we cut and why. Cutting F6, F7 or F8 is a
+legitimate outcome -- say so plainly rather than apologising for it.
+
+Before you open it: confirm the top bar offers no action whose route we
+did not build.
+
+Do not merge, and do not approve it yourself. A human approves.
 ```
 
 ---
@@ -63,6 +73,10 @@ work/table-N  ──▶  table-N          everything you built, in one request
 **One pull request, not one per feature.** The release is the product, so the thing a
 human reviews should be the product — a reviewer looking at F5 alone cannot see whether
 the interface promises screens that were never built.
+
+> **If `gh` asks you to authenticate**, something is wrong with the Codespace
+> rather than with you — tell an instructor. It is installed and signed in
+> already, and nobody should be pasting a token anywhere.
 
 **Opening the PR does not deploy.** CI runs the checks, a human approves, and the merge
 deploys. **A push never deploys** — if it did, the gate would be bypassable, and the gate
