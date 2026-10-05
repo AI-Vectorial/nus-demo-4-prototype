@@ -877,3 +877,375 @@ body {
 .citations .citation:has(.citation-link) {
   padding: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   /about. The facilitator's page, and the only screen in this product read
+   from the back of a room rather than from a desk.
+
+   The palette is the product's, unchanged, so the room recognises the thing
+   they are about to build. What changes is size: type is set in clamp() so the
+   same page carries a projector at 1920 and a phone at 360, and nothing on it
+   falls below 15px, because the back row cannot lean in.
+   --------------------------------------------------------------------------- */
+
+.about-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(1.5rem, 4vw, 3rem) 1.25rem 4rem;
+}
+
+/* Wider than the 46rem the product pages use: at projection sizes a 46rem
+   column is four words a line. */
+.about { max-width: 62rem; margin: 0 auto; }
+
+.about-eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.about-title {
+  margin: 0;
+  font-size: clamp(2rem, 5.4vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+}
+
+.about-lede {
+  margin: 0.8rem 0 0;
+  max-width: 44rem;
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  color: var(--text-dim);
+}
+
+.about-section { margin-top: clamp(2.4rem, 5vw, 3.6rem); }
+
+/* A rule above every heading. On a projector the gap between sections is not
+   enough on its own -- the eye needs a line to find the new section from six
+   metres away. */
+.about-section > h2 {
+  margin: 0 0 0.9rem;
+  padding-top: 1.1rem;
+  border-top: 2px solid var(--border-strong);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Prose is --text rather than --text-dim: the dim colour is a reading-distance
+   choice, and a projector in a lit room eats the difference. */
+.about-section > p {
+  margin: 0 0 0.8rem;
+  max-width: 48rem;
+  font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* The sentence the facilitator says out loud while it is on screen. */
+.about-section > p.about-point {
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-weight: 600;
+}
+
+.about-section > p.about-aside {
+  margin-top: 1.1rem;
+  color: var(--text-dim);
+}
+
+/* Quoted from the repository, and set so that it reads as quoted. */
+.about-quote {
+  margin: 1.2rem 0;
+  padding: 1.1rem 1.4rem;
+  border-left: 5px solid var(--accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--accent-soft);
+  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   The recap. Three modules, two lines each -- enough to re-establish what the
+   room already knows, and not a line more.
+   --------------------------------------------------------------------------- */
+
+.recap {
+  list-style: none;
+  margin: 1.2rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.recap-item {
+  padding: 1.1rem 1.25rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* --accent on white is 2.9:1. It is the product's colour and it is fine on a
+   desk; on a projector in a lit room it is the first thing to disappear, so
+   every piece of text on this page is set in --text or --text-dim and the
+   accent is left to do the work it can do at any contrast -- a border, a fill
+   and the focus ring. */
+.recap-tag {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+.recap-item h3 {
+  margin: 0.3rem 0 0.4rem;
+  font-size: clamp(1.1rem, 1.9vw, 1.28rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.recap-item > p:last-child {
+  margin: 0;
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+/* ---------------------------------------------------------------------------
+   The six stages, and the two gates.
+
+   The gates are what the module is about, so they are not a note beside the
+   flow -- they are steps in it, in the warning palette, with a border twice
+   the weight of a stage's. A reader scanning the column cannot get from 02 to
+   03, or from 05 to 06, without passing one.
+   --------------------------------------------------------------------------- */
+
+.stages {
+  position: relative;
+  list-style: none;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+/* The spine. Every card is opaque, so all that shows of this line is the
+   segment in each gap -- the connector between steps, drawn once. */
+.stages::before {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  bottom: 1.5rem;
+  left: 2.3rem;
+  width: 2px;
+  background: var(--border-strong);
+  z-index: 0;
+}
+
+.stage,
+.gate {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg);
+}
+
+.stage {
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.stage-no {
+  flex: 0 0 auto;
+  min-width: 2.2ch;
+  font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.stage-body { flex: 1; min-width: 0; }
+
+.stage-name {
+  margin: 0;
+  font-size: clamp(1.12rem, 2.1vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.stage-gate {
+  margin: 0.15rem 0 0;
+  font-size: clamp(0.98rem, 1.5vw, 1.1rem);
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.stage-time {
+  flex: 0 0 auto;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-dim);
+  background: var(--surface-tint);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.75rem;
+}
+
+.gate {
+  background: var(--warn-surface);
+  border: 2px solid var(--warn-border);
+}
+
+.gate-mark {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 2px solid var(--warn-border);
+  color: var(--warn);
+}
+
+.gate-mark .icon { width: 1.4rem; height: 1.4rem; }
+
+.gate-body { flex: 1; min-width: 0; }
+
+.gate-label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+
+/* The gate's own sentence is as large as a stage name and in full-strength
+   text: it is the line on the screen a facilitator points at. */
+.gate-text {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.05rem, 1.9vw, 1.22rem);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   The three rules from AGENTS.md.
+   --------------------------------------------------------------------------- */
+
+.rules {
+  list-style: none;
+  margin: 1.2rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.rule {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--accent);
+  border-radius: var(--radius-md);
+}
+
+.rule-no {
+  flex: 0 0 auto;
+  font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.rule-body { flex: 1; min-width: 0; }
+
+.rule-name {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.rule-body p {
+  margin: 0;
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+/* ---------------------------------------------------------------------------
+   The way out of this page is the thing it describes.
+   --------------------------------------------------------------------------- */
+
+.about-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+  padding: 0.9rem 1.5rem;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-weight: 600;
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
+
+.about-cta:hover { filter: brightness(0.93); }
+
+.about-foot {
+  margin-top: clamp(2.4rem, 5vw, 3.4rem);
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+
+.about-foot p {
+  margin: 0 0 0.35rem;
+  font-size: 0.98rem;
+  color: var(--text-dim);
+}
+
+.about-foot p:last-child { margin-bottom: 0; }
+
+/* A facilitator checks this page on a phone on the way into the room. The
+   stage row stops being three columns and becomes the number and the duration
+   on one line with the text beneath them -- the text is the part that cannot
+   afford to shrink. */
+@media (max-width: 640px) {
+  .about-scroll { padding: 1.5rem 1rem 3rem; }
+
+  .stage {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    row-gap: 0.4rem;
+    column-gap: 0.75rem;
+  }
+
+  .stage-body { flex: 1 1 100%; order: 3; }
+
+  .stages::before { left: 1.9rem; }
+
+  .gate { gap: 0.85rem; padding: 0.9rem 1rem; }
+  .gate-mark { width: 2.2rem; height: 2.2rem; }
+}
