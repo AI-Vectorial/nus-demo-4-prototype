@@ -6,7 +6,8 @@
 
 ## Inputs
 
-An approved pull request · your deployment at `web-table-N`
+The pull request from stage 05, carrying the whole increment · your deployment at
+`web-table-N`
 
 ## Output
 
@@ -30,12 +31,21 @@ memory.**
 | 3 | Show me the test that was red and is now green |
 | 4 | **Which review finding did you accept, and why?** |
 | 5 | How do we get this back if it is wrong? |
+| 6 | **What did you cut, and does the interface still offer it?** |
 
-All five answered → **approved → merge → it deploys.**
+All six answered → **approved → merge → it deploys.**
+
+> **Question 6 is why deploy waits until here.** Cutting F6, F7 or F8 is a legitimate
+> answer and nothing is lost by it. A top bar still advertising a screen that was cut is
+> a different thing — the product claiming something that is not there — and the last
+> moment to catch it is before it is live.
 
 ---
 
 ## After the merge
+
+**This is the deploy.** Nothing went out at F5 and nothing went out when the PR opened;
+the merge is the first time any of it is on a URL.
 
 ```
 merge to table-N  ──▶  CI deploys  ──▶  api-table-N + web-table-N
@@ -49,6 +59,7 @@ merge to table-N  ──▶  CI deploys  ──▶  api-table-N + web-table-N
 - [ ] Ask a question you know the corpus answers — **it answers, with citations**
 - [ ] Ask a question you know it cannot — **it refuses, and says where to go instead**
 - [ ] A citation shows its document, section and version
+- [ ] Every action in the top bar opens something — **and anything cut is not offered**
 
 > **Show the refusal deliberately.** It is the behaviour this product is judged on, and
 > the one nobody expects to be impressed by until they watch it work.

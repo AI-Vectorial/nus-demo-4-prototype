@@ -65,9 +65,14 @@ Four routes. **No settings page.**
 | **`/corpus`** | The five documents, each with owner, version, effective date and status |
 | **`/corpus/[id]`** | One document, with its sections down the left and the text beside them |
 
-**A top bar runs across every route.** The product name on the left; on the right three
-actions — **Reset** (start a fresh conversation), **History**, **Corpus**. No sidebar, no
-collapsing rail, no hamburger.
+**A top bar runs across every route.** The product name on the left; on the right
+**Reset** (start a fresh conversation), and **History** and **Corpus** as those routes
+land. No sidebar, no collapsing rail, no hamburger.
+
+> **The bar advertises what exists, and nothing else.** A product showing a Corpus
+> button before `/corpus` is built reads as broken to whoever is shown it — and the
+> first thing anyone does with a new screen is press the thing they were not told
+> about.
 
 > **Why history is a screen and not just a table.** Every exchange is already stored with
 > the model, the prompt version and the policy versions that answered it — REQ-P1, and the
@@ -215,7 +220,7 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-U6** | Degraded mode is visibly degraded — never passages shown as if they were an answer |
 | **REQ-U7** | A pending state shows while waiting |
 | **REQ-U8** | A follow-up can be asked without losing the conversation above it |
-| **REQ-U9** | A **top bar** on every route, with exactly three actions: **Reset**, **History**, **Corpus** |
+| **REQ-U9** | A **top bar** on every route, carrying **Reset** always, and **History** and **Corpus** as their routes land. **No action that goes nowhere** |
 | **REQ-U10** | It works at phone width |
 | **REQ-U11** | **Light theme only.** No dark mode, no theme switch |
 | **REQ-U12** | Markdown in a policy section renders as **markup, not as literal characters** — tables as tables |
@@ -226,6 +231,11 @@ Each has an id. Your acceptance criteria should reference them.
 > **REQ-U2 is a product decision, not a layout one.** The brief's assumption A3 is that
 > *showing the source is what makes the answer trustworthy*. Hiding citations behind a
 > tab tests a different assumption.
+>
+> **REQ-U9 is a promise, not a layout.** Each action in the bar says a screen exists.
+> Ship one before its route does and the product is lying about itself in the first
+> place anyone looks. If a feature is cut, its action is cut with it — that is a
+> smaller product, not a broken one.
 >
 > **REQ-U15 is what makes a citation a source.** One nobody can follow is a claim.
 > Link by **heading**, not by anchor: the anchor carries a section's position in its
@@ -462,15 +472,26 @@ will be asked at the gate — and *"the agent picked it"* is not an answer.
 
 # 12. Definition of done
 
-> **You are done when you have completed all six stages and deployed a working increment
-> to your own URL. Not when the product is feature-complete.**
+> **Build the whole product — F1 to F8 — and release it in one pull request at the end.
+> But you are done when you have completed all six stages and deployed that increment to
+> your own URL. Not when the product is feature-complete.**
 
-A team that ships ingestion and retrieval but runs out of time before generation has
-still shaped a ticket, defended a plan to a human, built against their own acceptance
-criteria, reviewed in five passes, written a rollback, and released through a gate.
-**That is the module.**
+F1–F8 is the target. It is not the definition of done, and the two are not the same
+thing. A team that ships F1–F5 and cuts F6, F7 and F8 for time has still shaped a
+ticket, defended a plan to a human, built against their own acceptance criteria,
+reviewed in five passes, written a rollback, and released through a gate. **That is the
+module.**
+
+**So: cut scope, never a stage.** F6, F7 and F8 are the scope that gets cut. The six
+stages are not available to cut, and a stage dropped to reach a feature is the one
+failure this exercise is built to catch.
 
 A polished product with no review record is the worse outcome.
+
+> **What you cut, you cut from the interface too.** The bar carries History and Corpus
+> only when those routes exist — REQ-U9. A product that offers five features and
+> delivers five is finished. One that offers eight and delivers five is not, and it is
+> obvious to everyone you show it to.
 
 ### The evidence
 

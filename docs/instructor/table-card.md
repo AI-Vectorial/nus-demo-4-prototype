@@ -62,7 +62,11 @@ Then open **`pipeline/01-shape.md`** and follow it.
 > **Six stages completed and something deployed to your URL.
 > Not a finished chatbot.**
 
-**Short on time? Cut scope, never a stage.**
+You are **building** the whole product — F1 to F8, in one pull request at stage
+05, deployed at stage 06. You are **marked** on the six stages.
+
+**Short on time? Cut scope, never a stage.** Cut F8, then F7, then F6 — and take
+the button out of the top bar with the feature. The bar only shows what exists.
 
 ---
 

@@ -41,7 +41,7 @@ Do NOT write acceptance criteria for me. Instead:
 1. Summarise in five lines what you believe we are building, so I can
    correct you if you have it wrong.
 
-2. Tell me which requirement IDs from the PRD fall inside F1 to F5.
+2. Tell me which requirement IDs from the PRD fall inside F1 to F8.
 
 3. Ask me, one at a time, the questions you need answered to know when
    we are done. After each answer, play it back as a single
@@ -52,10 +52,12 @@ Do NOT write acceptance criteria for me. Instead:
    tickets/T1.md -- the epic, using pipeline/templates/ticket.md, with
    MY wording in the acceptance criteria.
 
-   tickets/T1-F1-ingest.md through T1-F5-ask-and-ui.md -- one child per
+   tickets/T1-F1-ingest.md through T1-F8-history.md -- one child per
    feature, using pipeline/templates/feature-ticket.md. Each carries its
    requirement ids from features.md, a single pass-or-fail "Done when",
    and the section 10 decisions it depends on. Status starts at todo.
+   Mark F6, F7 and F8 as cuttable -- they are the scope we drop if we
+   run short.
 
    The epic holds the acceptance criteria. The children hold the
    tracking -- do not duplicate the criteria into them.
@@ -92,4 +94,5 @@ gate costs the session.
 - [ ] Every acceptance criterion is **pass or fail** — no "properly", "correctly", "well"
 - [ ] Every criterion names a requirement ID from the PRD
 - [ ] The team can read each one aloud and say what they would type to check it
-- [ ] Scope is F1–F5. **Not F6+**
+- [ ] Scope is the whole product, **F1–F8, in one increment**
+- [ ] **F6, F7 and F8 are marked cuttable.** They are what gives if time runs short — a stage never is

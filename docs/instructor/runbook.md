@@ -23,18 +23,20 @@
 
 **Say this. It is the single most important minute of the session:**
 
-> **Done is a completed pipeline and a deployed increment. Not a finished
-> product.**
+> **You are building the whole product — F1 to F8 — and releasing it in one
+> pull request at the end.**
 >
-> A team that ships ingestion and retrieval and runs out of time before
-> generation has still shaped a ticket, defended a plan to a human, reviewed in
-> five passes, written a rollback and released through a gate. **That is the
-> module.**
+> **But done is a completed pipeline and a deployed increment. Not a finished
+> product.** A team that ships F1 to F5 and cuts the rest has still shaped a
+> ticket, defended a plan to a human, reviewed in five passes, written a
+> rollback and released through a gate. **That is the module.**
 >
-> If you are running short: **cut scope, never a stage.**
+> **F6, F7 and F8 are cuttable. The six stages are not.** If you are running
+> short: **cut scope, never a stage.**
 
-**If this is not said out loud, every table skips the review to finish the
-feature — and the review is what is being assessed.**
+**Say both halves.** The target is the whole product; the definition of done is
+the pipeline. A table that hears only the first half skips the review to reach
+F8 — and the review is what is being assessed.
 
 Then: hand out cards, point at the reference URL, say *"that is the target, not
 the homework."*
@@ -83,12 +85,24 @@ not happen. **Be willing to be the one who says no.**
 # 0:45 — Stage 03 build  ·  *60 min*
 
 ```
-F1 ingest ─▶ F2 retrieve ─▶ F3 refuse ─▶ F4 generate ─▶ F5 ask + UI ─▶ DEPLOY
+F1 ingest ─▶ F2 retrieve ─▶ F3 refuse ─▶ F4 generate ─▶ F5 ask + UI
+                                                           │
+                  ┌────────────────────────────────────────┘
+                  ▼
+           F6 follow-up ─▶ F7 corpus ─▶ F8 history       cuttable
 ```
 
 They can run everything locally — Postgres and Qdrant are in the Codespace.
+**Nothing deploys in this stage.** It all goes out at 2:20, after the PR is
+approved and merged.
 
-**Say at 1:15 (halfway):** *"If F5 works, deploy now. Do not wait to be finished."*
+**Say at 1:15 (halfway):** *"Look at where you are and decide what you are
+cutting. F8, then F7, then F6. Decide it now and write it down — deciding it at
+2:10 means you decided it by running out of time."*
+
+> **The mid-point prompt is about scope, not deployment.** A table that has not
+> chosen what to drop by halfway will try to carry all eight into stage 04 and
+> arrive with nothing reviewed.
 
 **Roam for:**
 
@@ -97,7 +111,9 @@ They can run everything locally — Postgres and Qdrant are in the Codespace.
 | A table stuck >10 min | go in. Anything longer is a scaffold gap, not their failure |
 | Retrieval "not working" | ask what `MIN_SCORE` is and how they chose it |
 | **Anyone editing the corpus** | ⚠️ **stop them.** This is the lesson, not a slip |
-| Nobody deployed by 1:30 | intervene. An undeployed build completes nothing |
+| Still inside F1–F5 at 1:15 | tell them to cut F6–F8 **out loud and in the ticket** |
+| A top bar with buttons that go nowhere | ⚠️ the interface shows what exists. Cut the feature, cut the button |
+| A table saying they cannot review yet | **they are not finishing F8 first.** Scope is what gives, never the stage |
 
 ---
 
@@ -120,7 +136,8 @@ unrecorded finding is not a review.
 
 # 2:10 — Stage 05 release  ·  *10 min*  ·  ⚠️ **THE SECOND GATE**
 
-Release plan **with a rollback written before merge**, then a PR.
+Release plan **with a rollback written before merge**, then **one PR carrying
+everything they built**. Check the description names what they cut.
 
 **Reviewing the PR:** Files changed → Review changes.
 
@@ -141,11 +158,17 @@ Only **`gate`** is required. Glance at it and move.
 
 # 2:20 — Stage 06 verify  ·  *15 min*
 
-Each table shows three things on **their own URL**:
+The merge happens here, and the deploy with it. Each table then shows three
+things on **their own URL**:
 
 1. An answer, with citations
 2. **A refusal** — and why that is the product working
-3. The cited section, opened in the corpus browser
+3. The cited section, opened in the corpus browser — **or, if they cut F7, what
+   they cut and why**
+
+> **A table that cut two features and shipped cleanly has the better run.** Say
+> so in front of the room, or the next cohort will hear that eight features is
+> the bar.
 
 **Closing question, to every table:**
 
@@ -174,7 +197,8 @@ build whose health check never passed. Five separate deployments.
 
 | | |
 |---|---|
-| Did stage 03 fit in 60 minutes? | **the number that decides everything next time** |
+| How far did each table get, and what did they cut? | **the number that decides everything next time** |
+| Did anyone cut a stage to reach a feature? | if so, the 0:00 framing did not land |
 | Did the agent stop at the decision interview, or answer itself? | |
 | Was a plan genuinely rejected? Did they re-plan or argue? | |
 | Where did tables stick, and for how long? | >10 min = fix the scaffold |

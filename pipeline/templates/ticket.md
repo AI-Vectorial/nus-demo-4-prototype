@@ -1,6 +1,6 @@
 # T1 — <what this delivers, in a few words>
 
-*The epic. One increment, F1 to F5.*
+*The epic. One increment, F1 to F8, released in one pull request.*
 
 **Table:** N
 **Stage:** 01 shape
@@ -33,6 +33,12 @@ has not read the PRD should be able to check each one.*
 | F3 | [refuse](T1-F3-refuse.md) | `todo` |
 | F4 | [generate](T1-F4-generate.md) | `todo` |
 | F5 | [ask + UI](T1-F5-ask-and-ui.md) | `todo` |
+| F6 | [follow-up](T1-F6-follow-up.md) | `todo` · cuttable |
+| F7 | [corpus browser](T1-F7-corpus.md) | `todo` · cuttable |
+| F8 | [history](T1-F8-history.md) | `todo` · cuttable |
+
+*Cut from the back — F8, then F7, then F6 — and move what you cut into "Out of
+scope" below, with its top-bar action.*
 
 ## Out of scope
 

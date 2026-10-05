@@ -44,7 +44,7 @@ Do NOT write acceptance criteria for me. Instead:
 1. Summarise in five lines what you believe we are building, so I can
    correct you if you have it wrong.
 
-2. Tell me which requirement IDs from the PRD fall inside F1 to F5.
+2. Tell me which requirement IDs from the PRD fall inside F1 to F8.
 
 3. Ask me, one at a time, the questions you need answered to know when
    we are done. After each answer, play it back as a single
@@ -55,8 +55,9 @@ Do NOT write acceptance criteria for me. Instead:
    tickets/T1.md -- the epic, using pipeline/templates/ticket.md, with
    MY wording in the acceptance criteria.
 
-   tickets/T1-F1-ingest.md through T1-F5-ask-and-ui.md -- one child per
-   feature, using pipeline/templates/feature-ticket.md.
+   tickets/T1-F1-ingest.md through T1-F8-history.md -- one child per
+   feature, using pipeline/templates/feature-ticket.md. Mark F6, F7 and
+   F8 cuttable.
 
    The epic holds the acceptance criteria. The children hold the
    tracking -- do not duplicate the criteria into them.
@@ -83,12 +84,15 @@ Answers to everything you need for the acceptance criteria:
   inclusive.
 - A superseded citation is visibly marked as superseded.
 - With generation off, the passages still come back, clearly flagged.
-- The top bar carries Reset only in this slice. History and Corpus
-  arrive with F8 and F7. We do not ship buttons that do nothing.
+- The top bar carries an action only once its route exists. Reset from
+  F5, Corpus with F7, History with F8. We do not ship buttons that do
+  nothing.
+- Everything goes out in one pull request at stage 05. Nothing is
+  deployed before it is approved and merged.
 - Put NFR-2, NFR-3 and NFR-5 in as criteria. Leave NFR-1, NFR-4 and
   NFR-6 out -- we verify those, they are not criteria for this ticket.
 
-That is enough. Write the epic and the five children.
+That is enough. Write the epic and the eight children.
 ```
 
 ---
@@ -228,6 +232,9 @@ When a feature is finished, before starting the next one: set its child
 ticket's Status to done and paste in the output that shows its "Done
 when" line is satisfied.
 
+Add each top-bar action when its route lands -- Corpus with F7, History
+with F8. Do not deploy anything; it all goes out in one PR at stage 05.
+
 Start with the first item in the plan.
 ```
 
@@ -239,9 +246,15 @@ python -m app.ingest                    # again: 0 new -- REQ-I4
 pytest -q
 ```
 
-**F1 is roughly a quarter of the build phase.** If it took 25 minutes, sixty for
-F1–F5 is not real — and the fix is a more generous scaffold, never a compressed
-pipeline.
+**F1 is roughly a fifth of the build phase.** If it took 25 minutes, sixty for
+F1–F8 is not real — and the fix is a more generous scaffold or an earlier cut,
+never a compressed pipeline.
+
+### 📊 And record where the cut would have fallen
+
+On a rehearsal you will usually reach F8. A table will not. **Note the clock at
+F5, F6 and F7** — that is the number that tells you which features the room can
+actually hold, and it is the only honest basis for the mid-point prompt at 1:15.
 
 ---
 
@@ -277,16 +290,19 @@ Start with pass 1: correctness.
 
 ```
 Write tickets/T1-release.md using pipeline/templates/release-plan.md.
-It must state the rollback BEFORE we merge. Then commit everything and
-push work/table-3.
+It must state the rollback BEFORE we merge, and name anything we cut.
+Then commit everything and push work/table-3.
 ```
+
+**One PR, carrying the whole product:**
 
 ```bash
 gh pr create --base table-3 --head work/table-3 \
   --title "T1: the policy assistant" --fill
 ```
 
-Four checks run. **Nothing deploys.** Approve, merge, then:
+Four checks run. **Nothing deploys.** This is still the first time anything has
+been anywhere near a URL — the merge below is the deploy. Approve, merge, then:
 
 ```bash
 curl -s https://api-table-3-production.up.railway.app/healthz
@@ -298,6 +314,12 @@ Open **`https://web-table-3-production.up.railway.app`** and ask:
 |---|---|
 | *"What is the approval threshold for a travel expense claim?"* | an answer, cited |
 | *"Can I expense my partner's flight if they travel with me?"* | **a refusal** |
+| Then click the citation | the section opens in the corpus browser |
+| Then **History** | the conversation you just had |
+
+**Check the top bar against what you built.** On the full fast path all three
+actions are there. Rehearse a cut run too — drop F7 and F8, confirm the bar
+carries Reset alone, because that is the run most tables will have.
 
 ---
 

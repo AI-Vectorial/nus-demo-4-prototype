@@ -5,24 +5,35 @@ have 150 minutes and you will not finish everything.
 
 > ### Read this before you plan
 >
-> **F1 to F6 are the product.** Without all six there is no assistant.
+> **F1 to F8 are the product, and they are one increment.** You build all eight, and
+> they reach `table-N` through a single pull request at stage 05. Deploy is the last
+> thing that happens, not the middle.
 >
-> **Build in order. Deploy as soon as F5 works.** A deployed increment beats an
-> undeployed improvement, every time — and the pipeline only completes if something ships.
+> **Build in order. F6, F7 and F8 are cuttable.** If time runs short you drop them,
+> and what you ship is a smaller product that is whole rather than a larger one with
+> holes in it. **Cut scope, never a stage** — the six stages are what is being
+> assessed, and no feature is worth one.
 
 ---
 
 ## The critical path
 
 ```
-F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──▶ F5 ask + UI ──▶ DEPLOY
-                                                                   │
-                                            F6 follow-up ◀─────────┘
-                                            F7 corpus browser
-                                            F8 history
-                                                   │
-                                        F9 …  F10 …  only after you have shipped
+F1 ingest ──▶ F2 retrieve ──▶ F3 refuse ──▶ F4 generate ──▶ F5 ask + UI
+                                                                  │
+                                 ┌────────────────────────────────┘
+                                 ▼
+          F6 follow-up ──▶ F7 corpus browser ──▶ F8 history   all three cuttable
+                                 │                            cut from the back
+                                 ▼
+                      ONE PULL REQUEST ──▶ approved ──▶ merged ──▶ DEPLOY
+                                 │
+                                 ▼
+                      F9 …  F10 …  only after you have shipped
 ```
+
+**The pull request carries whatever you built**, F1–F8 or F1–F5. What it never carries
+is an interface offering more than it has.
 
 ---
 
@@ -116,14 +127,20 @@ renders all three outcomes — with the top bar from the UI target.
 | **Decisions** | **D7** — citation grouping |
 | **Done when** | You can ask in a browser and see a cited answer — **and a refusal looks different from an error** |
 
-> **Deploy here.** Do not wait for F6. The pipeline completes on a deployed increment; an
-> undeployed improvement completes nothing.
+> **Nothing deploys here.** F5 is the point at which it becomes a product, not the point
+> at which it ships. Keep going; everything goes out together at stage 05.
+>
+> ⚠️ **The top bar carries only the routes that exist (REQ-U9).** At F5 that is
+> **Reset**. **Corpus** arrives with F7, **History** with F8 — add each action when its
+> route lands, and never before. A button that goes nowhere is the first thing anyone
+> you demo this to will press.
 
 ---
 
 # F6 — Follow-up questions
 
-**Must have** — it is what makes it a conversation rather than a search box.
+**Should have, and the first of the three you may cut.** It is what makes it a
+conversation rather than a search box.
 
 Pass the recent turns to the model so *"and what about above £500?"* means something.
 
@@ -132,6 +149,7 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 | **Covers** | REQ-C3 … REQ-C7, REQ-A3, REQ-U8 |
 | **Decisions** | **D8** — how many turns · **D9** — whether a follow-up re-retrieves |
 | **Done when** | A follow-up is answered correctly, and **Reset** starts clean |
+| **If you cut it** | Every question stands alone and **Reset** is the only bar action. Nothing in the interface has to change — say in the release plan that follow-up is not in this release |
 
 > ⚠️ **Retrieval still runs on every turn (REQ-C5).** It is tempting to skip it on a
 > follow-up because you already have passages. Do not. *"And what about above £500?"*
@@ -150,7 +168,8 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 
 # F7 — Browse the corpus
 
-**Should have.** It is what lets someone check a citation rather than trust it.
+**Should have, and cuttable.** It is what lets someone check a citation rather than
+trust it.
 
 `/corpus` lists the five documents; `/corpus/[id]` shows one, with its sections.
 
@@ -158,6 +177,7 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 |---|---|
 | **Covers** | REQ-B1 … REQ-B6, REQ-A4, REQ-U12, REQ-U15 |
 | **Done when** | **Clicking a citation** opens the document at the section it named, and you can read it |
+| **If you cut it** | **No Corpus action in the top bar**, and a citation stays text rather than becoming a link. Citations still name document, section and version — they just cannot be opened |
 
 > Read from `backend/corpus/` (REQ-B5). Copying the documents into the database gives you
 > two sources of truth and a bug waiting to happen.
@@ -171,7 +191,7 @@ Pass the recent turns to the model so *"and what about above £500?"* means some
 
 # F8 — History
 
-**Should have.** Every exchange is already stored with its model, prompt version and the
+**Should have, and cuttable.** Every exchange is already stored with its model, prompt version and the
 policy versions that answered it. Storing that and never showing it means the only person
 who can check what the assistant said is someone with database access.
 
@@ -182,6 +202,7 @@ you carry on from where it stopped.
 |---|---|
 | **Covers** | REQ-C8, REQ-C9, REQ-A6, REQ-U13, REQ-U14 |
 | **Done when** | You can leave a conversation, come back to it from `/history`, and ask a follow-up that still has its context |
+| **If you cut it** | **No History action in the top bar.** Conversations are still persisted — REQ-C1 and REQ-C2 are F5's, not F8's — so nothing is lost, it is only unread |
 
 > The title is the first question, truncated. Do not add a title column — a second
 > source of truth that has to be kept in step with the conversation, for no gain.
@@ -190,7 +211,7 @@ you carry on from where it stopped.
 
 # Beyond the critical path
 
-**Only after F5 is deployed and your URL answers.** Each is genuinely useful and
+**Only after F1–F8 is merged and your URL answers.** Each is genuinely useful and
 genuinely optional.
 
 ### F9 — Was this helpful
@@ -229,4 +250,21 @@ be able to defend what the number means.
 
 ---
 
-*Policy Assistant · Feature list v2.0 · Build F1–F5, deploy, then F6 · CONFIDENTIAL — Chartered Vectorial*
+## When you are running out of time
+
+**Cut from the back. F8, then F7, then F6.** Decide it out loud, write it in the ticket
+as out of scope, and take the action out of the top bar with the feature. Then carry on
+to stage 04 with the time you just bought.
+
+**What you may never cut is a stage.** Review, release and verify are what the module
+assesses; the features are what the module uses to assess them. A table that ships F1–F5
+through all six stages has done the exercise. A table that reaches F8 by skipping the
+review has not done it at all, and the gap is not recoverable afterwards.
+
+> **This is why the eight are a target and not a definition of done.** PRD §12 is the
+> authority: done is a completed pipeline and a deployed increment. Building the whole
+> product is how you aim; it is not how you are marked.
+
+---
+
+*Policy Assistant · Feature list v2.0 · Build F1–F8, one pull request, then deploy · CONFIDENTIAL — Chartered Vectorial*

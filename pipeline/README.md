@@ -16,7 +16,7 @@ Six stages. Each has one job, one output, and one gate.
 | **02 plan** | `tickets/T1-plan.md` | ⚠️ **a human approves or rejects** |
 | **03 build** | working code | their criteria pass |
 | **04 review** | `tickets/T1-review.md` | a decision per finding |
-| **05 release** | `tickets/T1-release.md` + a PR | a rollback, written before merge |
+| **05 release** | `tickets/T1-release.md` + **one PR, the whole product** | a rollback, written before merge |
 | **06 verify** | a live URL | it answers on the deployed application |
 
 ## Two rules
@@ -30,7 +30,8 @@ sent back is a normal outcome, not a failure.
 
 ## If you fall behind
 
-**Cut scope, never a stage.** Stopping at F3 with a review, a release plan and a
-deployment beats reaching F5 with none of them.
+**Cut scope, never a stage.** F6, F7 and F8 are the scope — drop them from the back.
+Stopping at F5 with a review, a release plan and a deployment beats reaching F8 with
+none of them.
 
 > **Done is a completed pipeline and a deployed increment — not a finished product.**
