@@ -24,24 +24,17 @@
 
 # The prompt
 
-## First, thirty seconds
-
-```bash
-git checkout -b work/table-N      # your number. Skip if you are already on it
-git branch --show-current         # must print work/table-N
 ```
+We are table N.   <- your number
 
-⚠️ **`table-N` is protected — you cannot push to it.** Everything you build
-lands on `work/table-N` and reaches `table-N` through a pull request at stage
-05. Starting on the wrong branch works perfectly until minute 125, when the
-push is rejected.
+First, before anything else: check which branch we are on. If it is not
+work/table-N, create it with `git checkout -b work/table-N` and confirm
+it. table-N itself is protected and cannot be pushed to -- everything we
+build lands on work/table-N and reaches table-N through a pull request
+at stage 05.
 
----
-
-```
-Read docs/project-brief.md, docs/PRD.md and docs/features.md.
-
-Then help me shape our first ticket.
+Then read docs/project-brief.md, docs/PRD.md and docs/features.md, and
+help me shape our first ticket.
 
 Do NOT write acceptance criteria for me. Instead:
 

@@ -21,9 +21,11 @@ vector store are running in your Codespace. You set up nothing.
 ## First five minutes
 
 ```bash
-git checkout -b work/table-N      # your number
 claude                            # or: codex
 ```
+
+**Your agent creates `work/table-N` itself** — stage 01's first instruction.
+You do not need to.
 
 **First prompt — do not ask it to build anything yet:**
 

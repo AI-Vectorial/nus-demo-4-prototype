@@ -17,8 +17,9 @@ what a table must not do.
 ./scripts/quickstart.sh 3
 ```
 
-Checks the branch, the key, both stores, the frontend and the agent. Creates
-`work/table-3` if you are on `table-3`. **Refuses to continue if anything is
+Checks the key, both stores, the frontend and the agent. The **agent** creates
+`work/table-3` as stage 01's first instruction, so the branch is its job, not
+yours. **Refuses to continue if anything is
 wrong**, because all of these break later, further from the cause.
 
 Then:
