@@ -19,7 +19,7 @@
 
 ---
 
-# 0:00 — Open  ·  *5 min*
+# 0:00 — Open  ·  *10 min*
 
 **Say this. It is the single most important minute of the session:**
 
@@ -43,7 +43,7 @@ the homework."*
 
 ---
 
-# 0:05 — Stage 01 shape  ·  *15 min*
+# 0:10 — Stage 01 shape  ·  *15 min*
 
 They write a ticket with acceptance criteria **in their own words**.
 
@@ -57,7 +57,7 @@ work is already done. Stop it immediately.
 
 ---
 
-# 0:20 — Stage 02 plan  ·  *25 min*  ·  ⚠️ **THE GATE**
+# 0:25 — Stage 02 plan  ·  *20 min*  ·  ⚠️ **THE GATE**
 
 The agent presents **every open decision in one block**, then stops. They choose.
 
@@ -117,7 +117,7 @@ cutting. F8, then F7, then F6. Decide it now and write it down — deciding it a
 
 ---
 
-# 1:45 — Stage 04 review  ·  *25 min*
+# 1:45 — Stage 04 review  ·  *20 min*
 
 **First 10 minutes: the warm-up.** `docs/review-example/README.md` — somebody
 else's code, tests green, **real defects in it**.
@@ -134,7 +134,7 @@ unrecorded finding is not a review.
 
 ---
 
-# 2:10 — Stage 05 release  ·  *10 min*  ·  ⚠️ **THE SECOND GATE**
+# 2:05 — Stage 05 release  ·  *10 min*  ·  ⚠️ **THE SECOND GATE**
 
 Release plan **with a rollback written before merge**, then **one PR carrying
 everything they built**. Check the description names what they cut.
@@ -156,7 +156,7 @@ Only **`gate`** is required. Glance at it and move.
 
 ---
 
-# 2:20 — Stage 06 verify  ·  *15 min*
+# 2:15 — Stage 06 verify  ·  *15 min*
 
 The merge happens here, and the deploy with it. Each table then shows three
 things on **their own URL**:
