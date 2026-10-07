@@ -27,13 +27,23 @@
   "portsAttributes": {
     "3000": {
       "label": "Policy Assistant (your branch)",
-      "onAutoForward": "openPreview",
-      "visibility": "org"
+      // notify, not openPreview. A port is forwarded the moment the socket is
+      // bound, and `next dev` binds before it has compiled anything -- so
+      // openPreview reliably opened a dead page on first attach and said
+      // "connection failed". A notification waits for a human to click it, by
+      // which time start.sh has polled the server and reported it ready.
+      "onAutoForward": "notify",
+      // public, not org. An org-scoped forward needs a GitHub auth cookie the
+      // proxy cannot always get -- it returned 502 in both Brave and Chrome
+      // during the dry run, which reads as a broken app rather than a blocked
+      // one. The URL is unguessable, the data is fictional, and the service
+      // lives for one afternoon.
+      "visibility": "public"
     },
     "8000": {
       "label": "API",
       "onAutoForward": "silent",
-      "visibility": "org"
+      "visibility": "public"
     }
   },
 
