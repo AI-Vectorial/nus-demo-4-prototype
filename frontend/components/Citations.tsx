@@ -11,8 +11,6 @@
  * section it names (REQ-U15).
  */
 
-import Link from "next/link";
-
 import Markdown from "@/components/Markdown";
 import { sectionHref } from "@/lib/slug";
 import type { Citation } from "@/lib/types";
@@ -54,9 +52,11 @@ export default function Citations({
             <ul className="sections">
               {sections.map((c) => (
                 <li key={c.section}>
-                  <Link className="section" href={sectionHref(c.document_id, c.version, c.section)}>
+                  {/* A full load, not a client transition: only a real navigation
+                      sets :target, which is how the cited section is marked. */}
+                  <a className="section" href={sectionHref(c.document_id, c.version, c.section)}>
                     {c.section}
-                  </Link>
+                  </a>
                   {showText && c.text && <Markdown>{c.text}</Markdown>}
                 </li>
               ))}
