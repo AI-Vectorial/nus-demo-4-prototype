@@ -35,6 +35,36 @@ distributions overlap, B is better than C, which would lean towards answering.
 
 ## Measured value
 
-*Stage 03. The score distribution (in the format of `backend/corpus/EVALUATION.md`'s
-results table), the chosen value and the team's sign-off go here.
-`EVALUATION.md` itself is protected and is not edited.*
+**Status: no value chosen. The scores do not separate, so the build stopped for the team's
+review (stage 03, 2026-10-08).**
+
+`python -m app.retrieve.evaluate`, D0 `text-embedding-3-small` 1536, D1 one passage per
+section with title + heading prefixed, D3 top-k 5, no threshold applied.
+"Score" is the expected section's score for answerable rows (it must survive the
+threshold), and the top score of any passage for rows that must refuse.
+
+| | Q | Score | Expected section rank | Must |
+|---|---|---|---|---|
+| 1 | approval threshold | 0.802 | 2 (v3.0 §4.1 is 1st at 0.829) | answer |
+| 2 | exactly £75 | 0.653 | 1 | answer |
+| 3 | business class | **0.494** | 1 | answer |
+| 4 | Singapore cap | 0.598 | 1 | answer |
+| 5 | high-risk refresh | 0.753 | 1 | answer |
+| 6 | 90 days overdue | 0.758 | 1 | answer |
+| 7 | EDD ownership % | 0.535 | 1 | answer |
+| 8 | correspondence retention | 0.754 | 1 (§4.2) | answer |
+| 9 | critical outsourcing approval | 0.690 | 1 | answer |
+| 10 | the conflict | 0.520 | 2 and 3 (§6.4 0.521, §4.1 0.520) | answer |
+| C14 | follow-up "above that limit" | 0.707 | 2 | answer |
+| 11 | partner's flight | **0.517** | — (top: v3.1 §5.2 Air travel) | refuse |
+| 12 | cryptocurrency | **0.494** | — (top: KYC §9 Related policies) | refuse |
+| 13 | parental leave | 0.264 | — | refuse |
+| C31 | Q1 then Q11 | **0.732** | — (top: v3.0 §4.1 Approval thresholds) | refuse |
+
+- Lowest expected-section score: **0.494** (Q3). Highest score that must refuse:
+  **0.517** standalone (Q11), **0.732** with C31.
+- Gap: **−0.023** on the 13 questions alone, **−0.239** with C31. No threshold passes all
+  thirteen, and none comes close to passing C31.
+- Every expected section is in the top three (C4's retrieval half holds).
+- Searched alone, the C14 follow-up scores 0.495 and Q11 scores 0.517, so gating on the
+  current question by itself would not separate them either.
