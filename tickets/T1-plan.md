@@ -2,7 +2,7 @@
 
 **Stage:** 02 plan
 **Ticket:** [tickets/T1.md](T1.md) · F1–F8 in one increment, F6–F8 cuttable
-**Status:** AWAITING APPROVAL
+**Status:** APPROVED
 
 ---
 
@@ -71,7 +71,8 @@
 
 | | |
 |---|---|
-| **Decision** | APPROVED / REJECTED |
-| **By** | |
-| **When** | |
-| **If rejected, what would make it acceptable** | |
+| **Decision** | APPROVED |
+| **By** | Project owner / requester |
+| **When** | 2026-10-08 05:45 UTC |
+| **Conditions** | None |
+| **If rejected, what would make it acceptable** | n/a |
