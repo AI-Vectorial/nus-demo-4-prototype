@@ -184,6 +184,7 @@ build whose health check never passed. Five separate deployments.
 
 | Red | Do |
 |---|---|
+| **A table's app shows 502** | ⚠️ **Expect this, probably more than once.** PORTS tab → right-click 3000 → Port Visibility → **Public**. The port is private; `curl` from their terminal says 200 the whole time, so it looks like a broken build and is not |
 | **scope check** | ⚠️ **Do not fix it.** Send them back to revert. This is the lesson |
 | backend / frontend | send them back; the agent fixes it |
 | deploy | re-run the job — it already retries three times |

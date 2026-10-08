@@ -61,6 +61,20 @@ else
   fi
 fi
 
+# Port visibility is declared in devcontainer.json, but a port that was ALREADY
+# forwarded keeps the attributes it was forwarded with -- so a Codespace created
+# before that setting changed, or rebuilt after the port came up, still carries
+# the old one. The symptom is a 502 from the forwarded URL while curl from this
+# terminal returns 200, which reads as a broken app rather than a blocked one.
+#
+# Rather than let anyone lose twenty minutes to that, say it up front.
+if [ -n "${CODESPACE_NAME:-}" ]; then
+  echo
+  echo "  If the forwarded :3000 URL shows HTTP 502, the port is private:"
+  echo "    PORTS tab -> right-click 3000 -> Port Visibility -> Public"
+  echo "  That is a GitHub setting, not a fault in your build."
+fi
+
 echo
 echo "  frontend  http://localhost:3000   <- your work, live"
 echo "  api       http://localhost:8000/docs"
