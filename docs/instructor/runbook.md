@@ -4,7 +4,8 @@
 
 | | |
 |---|---|
-| **Format** | 5 tables · 150 minutes · one instructor roaming, one on the gate |
+| **Format** | 5 tables · 150 minutes · facilitator on the gate, roamer on the floor, mentor floating |
+| **Delivery** | `delivery-plan.md` — **who does what, and what you say.** Read it first |
 | **Companion** | `CV-NUS_M04_Dry_Run_Walkthrough.md` — the depth. This is the timing sheet |
 
 ---
