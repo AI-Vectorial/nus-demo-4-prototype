@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F4 Generate
 **Covers:** REQ-G1, REQ-G2, REQ-G3, REQ-G4, REQ-G5, REQ-G6
-**Criteria:** C4 (grounded-answer half), C8
+**Criteria:** C4 (grounded-answer half), C8, C30
 **Status:** `todo`
 
 ## Done when
