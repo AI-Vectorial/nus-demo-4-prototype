@@ -1,7 +1,7 @@
 # D2 — The refusal threshold
 
 **Decided:** 2026-10-08, table 3, stage 02 decision interview
-**Status:** method locked · **value to be measured in stage 03 and brought back for sign-off**
+**Status:** locked · **`MIN_SCORE=0.485` signed off by the project owner / requester, 2026-10-08 06:58 UTC**
 
 ## What we chose
 
@@ -156,3 +156,15 @@ The experiment reproduces exactly.
   passes it. It stays a failing criterion for the release gate (see T1).
 - The superseded version outranks the current one for Q1 and Q4. D4 relies on the
   labelling and the prompt to make the current version govern.
+
+## Sign-off
+
+| | |
+|---|---|
+| **Value** | `MIN_SCORE=0.485` |
+| **Signed off by** | Project owner / requester |
+| **When** | 2026-10-08 06:58 UTC |
+| **Basis** | Midpoint of the +0.078 gap on the real `text-embedding-3-large` + prefix index (Q3 0.524, Q11 0.446), by the method above |
+| **Known limitation** | C31 (Q11 after Q1, 0.645) is not separated by this or any threshold. It goes to the release gate as a failing criterion, with D9 and C31 unchanged by the team's decision |
+
+Set as the decided value in `backend/app/core/config.py` and `backend/.env.example`.

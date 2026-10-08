@@ -4,7 +4,7 @@
 **Feature:** F5 Ask + UI
 **Covers:** REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1, REQ-U2, REQ-U3, REQ-U4, REQ-U5, REQ-U6, REQ-U7, REQ-U9, REQ-U10, REQ-U11
 **Criteria:** C9, C10, C11, C13, C21, C22, C27, C28, and the Reset part of C25
-**Status:** `built` — C21 fails (see below); final once D2 is signed off
+**Status:** `done` — **C21 fails: release-gate known limitation** (team decision)
 
 ## Done when
 
@@ -22,7 +22,7 @@ C12 (a citation opens its section) depends on F7 and is tracked there.
 
 ## Evidence
 
-*All live results below were run with `MIN_SCORE=0.485`, the **proposed** value, set only in the local dev process. It is not signed off and not in configuration.*
+*Live results were run with `MIN_SCORE=0.485`, then proposed and since signed off unchanged.*
 
 Browser check against `localhost:3000`: 29/29 passed. Question, pending state, answer;
 citations visible without a click, grouped by document and version, superseded marked

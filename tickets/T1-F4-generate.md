@@ -4,7 +4,7 @@
 **Feature:** F4 Generate
 **Covers:** REQ-G1, REQ-G2, REQ-G3, REQ-G4, REQ-G5, REQ-G6
 **Criteria:** C4 (grounded-answer half), C8, C30
-**Status:** `built` — final once D2 is signed off
+**Status:** `done`
 
 ## Done when
 
@@ -21,7 +21,7 @@ The kill switch is part of this feature, not later polish.
 
 ## Evidence
 
-*All live results below were run with `MIN_SCORE=0.485`, the **proposed** value, set only in the local dev process. It is not signed off and not in configuration.*
+*Live results were run with `MIN_SCORE=0.485`, then proposed and since signed off unchanged.*
 
 - C4: Q1–Q10 all `answered` on the live model, with the expected sections cited.
 - C8: kill switch and failing-model tests pass; in the browser, a backend with

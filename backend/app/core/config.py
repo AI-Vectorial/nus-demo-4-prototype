@@ -89,8 +89,8 @@ class Settings:
     context_messages: int = int(os.getenv("CONTEXT_MESSAGES", "5"))
 
     # Below this a passage is discarded, and with none left the assistant
-    # refuses -- D2. No fallback until the team signs off the measured value.
-    min_score: float | None = _optional("MIN_SCORE", float)
+    # refuses -- D2: the midpoint of the measured gap, signed off by the team.
+    min_score: float | None = _optional("MIN_SCORE", float, "0.485")
 
     # One passage per section, the ceiling only a guard -- D1.
     chunk_max_tokens: int | None = _optional("CHUNK_MAX_TOKENS", int, "400")

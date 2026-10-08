@@ -4,7 +4,7 @@
 **Feature:** F6 Follow-up *(cuttable)*
 **Covers:** REQ-C3, REQ-C4, REQ-C5, REQ-C6, REQ-C7, REQ-A3, REQ-U8
 **Criteria:** C14, C15, C31
-**Status:** `built` — **C31 fails**; a release-gate decision
+**Status:** `done` — **C31 fails: release-gate known limitation** (team decision)
 
 ## Done when
 
@@ -21,7 +21,7 @@ Cuttable. If cut, every question stands alone, Reset is the only top-bar action,
 
 ## Evidence
 
-*All live results below were run with `MIN_SCORE=0.485`, the **proposed** value, set only in the local dev process. It is not signed off and not in configuration.*
+*Live results were run with `MIN_SCORE=0.485`, then proposed and since signed off unchanged.*
 
 - C14: "What is the approval limit for travel expenses?" then "What about expenses above
   that limit?" is answered with the £500 and £2,500 tiers. Tests confirm retrieval reran
