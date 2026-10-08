@@ -25,6 +25,15 @@ echo "Resetting table ${N}"
 echo
 
 # --- Postgres ---------------------------------------------------------------
+# The Postgres service is internal-only -- it has no TCP proxy, so PGHOST is
+# postgres.railway.internal and nothing outside the cluster can reach it. The
+# drop below therefore only runs if someone has since added a public URL.
+#
+# Without one, repointing is the reliable equivalent, exactly as for Qdrant
+# below: the API calls ensure_database() on boot, so pointing the service at a
+# new name gets an empty database on the next start. It leaves the old one
+# behind, which is 5 tables x a handful of dry runs -- cheap, and droppable
+# later from the dashboard.
 URL="$(railway variables --service Postgres --json 2>/dev/null \
       | python -c 'import json,sys;print(json.load(sys.stdin).get("DATABASE_PUBLIC_URL",""))')"
 if [[ -n "$URL" ]] && command -v psql >/dev/null; then
@@ -32,7 +41,14 @@ if [[ -n "$URL" ]] && command -v psql >/dev/null; then
   psql "$URL" -c "CREATE DATABASE ${DB}" >/dev/null
   echo "  database    ${DB} dropped and recreated"
 else
-  echo "  database    SKIPPED (need psql and the Postgres service)"
+  STAMP="$(date +%H%M%S)"
+  if railway variables --service "api-table-${N}" \
+       --set "DATABASE_NAME=${DB}_${STAMP}" >/dev/null 2>&1; then
+    echo "  database    unreachable from here; repointed to ${DB}_${STAMP}"
+  else
+    echo "  database    !! NOT RESET -- the next table will see the last run's history"
+    exit 1
+  fi
 fi
 
 # --- Qdrant -----------------------------------------------------------------

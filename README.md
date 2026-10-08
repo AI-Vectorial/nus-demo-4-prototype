@@ -175,7 +175,7 @@ cd frontend && npm run build && npm run typecheck && npm run lint
 ```
 pipeline/    .github/    ci/    AGENTS.md    START-HERE.md
 docs/PRD.md  docs/features.md   docs/project-brief.md
-backend/corpus/    scripts/    docs/instructor/
+backend/corpus/    scripts/    docs/table-card.md
 ```
 
 **`backend/corpus/` is the one you will be tempted by.** When retrieval performs badly,
