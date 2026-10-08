@@ -134,6 +134,23 @@ unrecorded finding is not a review.
 
 ---
 
+> ### ⚠️ Decide the approver before the day
+>
+> **GitHub will not let anyone approve their own pull request.** Whoever's account
+> the Codespace runs under is the PR's author, and that account is the one person
+> who cannot approve it.
+>
+> | If the Codespaces are created by… | Then the approver must be… |
+> |---|---|
+> | You | **your mentor, or the roamer** — not you |
+> | Each table, on their own account | **you** |
+>
+> There is no third option. "Merge without waiting for requirements" bypasses the
+> ruleset, and bypassing the gate in front of the room is the one thing this
+> session cannot afford to demonstrate.
+>
+> **Pick one, and confirm that person can approve, before anybody opens a PR.**
+
 # 2:05 — Stage 05 release  ·  *10 min*  ·  ⚠️ **THE SECOND GATE**
 
 Release plan **with a rollback written before merge**, then **one PR carrying
