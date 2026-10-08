@@ -54,11 +54,39 @@ else
   echo "frontend  starting on :3000 (first compile takes a moment)"
   if wait_up 3000; then
     echo "frontend  ready"
+    # Open it ourselves, now that it answers.
+    #
+    # onAutoForward would do this at bind time, which is before next dev has
+    # compiled anything -- the preview opens on a dead socket and says
+    # "connection failed". And the forwarded *.app.github.dev URL needs a
+    # browser cookie the proxy cannot always get, which is the 502. The
+    # in-editor preview goes through the VS Code connection instead, so
+    # neither applies to it.
+    if [ -n "${BROWSER:-}" ]; then
+      "$BROWSER" http://localhost:3000 >/dev/null 2>&1 || true
+    fi
   else
     echo
     echo "  !! frontend did not come up. The reason is in /tmp/frontend.log:"
     tail -15 /tmp/frontend.log
   fi
+fi
+
+# Port visibility is declared in devcontainer.json, but a port that was ALREADY
+# forwarded keeps the attributes it was forwarded with -- so a Codespace created
+# before that setting changed, or rebuilt after the port came up, still carries
+# the old one. The symptom is a 502 from the forwarded URL while curl from this
+# terminal returns 200, which reads as a broken app rather than a blocked one.
+#
+# Rather than let anyone lose twenty minutes to that, say it up front.
+if [ -n "${CODESPACE_NAME:-}" ]; then
+  echo
+  echo "  Your app is open in the editor preview -- use that."
+  echo
+  echo "  The forwarded *.app.github.dev URL is a separate thing, and it needs"
+  echo "  a port set to Public to work from an outside browser:"
+  echo "    PORTS tab -> right-click 3000 -> Port Visibility -> Public"
+  echo "  A 502 there is that setting, never a fault in your build."
 fi
 
 echo

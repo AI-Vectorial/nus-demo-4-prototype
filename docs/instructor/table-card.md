@@ -42,7 +42,7 @@ Then open **`pipeline/01-shape.md`** and follow it.
 
 ```
 01 shape ──▶ 02 plan ──▶ 03 build ──▶ 04 review ──▶ 05 release ──▶ 06 verify
-  15min        25min        60min        25min        10min        15min
+  15min        20min        60min        20min        10min        15min
                  │                                                    │
           ⚠️ HUMAN GATE                                        ⚠️ HUMAN GATE
 ```
@@ -91,6 +91,17 @@ cd backend && python -m app.ingest    # index the corpus (after F1)
 pytest -q                             # your acceptance criteria
 curl localhost:8000/healthz           # what is up, what is down
 ```
+
+> ### Where your app is
+>
+> **It opens by itself in the editor, once it is ready.** That preview is the
+> one to use — it goes through your editor connection and always works.
+>
+> The `*.app.github.dev` URL is a different route and starts **private**, so an
+> outside browser gets **502** until you set
+> **PORTS → right-click 3000 → Port Visibility → Public**. That is a GitHub
+> setting, never a fault in your build — `curl localhost:3000` says 200 the
+> whole time.
 
 **Stuck for ten minutes? Ask an instructor.** That is what they are for.
 
