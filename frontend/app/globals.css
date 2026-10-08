@@ -271,6 +271,23 @@ code {
   text-align: center;
 }
 
+/* REQ-U1b: example questions under the composer. */
+.examples { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+
+.examples button {
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--text);
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+}
+
+.examples button:hover { border-color: var(--accent); background: var(--accent-soft); }
+
 .thread { display: flex; flex-direction: column; gap: 1.5rem; }
 .exchange { display: flex; flex-direction: column; gap: 0.6rem; }
 

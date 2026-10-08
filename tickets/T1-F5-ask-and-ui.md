@@ -36,3 +36,10 @@ no horizontal scroll at 390 px, light theme only (C27).
 - **C21 FAILS.** Median answer latency: 5.23 s over Q1–Q10, against a target of under 5 s.
   Individual answers range from 2.2 s to 16.4 s, and the time is the model call
   (`LLM_MODEL`, fixed by PRD §8). Median refusal latency: 1.12 s (under 1.5 s, passes).
+
+### REQ-U1b — added to the PRD on `table-3` after stage 02
+
+The empty state offers three example questions, and clicking one asks it. The first is the
+superseded-policy case. Browser check: 3 examples shown; clicking the first produced an
+answer with the v3.0 citation flagged as superseded. No horizontal scroll at 390 px, and no
+page errors. T1's criteria predate REQ-U1b, so no C-number covers it. The team may add one.

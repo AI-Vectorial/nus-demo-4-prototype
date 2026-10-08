@@ -36,6 +36,7 @@ the policies do not cover it and who owns each policy area.
 |---|---|---|
 | **C31** | An out-of-scope question asked as a follow-up (Q11 after Q1) is **answered, not refused**. The model's text declines, but the outcome is `answered`. No threshold can fix it. | Team: keep C31 and D9 as written, no model-based refusal gate |
 | **C21** | Median answer latency was **5.2 s and 6.2 s** in two full runs, against a target of under 5 s. The time is the model call. Refusals take about 1 s (passes). | Team: known limitation for this release |
+| **R6** | Short, casual questions the policies do answer can be **refused** ("hotel cap singapore", "what class can I fly to New York"): 3 of 20 rewordings tested. Fully worded questions pass. | **Open** — fix (review R6, option A) or accept |
 | S1 | Every question is sent to OpenRouter (embedding and chat). A question can contain personal data. | Accepted under C24 (F10 out of scope) — **confirm** |
 | S2 | History (`/conversations`) has no authentication, so anyone who can reach the API can read every conversation. | Accepted under C24 (auth out of scope) — **confirm, or cut F8** |
 | F4 | A hung model can hold an answer for minutes (60 s timeout × 3 retries) before degrading. | Deferred, tied to C21 — **confirm** |

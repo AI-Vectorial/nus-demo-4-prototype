@@ -109,6 +109,32 @@ gate decides whether it blocks.**
 **Decision:** FIXED by F1's fix: on boot the index is rebuilt when its passage count or
 dimension no longer matches the corpus and D0. `--force` remains for a manual rebuild.
 
+### R6 — Short, casual questions the policies answer can be refused
+**Pass:** 1 (found after the review, in use) · **Severity:** medium · **Where:** D2,
+`MIN_SCORE=0.485`
+**What:** of 20 natural rewordings of answerable questions, 17 were answered and 3 were
+refused:
+
+| Question | Score |
+|---|---|
+| "what's the hotel limit in Singapore" | 0.435 |
+| "hotel cap singapore" | 0.402 |
+| "what class can I fly to New York" | 0.448 |
+
+Several more cleared the threshold only narrowly (0.495–0.508). The threshold was fitted to
+the 13 fully worded evaluation questions. Casual answerable questions score 0.40–0.45, the
+same band as the two that must refuse: Q11 at 0.446 and Q12 at 0.435. So no threshold
+fixes it.
+**Decision:** **OPEN — for the team / release gate.** Options were put to the project
+owner on 2026-10-08:
+
+- A. Add lexical (keyword) matching to retrieval and re-measure D2 on a wider set — the
+  agent's recommendation.
+- B. Lower `MIN_SCORE`. Rejected by the analysis: it lets Q11 and Q12 through.
+- C. Show the nearest sections on a refusal, labelled as not confident enough to answer.
+
+No change has been made, and none has been chosen.
+
 ### S1 — Question text leaves the bank, to OpenRouter
 **Pass:** 2 · **Severity:** medium · **Where:** `backend/app/generate/client.py` (embed and
 generate)
@@ -232,10 +258,11 @@ or database down → 503). A client-side cut-off would be a new number nobody ha
 
 | | |
 |---|---|
-| Findings | 20 |
+| Findings | 21 |
 | Fixed | 10 — R1, R2, R5, M1, M2, M3, M6, F1, F2, F3 |
 | Accepted | 8 — R3, R4, S1, S2, M4, M5, F5, F6 |
 | Deferred | 2 — P1, F4 |
+| **Open** | 1 — R6 (for the team / release gate) |
 
 **The one we accepted on purpose, and why:**
 

@@ -21,6 +21,16 @@ import TopBar from "@/components/TopBar";
 import { ApiError, ask } from "@/lib/api";
 import type { AskResponse } from "@/lib/types";
 
+// REQ-U1b: three questions the policies genuinely answer, so nobody's first
+// question is a guess. The first is the superseded-policy case: its answer cites
+// the withdrawn v3.0 alongside v3.1, flagged -- the behaviour the product
+// exists to show.
+const EXAMPLES = [
+  "What is the approval threshold for a travel expense claim?",
+  "How often do we refresh KYC for a high-risk client?",
+  "How long do we keep client correspondence?",
+];
+
 export type Exchange = {
   question: string;
   response?: AskResponse;
@@ -58,9 +68,12 @@ export default function Chat({
   const [draft, setDraft] = useState("");
   const busy = exchanges.some((e) => !e.response && !e.error);
 
-  async function send(event: React.FormEvent) {
+  function send(event: React.FormEvent) {
     event.preventDefault();
-    const question = draft.trim();
+    void askQuestion(draft.trim());
+  }
+
+  async function askQuestion(question: string) {
     if (!question || busy) return;
     setDraft("");
     const index = exchanges.length;
@@ -115,6 +128,13 @@ export default function Chat({
               assistant says so.
             </p>
             {composer}
+            <div className="examples" aria-label="Example questions">
+              {EXAMPLES.map((example) => (
+                <button key={example} type="button" onClick={() => void askQuestion(example)}>
+                  {example}
+                </button>
+              ))}
+            </div>
           </section>
         ) : (
           <>
