@@ -123,7 +123,7 @@ renders all three outcomes — with the top bar from the UI target.
 
 | | |
 |---|---|
-| **Covers** | REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1 … REQ-U7, REQ-U9 … REQ-U11 |
+| **Covers** | REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1, REQ-U1b, REQ-U2 … REQ-U7, REQ-U9 … REQ-U11 |
 | **Decisions** | **D7** — citation grouping |
 | **Done when** | You can ask in a browser and see a cited answer — **and a refusal looks different from an error** |
 

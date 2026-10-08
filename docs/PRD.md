@@ -213,6 +213,7 @@ Each has an id. Your acceptance criteria should reference them.
 | | |
 |---|---|
 | **REQ-U1** | An empty state invites a question, centred, with a send control |
+| **REQ-U1b** | The empty state offers **three example questions**. Clicking one asks it |
 | **REQ-U2** | Asking shows the question, then the answer, with **citations visible without further interaction** |
 | **REQ-U3** | Each citation shows document, section, version and status |
 | **REQ-U4** | A **superseded** citation is visibly distinguished |
@@ -228,6 +229,13 @@ Each has an id. Your acceptance criteria should reference them.
 | **REQ-U14** | A conversation with no turns is never listed |
 | **REQ-U15** | **A citation opens the section it names** in the corpus browser |
 
+> **REQ-U1b is not decoration.** Nobody arrives knowing what a policy corpus can be
+> asked. An empty box invites a bad first question, the answer disappoints, and the
+> product gets blamed for retrieval the user never gave it a chance to do. Three
+> questions it can genuinely answer set the expectation in one glance — and one of them
+> should be the superseded-policy case, so the first thing anyone sees is a citation
+> flagged as withdrawn.
+>
 > **REQ-U2 is a product decision, not a layout one.** The brief's assumption A3 is that
 > *showing the source is what makes the answer trustworthy*. Hiding citations behind a
 > tab tests a different assumption.
