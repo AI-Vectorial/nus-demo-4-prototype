@@ -16,7 +16,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import ask, corpus, health
+from app.api import ask, conversations, corpus, health
 from app.core import database
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
@@ -67,6 +67,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(ask.router)
 app.include_router(corpus.router)
+app.include_router(conversations.router)
 
 
 @app.get("/")

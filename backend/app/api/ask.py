@@ -113,9 +113,10 @@ def _citation(hit: Hit, *, with_text: bool) -> Citation:
     )
 
 
-def _conversation(db: Session, conversation_id: uuid.UUID | None) -> Conversation:
+def _conversation(db: Session, conversation_id: uuid.UUID | None,
+                  received: datetime) -> Conversation:
     if conversation_id is None:
-        conversation = Conversation()
+        conversation = Conversation(started_at=received, last_at=received)
         db.add(conversation)
         return conversation
     conversation = db.get(Conversation, conversation_id)
@@ -137,8 +138,8 @@ def _history(db: Session, conversation: Conversation, limit: int) -> list[Turn]:
 @router.post("/ask", response_model=AskResponse)
 def ask(body: AskRequest, db: Annotated[Session, Depends(get_session)],
         deps: Annotated[AskDeps, Depends(get_deps)]) -> AskResponse:
-    started = time.perf_counter()
-    conversation = _conversation(db, body.conversation_id)
+    started, received = time.perf_counter(), datetime.now(UTC)
+    conversation = _conversation(db, body.conversation_id, received)
     history = _history(db, conversation, deps.context_messages) if body.conversation_id else []
     turns = window(history, body.question, size=deps.context_messages)
 
@@ -166,12 +167,11 @@ def ask(body: AskRequest, db: Annotated[Session, Depends(get_session)],
             assistant.outcome = "degraded"
         citations = [_citation(h, with_text=assistant.outcome == "degraded") for h in found.hits]
 
-    now = datetime.now(UTC)
     assistant.latency_ms = round((time.perf_counter() - started) * 1000)
     assistant.citations = [
         MessageCitation(**c.model_dump(exclude={"text"})) for c in citations
     ]
-    question = Message(role="user", content=body.question, created_at=now)
+    question = Message(role="user", content=body.question, created_at=received)
     assistant.created_at = datetime.now(UTC)
     conversation.messages.extend([question, assistant])
     conversation.last_at = assistant.created_at

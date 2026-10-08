@@ -3,7 +3,7 @@ deterministic half of C30 (both conflicting sections are cited).
 
 The store and model are fakes and the database is SQLite in memory, so this runs
 in CI. MIN_SCORE below is a fixture value on the fake model's bag-of-words
-scale -- it is NOT table 3's D2 threshold, which is still awaiting sign-off.
+scale (see conftest.py) -- it is NOT table 3's D2 threshold.
 """
 
 from __future__ import annotations
@@ -11,66 +11,17 @@ from __future__ import annotations
 import dataclasses
 import logging
 import uuid
-from pathlib import Path
 
-import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, func, select
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy import func, select
 
-from app.api.ask import AskDeps, get_deps
-from app.core.database import Base, get_session
 from app.core.models import Message, MessageCitation
-from app.ingest import corpus
-from app.ingest.ingest import ingest
 from app.main import app
 from app.retrieve.store import Hit
-
-CORPUS = Path(__file__).resolve().parents[2] / "corpus"
-FAKE_SCALE_MIN_SCORE = 0.3
+from tests.features.conftest import api
 
 ANSWERABLE = "What approval thresholds apply to a travel expense claim?"
 UNANSWERABLE = "How many days of paid parental leave am I entitled to?"
-
-
-@pytest.fixture
-def db():
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False},
-                           poolclass=StaticPool)
-    Base.metadata.create_all(engine)
-    return sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
-
-
-@pytest.fixture
-def indexed(store, model):
-    ingest(store, model.embed, corpus_dir=CORPUS, max_tokens=400, overlap_tokens=0,
-           batch_size=96)
-    return store
-
-
-def api(db, store, *, embed, generate, enabled=True):
-    def session():
-        s = db()
-        try:
-            yield s
-            s.commit()
-        finally:
-            s.close()
-
-    app.dependency_overrides[get_session] = session
-    app.dependency_overrides[get_deps] = lambda: AskDeps(
-        store=store, embed=embed, generate=generate, documents=corpus.load(CORPUS),
-        top_k=5, min_score=FAKE_SCALE_MIN_SCORE, context_messages=5,
-        generation_enabled=enabled, model_name="fake-model",
-    )
-    return TestClient(app)
-
-
-@pytest.fixture(autouse=True)
-def _clear_overrides():
-    yield
-    app.dependency_overrides.clear()
 
 
 def test_an_answerable_question_is_answered_with_citations(db, indexed, model):

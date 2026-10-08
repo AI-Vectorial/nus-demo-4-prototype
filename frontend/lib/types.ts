@@ -60,3 +60,29 @@ export interface DocumentSummary {
 export interface PolicyDocument extends Omit<DocumentSummary, "sections"> {
   sections: { heading: string; text: string }[];
 }
+
+/** GET /conversations -- newest first. */
+export interface ConversationSummary {
+  id: string;
+  started_at: string;
+  last_at: string;
+  /** The first question, truncated. */
+  title: string;
+  message_count: number;
+}
+
+/** GET /conversations/{id} */
+export interface ConversationDetail {
+  id: string;
+  started_at: string;
+  last_at: string;
+  messages: {
+    id: string;
+    role: "user" | "assistant";
+    content: string | null;
+    outcome: Outcome | null;
+    citations: Citation[];
+    latency_ms: number | null;
+    created_at: string;
+  }[];
+}

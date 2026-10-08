@@ -5,7 +5,14 @@
  * so a component never has to interpret a fetch rejection.
  */
 
-import type { AskResponse, DocumentSummary, Health, PolicyDocument } from "./types";
+import type {
+  AskResponse,
+  ConversationDetail,
+  ConversationSummary,
+  DocumentSummary,
+  Health,
+  PolicyDocument,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -71,6 +78,16 @@ export function corpus(apiUrl: string): Promise<DocumentSummary[]> {
 export function policy(apiUrl: string, id: string, version?: string): Promise<PolicyDocument> {
   const query = version ? `?version=${encodeURIComponent(version)}` : "";
   return request<PolicyDocument>(apiUrl, `/corpus/${encodeURIComponent(id)}${query}`, {
+    cache: "no-store",
+  });
+}
+
+export function conversations(apiUrl: string): Promise<ConversationSummary[]> {
+  return request<ConversationSummary[]>(apiUrl, "/conversations?limit=50", { cache: "no-store" });
+}
+
+export function conversation(apiUrl: string, id: string): Promise<ConversationDetail> {
+  return request<ConversationDetail>(apiUrl, `/conversations/${encodeURIComponent(id)}`, {
     cache: "no-store",
   });
 }
