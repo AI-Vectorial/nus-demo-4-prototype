@@ -5,24 +5,47 @@
 | | |
 |---|---|
 | **Module** | M04 — AI-Native Development Lifecycle: From Concept to Production |
-| **Assessed against** | `CV-NUS_M04.6_Coverage_Brief` (the governing spec) and `CV-NUS_M04.5_Coverage_Brief` |
+| **Assessed against** | **`AI_Practitioner_Certificate_Course_Outline_R2`** (the approved curriculum, 21 Sep 2026) — and, where it is silent, the issued M04.5 / M04.6 coverage briefs |
 | **Assessing** | This repository as it stands — `pipeline/`, `docs/`, `scripts/`, the reference build |
-| **Version** | **3.0** |
+| **Version** | **3.1** — corrected against the approved outline |
 | **Supersedes** | v2.0 (`docs/v2/`), which audits a design this repo no longer has — eight stages, five gates, five physical cards, an `/evidence` route. **None of that exists.** v2 should not be used to judge coverage |
 | **Date** | 8 October 2026 |
 
 ---
 
-# The headline
+# Read this first — there are two specs, and only one governs
 
-> **M04.5 — Production Readiness and Controlled Release — is ON HOLD** while the
-> Module-5 boundary is reviewed. The M04.6 brief says what that means:
->
-> *"Because M04.5 is on hold, this lab carries the release-and-deploy evidence
-> itself, at the awareness depth the outline sets."*
+| | Says M04 is | Status |
+|---|---|---|
+| **Course Outline R2** (21 Sep 2026) | **One day, five sections**, the lab being section 5 | ✅ **Approved. This governs** |
+| **Coverage briefs** (5 Aug 2026) | **Six sessions**, M04.5 release + M04.6 lab | Built on the *proposed* outline; each brief states it "does not replace the approved curriculum" |
 
-So deployment is not a bonus in this lab. **It is a learning outcome the lab has
-inherited**, and it is the reason stage 05 and stage 06 exist in the shape they do.
+v3.0 of this map assessed against the briefs. That was the wrong yardstick. The
+approved outline is narrower, and the difference matters in exactly one place.
+
+### The approved lab, verbatim
+
+> *"Teams take a banking feature specification and build a working prototype using
+> AI coding tools across the full SDLC — **requirements → design → code → tests →
+> documentation** — framed by the agentic SDLC methodology introduced earlier in the
+> day. Each team reflects on where AI added genuine value, where it introduced risk,
+> and what governance controls they applied. **Instructor-driven Claude Code demo
+> projected for all participants.** Hands-on where sandbox access is cleared;
+> otherwise instructor-led demo."*
+
+Two things follow, and both are load-bearing.
+
+**1. Deployment is not in the approved lab scope.** The chain ends at
+*documentation*. What *is* in scope is LO5: *"apply an agentic SDLC methodology to
+move work through staged, gated agents from shaping **to release**."* Release, not
+deployment. Day 5 owns deployment outright — *"LLMOps & deployment: CI/CD for AI,
+prompt and model/adapter versioning, environments, rollback, change management"* —
+and opens by taking *"the prototype built across Days 1–4"* into production.
+
+**2. Claude Code is named in the approved curriculum**, both as the projected demo
+and in the section 2 tool comparison alongside Copilot, Cursor, Windsurf and Amazon
+Q Developer. The tooling question is settled at curriculum level; see §4b for what
+the scaffold actually requires.
 
 ---
 
@@ -86,11 +109,24 @@ The outline's own success criteria for the lab:
 
 ---
 
-# 4. Deployment — what the lab actually teaches
+# 4. Release — and why it is not deployment
 
-**This is the question worth being precise about: no table writes any CI/CD.**
-The scaffold ships it. What a table *does* is produce release evidence and run
-the control flow — which is exactly what the brief asks for, and nothing more.
+> **Say "release", never "deployment", in the room on Day 4.** Deployment is Day 5's
+> word. Using it here sets up a collision the Module 5 trainer then has to walk back.
+
+**No table writes any CI/CD, provisions anything, or types a deploy command.** The
+scaffold ships all of it. What a table does is open one pull request, have *a
+different person* approve it, and watch the merge put the thing on a URL — then
+validate it. That is roughly 25 of the 150 minutes.
+
+That is the cheapest honest way to make LO5's *"to release"* true rather than
+described. It is **above** the approved lab's stated chain, which stops at
+documentation — a deliberate addition, not a gap being filled. It also hands Day 5
+the live, evidenced artefact its own opening assumes.
+
+**Recommendation: keep it, reframe the language.** Cutting it would save 25 minutes
+and cost the only part of the day where a human approval visibly gates software
+reaching users.
 
 M04.5's controlled-release flow, against our stages:
 
@@ -144,7 +180,12 @@ expected, because the product genuinely has runtime AI:
 
 # 6. Gaps — decisions, not surprises
 
-### G1 · No role assignment, and no role cards 🔴
+### G1 · No role assignment, and no role cards 🟡 *(downgraded in v3.1)*
+
+> **Downgraded.** The approved outline sets no role split for the M04 lab — that was
+> the proposed outline's M04.6 brief. So this is no longer a compliance gap. It
+> stays on the list because the cohort is deliberately mixed and the failure it
+> prevents is real.
 
 The brief's Phase 1 is *"select the candidate app; assign **product/architecture,
 development, testing/platform and risk/review** responsibilities"*, and the role
