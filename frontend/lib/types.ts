@@ -1,5 +1,5 @@
 /**
- * The /ask contract, from docs/PRD.md section 4.
+ * The /ask contract, from docs/PRD.md section 5.
  *
  * THIS SHAPE IS FIXED. Five tables build against it so five results are
  * comparable and the checks in ci/ can test any of them. Add fields if you
@@ -15,6 +15,8 @@ export interface Citation {
   /** "superseded" must be shown differently from "current" -- REQ-U4. */
   status: "current" | "superseded";
   score: number;
+  /** Added field: the passage itself, sent only in degraded mode. */
+  text?: string | null;
 }
 
 /**
@@ -31,7 +33,8 @@ export interface AskResponse {
   /** The composed answer, or the reason for a refusal. null when degraded. */
   answer: string | null;
   citations: Citation[];
-  exchange_id: string;
+  conversation_id: string;
+  message_id: string;
   latency_ms: number;
 }
 

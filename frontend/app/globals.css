@@ -231,121 +231,86 @@ code {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------------------------------------------------------------------------
-   The welcome screen. Scaffolding -- F5 replaces it. It exists so the first
-   thing a table sees is true and points somewhere, rather than a blank page or
-   a claim about state that is not the case.
+   The assistant. F5.
    --------------------------------------------------------------------------- */
 
-.welcome {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 56px 24px 72px;
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 1;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.welcome-head h1 {
-  margin: 6px 0 0;
-  font-size: 2rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--text);
-}
-
-.eyebrow {
-  margin: 0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.welcome .lede {
-  margin: 12px 0 0;
-  font-size: 1rem;
-  line-height: 1.65;
-  color: var(--text-dim);
-}
-
-.welcome .card {
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1.25rem;
   background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar .brand { font-weight: 600; color: var(--text); text-decoration: none; }
+.topbar .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.topbar .actions a,
+.topbar .actions button {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface-tint);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 22px 24px;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
 }
 
-.welcome .card h2 {
-  margin: 0 0 14px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-.status-list,
-.start-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.empty {
+  margin: auto 0;
   display: flex;
   flex-direction: column;
-  gap: 9px;
-}
-
-.start-list {
-  list-style: decimal;
-  padding-left: 20px;
-  color: var(--text);
-}
-
-.start-list li { padding-left: 4px; }
-
-.status-list li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: baseline;
-  font-size: 0.92rem;
-}
-
-.status-name {
-  min-width: 120px;
-  font-weight: 600;
-  color: var(--text);
-  text-transform: capitalize;
-}
-
-.status-ok { color: var(--text-dim); }
-
-.status-bad {
-  color: var(--danger);
-  font-weight: 600;
-}
-
-.welcome .note {
-  margin: 16px 0 0;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-  font-size: 0.88rem;
-  line-height: 1.6;
-  color: var(--text-dim);
-}
-
-.welcome code {
-  font-family: var(--mono);
-  font-size: 0.86em;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-tint);
-  color: var(--text);
-}
-
-.footnote {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--text-dim);
+  gap: 1rem;
   text-align: center;
+}
+
+.thread { display: flex; flex-direction: column; gap: 1.5rem; }
+.exchange { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.question {
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+}
+
+.answer-text { white-space: pre-wrap; }
+
+.citation .sections {
+  flex-basis: 100%;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.citation .passage {
+  margin: 0.3rem 0 0.5rem;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+
+.refusal p { margin: 0; }
+.refusal ul.next { padding-left: 1.2rem; }
+
+/* An error is none of the three outcomes, and must not look like one. */
+.error {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+@media (max-width: 480px) {
+  .wrap { padding: 1.5rem 1rem 1.5rem; }
+  .composer { flex-direction: column; }
+  .question { max-width: 100%; }
 }

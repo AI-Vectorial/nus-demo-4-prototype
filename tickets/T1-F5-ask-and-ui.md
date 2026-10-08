@@ -4,7 +4,7 @@
 **Feature:** F5 Ask + UI
 **Covers:** REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1, REQ-U2, REQ-U3, REQ-U4, REQ-U5, REQ-U6, REQ-U7, REQ-U9, REQ-U10, REQ-U11
 **Criteria:** C9, C10, C11, C13, C21, C22, C27, C28, and the Reset part of C25
-**Status:** `todo`
+**Status:** `in progress` — API and UI built; browser checks (C13, C21) wait on D2
 
 ## Done when
 
