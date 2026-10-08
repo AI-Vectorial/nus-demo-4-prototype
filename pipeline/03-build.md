@@ -104,4 +104,7 @@ are only what it is assessed on.
 - [ ] The top bar offers **nothing that does not exist** — every action opens a route
 - [ ] Anything cut is written down as cut, not left half-built
 - [ ] No test was skipped, weakened or deleted to get here
+- [ ] `/healthz` reports passages indexed, not zero
+- [ ] The evaluation set has been run **against the live index since the last
+      change to D0, D1 or D2** — all ten answer, all three refuse
 - [ ] Work is committed to `work/table-N` — **and nothing has been deployed**
