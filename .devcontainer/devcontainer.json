@@ -71,6 +71,6 @@
   // Everything else -- the stores, the API key -- comes from docker-compose
   // and from the repository's Codespaces secrets. A table configures nothing.
   "remoteEnv": {
-    "API_URL": "http://localhost:8000"
+    "API_URL": "http://127.0.0.1:8000"
   }
 }
