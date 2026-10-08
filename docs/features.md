@@ -82,7 +82,16 @@ call the model.**
 |---|---|
 | **Covers** | REQ-R2, REQ-R3, REQ-R4, REQ-R6 |
 | **Decisions** | **D2** — the threshold and how you chose it · **D5** — what the refusal says |
-| **Done when** | All three out-of-scope questions refuse, and all ten answerable ones do not |
+| **Done when** | All three out-of-scope questions refuse, and all ten answerable ones do not — **against the live index, with the scores recorded** |
+
+> ⚠️ **A threshold is tuned against an embedding strategy, not against a corpus.**
+> Change D0 or what ingestion embeds, and the number you chose for D2 is from a
+> previous world: every score moves, and the symptom is a product that refuses
+> everything while its tests stay green and `/healthz` reports a full index.
+>
+> **If you revisit D0 or D1 after tuning D2, re-run the evaluation and re-tune.**
+> It is one command and it is the difference between a working product and a
+> very polite one.
 
 > **Make refusal a type, not an empty list.** If `retrieve()` returns
 > `Grounded | Insufficient`, generation *cannot* run on a refusal — the code will not
@@ -123,7 +132,7 @@ renders all three outcomes — with the top bar from the UI target.
 
 | | |
 |---|---|
-| **Covers** | REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1 … REQ-U7, REQ-U9 … REQ-U11 |
+| **Covers** | REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1, REQ-U1b, REQ-U2 … REQ-U7, REQ-U9 … REQ-U11 |
 | **Decisions** | **D7** — citation grouping |
 | **Done when** | You can ask in a browser and see a cited answer — **and a refusal looks different from an error** |
 

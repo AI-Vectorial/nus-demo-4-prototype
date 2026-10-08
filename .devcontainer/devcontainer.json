@@ -62,6 +62,19 @@
       "openFiles": ["START-HERE.md"],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
+        // Selecting text in the terminal copies it. A table spends the whole
+        // session reading an agent's output in a terminal and pasting bits of
+        // it back -- and the default there is that Ctrl+C with no selection
+        // sends an interrupt and says "no selection to copy", which is both
+        // confusing and, mid-build, destructive.
+        "terminal.integrated.copyOnSelection": true,
+        // Right-click pastes rather than opening a menu, so the round trip out
+        // of the terminal and back is two actions instead of four.
+        "terminal.integrated.rightClickBehavior": "paste",
+        // The agent prints tables and score reports that wrap badly at the
+        // default, and a wrapped score table is unreadable exactly when it
+        // matters.
+        "terminal.integrated.scrollback": 20000,
         "python.testing.pytestEnabled": true,
         "python.testing.cwd": "${workspaceFolder}/backend"
       }
@@ -71,6 +84,6 @@
   // Everything else -- the stores, the API key -- comes from docker-compose
   // and from the repository's Codespaces secrets. A table configures nothing.
   "remoteEnv": {
-    "API_URL": "http://localhost:8000"
+    "API_URL": "http://127.0.0.1:8000"
   }
 }

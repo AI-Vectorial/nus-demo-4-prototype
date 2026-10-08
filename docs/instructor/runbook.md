@@ -134,6 +134,23 @@ unrecorded finding is not a review.
 
 ---
 
+> ### ⚠️ Decide the approver before the day
+>
+> **GitHub will not let anyone approve their own pull request.** Whoever's account
+> the Codespace runs under is the PR's author, and that account is the one person
+> who cannot approve it.
+>
+> | If the Codespaces are created by… | Then the approver must be… |
+> |---|---|
+> | You | **your mentor, or the roamer** — not you |
+> | Each table, on their own account | **you** |
+>
+> There is no third option. "Merge without waiting for requirements" bypasses the
+> ruleset, and bypassing the gate in front of the room is the one thing this
+> session cannot afford to demonstrate.
+>
+> **Pick one, and confirm that person can approve, before anybody opens a PR.**
+
 # 2:05 — Stage 05 release  ·  *10 min*  ·  ⚠️ **THE SECOND GATE**
 
 Release plan **with a rollback written before merge**, then **one PR carrying
@@ -165,6 +182,13 @@ things on **their own URL**:
 2. **A refusal** — and why that is the product working
 3. The cited section, opened in the corpus browser — **or, if they cut F7, what
    they cut and why**
+
+> **Give it two minutes before you read anything into `/healthz`.** A freshly
+> deployed container indexes the corpus in the background so the health endpoint
+> answers while it works. For the first minute or two the vector store reports
+> *"collection not created yet"*, then flips to *"135 passages indexed"*. Seen at
+> 2:16 on a table's first deploy, that reads like a broken build. **It is a cold
+> start.** Refresh before you send anyone back to their agent.
 
 > **A table that cut two features and shipped cleanly has the better run.** Say
 > so in front of the room, or the next cohort will hear that eight features is

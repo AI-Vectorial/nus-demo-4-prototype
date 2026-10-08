@@ -49,7 +49,9 @@ legitimate outcome -- say so plainly rather than apologising for it.
 Before you open it: confirm the top bar offers no action whose route we
 did not build.
 
-Do not merge, and do not approve it yourself. A human approves.
+Do not merge, and do not approve it yourself. A human approves -- and it
+has to be a different person, because GitHub will not accept an approval
+from the account that opened the pull request.
 ```
 
 ---

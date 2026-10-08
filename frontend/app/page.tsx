@@ -10,6 +10,9 @@ import Chat from "@/components/Chat";
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const apiUrl = process.env.API_URL ?? "http://localhost:8000";
+  // The browser calls our own origin, and app/api/[...path] forwards to the
+  // real API from the server. Handing a client component API_URL directly
+  // would have it fetch localhost:8000 from the laptop, which is nothing.
+  const apiUrl = "/api";
   return <Chat apiUrl={apiUrl} />;
 }
