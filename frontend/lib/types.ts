@@ -1,5 +1,5 @@
 /**
- * The /ask contract, from docs/PRD.md section 4.
+ * The /ask contract, from docs/PRD.md section 5.
  *
  * THIS SHAPE IS FIXED. Five tables build against it so five results are
  * comparable and the checks in ci/ can test any of them. Add fields if you
@@ -15,6 +15,8 @@ export interface Citation {
   /** "superseded" must be shown differently from "current" -- REQ-U4. */
   status: "current" | "superseded";
   score: number;
+  /** Added field: the passage itself, sent only in degraded mode. */
+  text?: string | null;
 }
 
 /**
@@ -31,7 +33,8 @@ export interface AskResponse {
   /** The composed answer, or the reason for a refusal. null when degraded. */
   answer: string | null;
   citations: Citation[];
-  exchange_id: string;
+  conversation_id: string;
+  message_id: string;
   latency_ms: number;
 }
 
@@ -40,4 +43,46 @@ export interface Health {
   build: string;
   environment: string;
   dependencies: Record<string, string>;
+}
+
+/** GET /corpus -- every document, both travel versions included. */
+export interface DocumentSummary {
+  id: string;
+  title: string;
+  owner: string;
+  version: string;
+  effective: string;
+  status: "current" | "superseded";
+  sections: string[];
+}
+
+/** GET /corpus/{id}?version= */
+export interface PolicyDocument extends Omit<DocumentSummary, "sections"> {
+  sections: { heading: string; text: string }[];
+}
+
+/** GET /conversations -- newest first. */
+export interface ConversationSummary {
+  id: string;
+  started_at: string;
+  last_at: string;
+  /** The first question, truncated. */
+  title: string;
+  message_count: number;
+}
+
+/** GET /conversations/{id} */
+export interface ConversationDetail {
+  id: string;
+  started_at: string;
+  last_at: string;
+  messages: {
+    id: string;
+    role: "user" | "assistant";
+    content: string | null;
+    outcome: Outcome | null;
+    citations: Citation[];
+    latency_ms: number | null;
+    created_at: string;
+  }[];
 }

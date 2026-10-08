@@ -138,6 +138,20 @@ def ensure_database() -> tuple[bool, str]:
             pass
 
 
+def ensure_tables() -> tuple[bool, str]:
+    """Create the section 6 tables if they are missing. Never raises; a failure
+    is reported by /healthz, like ensure_database()."""
+    if _engine is None:
+        return False, "DATABASE_URL not set"
+    from app.core import models  # noqa: F401 - registers the tables on Base
+
+    try:
+        Base.metadata.create_all(_engine)
+        return True, "tables present"
+    except Exception as exc:  # noqa: BLE001 - reported, not handled
+        return False, f"could not create tables: {type(exc).__name__}"
+
+
 def health() -> tuple[bool, str]:
     """Never raises: /healthz must answer even when Postgres is down."""
     if _engine is None:

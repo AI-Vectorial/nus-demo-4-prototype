@@ -8,11 +8,33 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+# backend/, so the corpus resolves the same from a checkout and from the image.
+_BACKEND = Path(__file__).resolve().parents[2]
 
 
 def _origins() -> list[str]:
     raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
     return [o.strip() for o in raw.split(",") if o.strip()]
+
+
+def _optional(name: str, cast, decided: str = ""):
+    """A team decision. `decided` is the value recorded in docs/design/; with
+    none recorded yet, unset stays None and fails loudly where it is used."""
+    raw = os.getenv(name, "").strip() or decided
+    return cast(raw) if raw else None
+
+
+class MissingSetting(RuntimeError):
+    """A decision the team has to make was not supplied by the environment."""
+
+
+def require(value, name: str):
+    """The value, or a message that names the setting that is missing."""
+    if value is None:
+        raise MissingSetting(f"{name} is not set. It is a team decision -- see docs/design/.")
+    return value
 
 
 @dataclass(frozen=True)
@@ -39,7 +61,7 @@ class Settings:
     qdrant_collection: str = os.getenv("QDRANT_COLLECTION", "policy_passages")
 
     # Must match the embedding model. Changing it means re-indexing the corpus.
-    embedding_dimensions: int = int(os.getenv("EMBEDDING_DIMENSIONS", "1536"))
+    embedding_dimensions: int = int(os.getenv("EMBEDDING_DIMENSIONS", "3072"))
 
     # --- OpenRouter: the only model credential -----------------------------
     openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
@@ -51,25 +73,36 @@ class Settings:
     llm_timeout_seconds: int = int(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
     llm_max_retries: int = int(os.getenv("LLM_MAX_RETRIES", "3"))
 
-    # Your decision -- PRD section 9, D0. The Qdrant collection is created at
+    # D0 (table 3): the large model, chosen on measured evidence -- see
+    # docs/design/D0-embedding-model.md. The Qdrant collection is created at
     # whatever dimension you index with, so these two must agree.
     embedding_model_slug: str = os.getenv(
-        "EMBEDDING_MODEL_SLUG", "openai/text-embedding-3-small"
+        "EMBEDDING_MODEL_SLUG", "openai/text-embedding-3-large"
     )
     embedding_batch_size: int = int(os.getenv("EMBEDDING_BATCH_SIZE", "96"))
 
     # Turning generation off must leave a working policy search behind.
     generation_enabled: bool = os.getenv("GENERATION_ENABLED", "true").lower() != "false"
 
-    # How many recent turns a follow-up question is answered with. Yours -- D8.
-    # Retrieval still runs on every turn: context informs the answer, it never
-    # replaces the search.
+    # How many recent messages (rows, not turns) a follow-up sees -- D8. The
+    # same window supplies the user questions retrieval runs on -- D9.
     context_messages: int = int(os.getenv("CONTEXT_MESSAGES", "5"))
 
-    # Below this, retrieval is treated as having found nothing and the
-    # assistant refuses rather than composing an answer from weak matches.
-    # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # Below this a passage is discarded, and with none left the assistant
+    # refuses -- D2: the midpoint of the measured gap, signed off by the team.
+    min_score: float | None = _optional("MIN_SCORE", float, "0.485")
+
+    # One passage per section, the ceiling only a guard -- D1.
+    chunk_max_tokens: int | None = _optional("CHUNK_MAX_TOKENS", int, "400")
+    chunk_overlap_tokens: int | None = _optional("CHUNK_OVERLAP_TOKENS", int, "0")
+
+    # A ceiling on passages fetched before the threshold -- D3.
+    retrieve_top_k: int | None = _optional("RETRIEVE_TOP_K", int, "5")
+
+    corpus_dir: Path = Path(os.getenv("CORPUS_DIR", str(_BACKEND / "corpus")))
+
+    # Versioned prompt and refusal text (REQ-G4), outside the code.
+    prompts_dir: Path = Path(os.getenv("PROMPTS_DIR", str(_BACKEND / "prompts")))
 
     @property
     def database_configured(self) -> bool:
