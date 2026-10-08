@@ -142,11 +142,14 @@ def test_c22_the_question_is_never_logged(db, indexed, model, caplog):
     assert not any("Zanzibar" in r.getMessage() for r in caplog.records)
 
 
-def test_an_unset_threshold_is_a_clear_503_not_a_guess(monkeypatch):
+def test_an_unset_threshold_is_a_clear_503_not_a_guess(db, monkeypatch):
     from app.api import ask as module
+    from app.core.database import get_session
 
     unset = dataclasses.replace(module.settings, min_score=None, retrieve_top_k=5)
     monkeypatch.setattr(module, "settings", unset)
+    # Only the database is supplied, so the real get_deps reads the settings.
+    app.dependency_overrides[get_session] = lambda: (yield db())
     response = TestClient(app).post("/ask", json={"question": ANSWERABLE})
 
     assert response.status_code == 503
