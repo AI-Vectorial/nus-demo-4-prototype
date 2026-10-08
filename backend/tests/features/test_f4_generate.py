@@ -40,7 +40,7 @@ def test_an_answer_is_composed_from_the_passages(model):
 def test_an_answer_records_its_prompt_version_and_model(model):
     result = compose("q", [], GROUNDED, model.generate, enabled=True, model_name="the-model")
 
-    assert result.prompt_version == PROMPT_VERSION == "answer-v1"
+    assert result.prompt_version == PROMPT_VERSION == "answer-v2"
     assert result.model == "the-model"
 
 
@@ -74,7 +74,8 @@ def test_d4_superseded_passages_are_labelled_as_superseded():
 def test_d6_the_prompt_says_to_surface_a_conflict_and_not_resolve_it():
     system, _ = render("q", [], GROUNDED)
 
-    assert "do not choose between them" in system
+    assert "begin your answer by saying that the policies conflict" in system
+    assert "do not say or imply which one applies" in system
     assert "escalation route" in system
 
 

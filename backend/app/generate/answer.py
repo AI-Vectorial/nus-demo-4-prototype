@@ -18,7 +18,7 @@ from app.retrieve.retrieve import Grounded
 
 log = logging.getLogger(__name__)
 
-PROMPT_VERSION = "answer-v1"
+PROMPT_VERSION = "answer-v2"
 
 
 @dataclass(frozen=True)

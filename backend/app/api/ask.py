@@ -18,7 +18,6 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from functools import lru_cache
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -26,6 +25,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.corpus import documents
 from app.core.config import MissingSetting, require, settings
 from app.core.database import get_session
 from app.core.models import Conversation, Message, MessageCitation
@@ -83,18 +83,13 @@ class AskDeps:
     model_name: str
 
 
-@lru_cache(maxsize=1)
-def _documents() -> list[corpus.Document]:
-    return corpus.load(settings.corpus_dir)
-
-
 def get_deps() -> AskDeps:
     try:
         return AskDeps(
             store=get_vector_store(),
             embed=embed,
             generate=generate,
-            documents=_documents(),
+            documents=documents(),
             top_k=require(settings.retrieve_top_k, "RETRIEVE_TOP_K"),
             min_score=require(settings.min_score, "MIN_SCORE"),
             context_messages=settings.context_messages,
