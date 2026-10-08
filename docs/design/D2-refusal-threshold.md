@@ -121,3 +121,38 @@ refuse rows show the top score of any passage.*
 
 **No product change has been made.** Whether to adopt 3b (a D0 change with a re-index)
 and what to do about C31 and D9 are open decisions for the team.
+
+## Real index after the D0 revision (2026-10-08)
+
+`text-embedding-3-large`, 3072, D1 prefix kept. Re-indexed with `--force`: 135 passages,
+ids unchanged. `python -m app.retrieve.evaluate`:
+
+| | Q | Score | Expected section rank | Must |
+|---|---|---|---|---|
+| 1 | approval threshold | 0.731 | 2 (v3.0 §4.1 1st at 0.757) | answer |
+| 2 | exactly £75 | 0.695 | 1 | answer |
+| 3 | business class | **0.524** | 1 | answer |
+| 4 | Singapore cap | 0.592 | 2 (v3.0 §6.1 1st at 0.594) | answer |
+| 5 | high-risk refresh | 0.773 | 1 | answer |
+| 6 | 90 days overdue | 0.732 | 1 | answer |
+| 7 | EDD ownership % | 0.605 | 1 | answer |
+| 8 | correspondence retention | 0.752 | 1 | answer |
+| 9 | critical outsourcing approval | 0.694 | 1 | answer |
+| 10 | the conflict | 0.539 | §4.1 2nd (0.570), §6.4 3rd (0.539) | answer |
+| C14 | follow-up | 0.622 | 2 | answer |
+| 11 | partner's flight | **0.446** | — | refuse |
+| 12 | cryptocurrency | 0.435 | — | refuse |
+| 13 | parental leave | 0.241 | — | refuse |
+| C31 | Q1 then Q11 | **0.645** | — | refuse |
+
+The experiment reproduces exactly.
+
+- **The 13 questions and C14:** lowest that must pass 0.524 (Q3), highest that must refuse
+  0.446 (Q11). **Gap +0.078.** Every expected section is in the top three.
+- **Proposed `MIN_SCORE` = 0.485**, the midpoint, by the method above. Margins: 0.039 to
+  Q3 and 0.039 to Q11.
+- **Status: PROPOSED, awaiting the team's sign-off.** It is not in configuration.
+- **C31 (0.645) is above the proposal and above five answerable questions.** No threshold
+  passes it. It stays a failing criterion for the release gate (see T1).
+- The superseded version outranks the current one for Q1 and Q4. D4 relies on the
+  labelling and the prompt to make the current version govern.
