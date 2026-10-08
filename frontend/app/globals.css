@@ -283,18 +283,10 @@ code {
   background: var(--accent-soft);
 }
 
-.answer-text { white-space: pre-wrap; }
-
 .citation .sections {
   flex-basis: 100%;
   margin: 0;
   padding-left: 1.1rem;
-}
-
-.citation .passage {
-  margin: 0.3rem 0 0.5rem;
-  white-space: pre-wrap;
-  color: var(--text);
 }
 
 .refusal p { margin: 0; }

@@ -92,3 +92,12 @@ def test_the_prompt_is_read_from_a_versioned_file():
     system, _ = render("q", [], GROUNDED)
 
     assert system.startswith("You answer questions from staff at Aldermere Bank")
+
+
+def test_an_empty_reply_degrades_rather_than_showing_nothing():
+    from tests.fixtures.fake_model import FakeModel
+
+    silent = FakeModel(answer="")
+    result = compose("q", [], GROUNDED, silent.generate, enabled=True, model_name="m")
+
+    assert isinstance(result, Degraded)

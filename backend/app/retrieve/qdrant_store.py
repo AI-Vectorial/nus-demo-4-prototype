@@ -13,7 +13,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from app.core.config import settings
-from app.retrieve.store import Hit, Passage
+from app.retrieve.store import Hit, Passage, StoreUnavailable
 
 log = logging.getLogger(__name__)
 
@@ -75,13 +75,16 @@ class QdrantVectorStore:
         return len(passages)
 
     def search(self, embedding: list[float], limit: int = 5, min_score: float = 0.0) -> list[Hit]:
-        results = self._client.query_points(
-            collection_name=self.collection,
-            query=embedding,
-            limit=limit,
-            score_threshold=min_score or None,
-            with_payload=True,
-        ).points
+        try:
+            results = self._client.query_points(
+                collection_name=self.collection,
+                query=embedding,
+                limit=limit,
+                score_threshold=min_score or None,
+                with_payload=True,
+            ).points
+        except Exception as exc:  # noqa: BLE001 - converted, so callers need no client types
+            raise StoreUnavailable(f"search failed: {type(exc).__name__}") from exc
 
         hits: list[Hit] = []
         for r in results:
@@ -103,6 +106,12 @@ class QdrantVectorStore:
         if not self._client.collection_exists(self.collection):
             return 0
         return int(self._client.count(self.collection, exact=True).count)
+
+    def dimension(self) -> int | None:
+        if not self._client.collection_exists(self.collection):
+            return None
+        vectors = self._client.get_collection(self.collection).config.params.vectors
+        return int(vectors.size)
 
     def health(self) -> tuple[bool, str]:
         """Never raises: /healthz must answer even when Qdrant is down."""

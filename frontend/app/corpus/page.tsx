@@ -2,12 +2,13 @@ import Link from "next/link";
 
 import TopBar from "@/components/TopBar";
 import { ApiError, corpus } from "@/lib/api";
+import { apiUrl as configuredApiUrl } from "@/lib/config";
 
 // Read at request time, like the home page: the API location is configuration.
 export const dynamic = "force-dynamic";
 
 export default async function CorpusPage() {
-  const apiUrl = process.env.API_URL ?? "http://localhost:8000";
+  const apiUrl = configuredApiUrl();
   let documents;
   try {
     documents = await corpus(apiUrl);

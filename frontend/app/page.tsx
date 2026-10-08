@@ -1,14 +1,9 @@
 import Chat, { type Exchange } from "@/components/Chat";
 import { ApiError, conversation } from "@/lib/api";
 import type { ConversationDetail } from "@/lib/types";
+import { apiUrl as configuredApiUrl } from "@/lib/config";
 
-// Server component. It reads the API location at REQUEST time, not build time.
-//
-// NEXT_PUBLIC_* variables are baked into the client bundle when `next build`
-// runs, so changing one means rebuilding. Reading it here instead means the
-// deployment can be pointed at a different API by changing an environment
-// variable and restarting -- which is what a table will expect when they change
-// configuration, and what an operator expects when they roll something back.
+// Server component: the API location is read at request time (lib/config.ts).
 export const dynamic = "force-dynamic";
 
 /** A stored conversation, as the exchanges the chat shows (F8, REQ-C9). */
@@ -36,7 +31,7 @@ export default async function Home({
 }: {
   searchParams: Promise<{ c?: string }>;
 }) {
-  const apiUrl = process.env.API_URL ?? "http://localhost:8000";
+  const apiUrl = configuredApiUrl();
   const { c } = await searchParams;
   if (!c) return <Chat apiUrl={apiUrl} />;
 

@@ -4,6 +4,7 @@ import Markdown from "@/components/Markdown";
 import TopBar from "@/components/TopBar";
 import { ApiError, policy } from "@/lib/api";
 import { slug } from "@/lib/slug";
+import { apiUrl as configuredApiUrl } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function PolicyPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ version?: string }>;
 }) {
-  const apiUrl = process.env.API_URL ?? "http://localhost:8000";
+  const apiUrl = configuredApiUrl();
   const { id } = await params;
   const { version } = await searchParams;
 

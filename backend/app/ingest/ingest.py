@@ -132,3 +132,27 @@ def ingest(store: VectorStore, embed: Callable[[list[str]], list[list[float]]], 
     log.info("ingested %d documents, %d passages, %d embedding requests",
              len(documents), len(chunks), requests)
     return IngestReport(len(documents), len(chunks), requests)
+
+
+def ensure_index(store: VectorStore, embed: Callable[[list[str]], list[list[float]]], *,
+                 corpus_dir: Path, max_tokens: int, overlap_tokens: int, batch_size: int,
+                 dimensions: int) -> str:
+    """Make the index match the corpus and the embedding model, on boot.
+
+    A deployed service's vector store sits on a private network nobody can run
+    `python -m app.ingest` against, so the service builds its own index: from
+    nothing if there is none, and from scratch if it was built at another
+    dimension (D0 changed) or holds a different number of passages (the corpus
+    or D1 changed). An index that already matches is left alone.
+    """
+    expected = len(passages_for(corpus.load(corpus_dir), max_tokens=max_tokens,
+                                overlap_tokens=overlap_tokens))
+    found_dim, found = store.dimension(), store.count()
+    if found_dim == dimensions and found == expected:
+        return f"index current: {found} passages at {found_dim} dimensions"
+
+    report = ingest(store, embed, corpus_dir=corpus_dir, max_tokens=max_tokens,
+                    overlap_tokens=overlap_tokens, batch_size=batch_size,
+                    force=found_dim is not None)
+    return (f"index rebuilt: had {found} passages at {found_dim} dimensions, "
+            f"now {report.passages} at {dimensions}")

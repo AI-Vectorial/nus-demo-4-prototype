@@ -43,6 +43,14 @@ class Hit:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
+class StoreUnavailable(RuntimeError):
+    """The vector store could not be reached or could not answer.
+
+    Raised instead of the client library's own errors, so a caller can tell
+    "nothing matched" from "could not search" without knowing the engine.
+    """
+
+
 @runtime_checkable
 class VectorStore(Protocol):
     """What the application needs from a vector store. Nothing more."""
@@ -72,6 +80,10 @@ class VectorStore(Protocol):
 
     def count(self) -> int:
         """How many passages are indexed."""
+
+    def dimension(self) -> int | None:
+        """The vector size the store was created with, or None if it does not
+        exist yet. A mismatch with EMBEDDING_DIMENSIONS means re-indexing."""
 
     def health(self) -> tuple[bool, str]:
         """(reachable, detail) -- for /healthz. Must never raise."""

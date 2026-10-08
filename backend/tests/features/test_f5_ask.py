@@ -151,3 +151,26 @@ def test_an_unset_threshold_is_a_clear_503_not_a_guess(monkeypatch):
 
     assert response.status_code == 503
     assert "MIN_SCORE" in response.json()["detail"]
+
+
+def test_a_blank_question_is_rejected(db, indexed, model):
+    searches = len(model.embed_calls)
+    response = api(db, indexed, embed=model.embed, generate=model.generate).post(
+        "/ask", json={"question": "   "})
+
+    assert response.status_code == 422
+    assert len(model.embed_calls) == searches
+
+
+class DownStore:
+    def search(self, embedding, limit=5, min_score=0.0):
+        from app.retrieve.store import StoreUnavailable
+        raise StoreUnavailable("search failed: ConnectError")
+
+
+def test_an_unreachable_store_is_an_error_not_a_refusal(db, model):
+    response = api(db, DownStore(), embed=model.embed, generate=model.generate).post(
+        "/ask", json={"question": ANSWERABLE})
+
+    assert response.status_code == 503
+    assert not model.was_called

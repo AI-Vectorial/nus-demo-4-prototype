@@ -66,4 +66,8 @@ def compose(question: str, history: list[Turn], grounded: Grounded,
         # Handled: the caller shows the passages without an answer (REQ-G6).
         log.warning("generation unavailable, degrading: %s", type(error).__name__)
         return Degraded("the model is unreachable")
+    if not text:
+        # An empty reply is not an answer; show the passages instead.
+        log.warning("generation returned nothing, degrading")
+        return Degraded("the model returned no answer")
     return Answered(text=text, prompt_version=PROMPT_VERSION, model=model_name)

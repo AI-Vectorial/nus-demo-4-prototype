@@ -7,13 +7,10 @@ asked for; without one, the current version is served.
 
 from __future__ import annotations
 
-from functools import lru_cache
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.core.config import settings
-from app.ingest import corpus
+from app.ingest.corpus import documents
 
 router = APIRouter(tags=["corpus"])
 
@@ -41,12 +38,6 @@ class DocumentOut(BaseModel):
     effective: str
     status: str
     sections: list[SectionOut]
-
-
-@lru_cache(maxsize=1)
-def documents() -> list[corpus.Document]:
-    """The corpus, parsed once per process. Also the refusal's directory."""
-    return corpus.load(settings.corpus_dir)
 
 
 @router.get("/corpus", response_model=list[DocumentSummary])

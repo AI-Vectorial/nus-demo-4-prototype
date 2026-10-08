@@ -9,7 +9,10 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
+
+from app.core.config import settings
 
 _FRONT_MATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 _HEADING = re.compile(r"^(#{1,3}) +(.+?)\s*$")
@@ -85,3 +88,10 @@ def load(corpus_dir: Path) -> list[Document]:
         if _FRONT_MATTER.match(path.read_text(encoding="utf-8")):
             documents.append(parse(path))
     return documents
+
+
+@lru_cache(maxsize=1)
+def documents() -> list[Document]:
+    """The configured corpus, parsed once per process: what /corpus serves and
+    what the refusal's directory of owners is built from."""
+    return load(settings.corpus_dir)

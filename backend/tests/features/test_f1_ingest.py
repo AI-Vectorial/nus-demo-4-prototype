@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from app.ingest import corpus
-from app.ingest.ingest import ingest, passages_for
+from app.ingest.ingest import ensure_index, ingest, passages_for
 from app.retrieve.store import Passage
 
 CORPUS = Path(__file__).resolve().parents[2] / "corpus"
@@ -128,3 +128,50 @@ def test_c29_embedding_requests_are_batched(store, model, batch_size):
 
     assert len(model.embed_calls) < store.count()
     assert all(len(call) <= batch_size for call in model.embed_calls)
+
+
+# --- the deployed service builds its own index on boot ---------------------------
+
+def ensure(store, model, dimensions=1536):
+    return ensure_index(store, model.embed, corpus_dir=CORPUS, dimensions=dimensions,
+                        **SETTINGS)
+
+
+def test_an_empty_store_is_indexed_on_boot(store, model):
+    status = ensure(store, model)
+
+    assert status.startswith("index rebuilt")
+    assert store.count() == len(passages_for(corpus.load(CORPUS), max_tokens=400,
+                                             overlap_tokens=0))
+
+
+def test_a_current_index_is_left_alone(store, model):
+    ensure(store, model)
+    model.embed_calls.clear()
+
+    status = ensure(store, model)
+
+    assert status.startswith("index current")
+    assert model.embed_calls == []
+
+
+def test_an_index_at_another_dimension_is_rebuilt(model):
+    from tests.fixtures.fake_store import FakeVectorStore
+
+    old = FakeVectorStore(dim=3072)
+    old.ensure_ready()
+
+    status = ensure(old, model, dimensions=1536)
+
+    assert "had 0 passages at 3072" in status
+    assert old.dimension() == 1536
+
+
+def test_an_index_with_stale_passages_is_rebuilt(store, model):
+    ensure(store, model)
+    store.upsert([Passage(id="stale", text="x", document_id="gone", document_title="Gone",
+                          section="1", embedding=[0.0] * model.embedding_dimensions)])
+
+    ensure(store, model)
+
+    assert "stale" not in store._passages

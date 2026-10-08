@@ -26,9 +26,12 @@ def _cosine(a: list[float], b: list[float]) -> float:
 class FakeVectorStore:
     """Everything the application asks of a vector store, in a dictionary."""
 
-    def __init__(self) -> None:
+    def __init__(self, dim: int | None = None) -> None:
         self._passages: dict[str, Passage] = {}
         self.ready = False
+        # The size a pre-existing collection was created with, for tests of
+        # what happens when it no longer matches the embedding model.
+        self.dim = dim
 
     def ensure_ready(self) -> None:
         self.ready = True
@@ -36,6 +39,7 @@ class FakeVectorStore:
     def reset(self) -> None:
         self._passages.clear()
         self.ready = False
+        self.dim = None
 
     def upsert(self, passages: list[Passage]) -> int:
         for passage in passages:
@@ -66,6 +70,12 @@ class FakeVectorStore:
 
     def count(self) -> int:
         return len(self._passages)
+
+    def dimension(self) -> int | None:
+        if not self.ready:
+            return None
+        first = next(iter(self._passages.values()), None)
+        return len(first.embedding) if first else self.dim
 
     def health(self) -> tuple[bool, str]:
         return True, f"{self.count()} passages indexed (fake)"

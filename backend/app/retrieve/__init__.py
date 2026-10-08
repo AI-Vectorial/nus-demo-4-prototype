@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from app.retrieve.store import Hit, Passage, VectorStore
+from app.retrieve.store import Hit, Passage, StoreUnavailable, VectorStore
 
-__all__ = ["Hit", "Passage", "VectorStore", "get_vector_store"]
+__all__ = ["Hit", "Passage", "StoreUnavailable", "VectorStore", "get_vector_store"]
 
 
 @lru_cache(maxsize=1)

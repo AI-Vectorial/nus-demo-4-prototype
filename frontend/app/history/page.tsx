@@ -2,13 +2,19 @@ import Link from "next/link";
 
 import TopBar from "@/components/TopBar";
 import { ApiError, conversations } from "@/lib/api";
+import { apiUrl as configuredApiUrl } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
-const when = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" });
+// Rendered on the server, so say which clock it is rather than imply the reader's.
+const when = new Intl.DateTimeFormat("en-GB", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "UTC",
+});
 
 export default async function HistoryPage() {
-  const apiUrl = process.env.API_URL ?? "http://localhost:8000";
+  const apiUrl = configuredApiUrl();
   let list;
   try {
     list = await conversations(apiUrl);
@@ -41,7 +47,7 @@ export default async function HistoryPage() {
               <li key={c.id}>
                 <Link href={`/?c=${encodeURIComponent(c.id)}`}>{c.title}</Link>
                 <div className="meta">
-                  {when.format(new Date(c.last_at))} · {c.message_count} messages
+                  {when.format(new Date(c.last_at))} UTC · {c.message_count} messages
                 </div>
               </li>
             ))}

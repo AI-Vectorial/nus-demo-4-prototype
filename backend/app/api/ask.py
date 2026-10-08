@@ -21,11 +21,10 @@ from datetime import UTC, datetime
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.corpus import documents
 from app.core.config import MissingSetting, require, settings
 from app.core.database import get_session
 from app.core.models import Conversation, Message, MessageCitation
@@ -34,9 +33,10 @@ from app.features.refuse import REFUSAL_VERSION, refusal
 from app.generate import ProviderError, embed, generate
 from app.generate.answer import Answered, compose
 from app.ingest import corpus
+from app.ingest.corpus import documents
 from app.retrieve import get_vector_store
 from app.retrieve.retrieve import Insufficient, query_text, retrieve
-from app.retrieve.store import Hit, VectorStore
+from app.retrieve.store import Hit, StoreUnavailable, VectorStore
 
 log = logging.getLogger(__name__)
 router = APIRouter(tags=["ask"])
@@ -45,6 +45,13 @@ router = APIRouter(tags=["ask"])
 class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     conversation_id: uuid.UUID | None = None
+
+    @field_validator("question")
+    @classmethod
+    def _not_blank(cls, question: str) -> str:
+        if not question.strip():
+            raise ValueError("a question cannot be blank")
+        return question.strip()
 
 
 class Citation(BaseModel):
@@ -146,9 +153,9 @@ def ask(body: AskRequest, db: Annotated[Session, Depends(get_session)],
     try:
         found = retrieve(query_text(retrieval_questions(turns)), deps.store, deps.embed,
                          top_k=deps.top_k, min_score=deps.min_score)
-    except ProviderError as error:
-        # Without an embedding there is nothing to search, so nothing to show:
-        # an error, distinct from a refusal and from degraded mode.
+    except (ProviderError, StoreUnavailable) as error:
+        # Without an embedding or a store there is nothing to search, so nothing
+        # to show: an error, distinct from a refusal and from degraded mode.
         log.warning("search unavailable: %s", type(error).__name__)
         raise HTTPException(status_code=503, detail="policy search is unavailable") from error
 
