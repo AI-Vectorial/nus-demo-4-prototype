@@ -43,7 +43,7 @@ Nobody else can reach them, and you cannot reach anybody else's.
 
 ```
 01 shape ──▶ 02 plan ──▶ 03 build ──▶ 04 review ──▶ 05 release ──▶ 06 verify
-  15min        25min        60min        25min         10min        15min
+  15min        20min        60min        20min         10min        15min
                  │                                                     │
           ⚠️ HUMAN GATE                                        ⚠️ HUMAN GATE
        your plan is approved                                 your release is

@@ -14,17 +14,36 @@
   "postCreateCommand": "cd frontend && npm install && grep -q credentials.sh ~/.bashrc || echo '. ${containerWorkspaceFolder}/.devcontainer/credentials.sh' >> ~/.bashrc",
   "postAttachCommand": "bash .devcontainer/start.sh",
 
+  // The GitHub CLI, explicitly. Stage 05 has the agent open the pull request
+  // with `gh pr create`, and the base python image does not carry gh -- an
+  // agent discovering that at minute 125 has nowhere to go, because the one
+  // thing it needs is the thing it cannot install without the network it is
+  // about to use.
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
   "forwardPorts": [3000, 8000],
   "portsAttributes": {
     "3000": {
       "label": "Policy Assistant (your branch)",
-      "onAutoForward": "openPreview",
-      "visibility": "org"
+      // notify, not openPreview. A port is forwarded the moment the socket is
+      // bound, and `next dev` binds before it has compiled anything -- so
+      // openPreview reliably opened a dead page on first attach and said
+      // "connection failed". A notification waits for a human to click it, by
+      // which time start.sh has polled the server and reported it ready.
+      "onAutoForward": "notify",
+      // public, not org. An org-scoped forward needs a GitHub auth cookie the
+      // proxy cannot always get -- it returned 502 in both Brave and Chrome
+      // during the dry run, which reads as a broken app rather than a blocked
+      // one. The URL is unguessable, the data is fictional, and the service
+      // lives for one afternoon.
+      "visibility": "public"
     },
     "8000": {
       "label": "API",
       "onAutoForward": "silent",
-      "visibility": "org"
+      "visibility": "public"
     }
   },
 
@@ -52,6 +71,6 @@
   // Everything else -- the stores, the API key -- comes from docker-compose
   // and from the repository's Codespaces secrets. A table configures nothing.
   "remoteEnv": {
-    "API_URL": "http://localhost:8000"
+    "API_URL": "http://127.0.0.1:8000"
   }
 }

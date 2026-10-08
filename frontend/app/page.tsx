@@ -1,10 +1,14 @@
 import Chat, { type Exchange } from "@/components/Chat";
 import { ApiError, conversation } from "@/lib/api";
-import type { ConversationDetail } from "@/lib/types";
 import { apiUrl as configuredApiUrl } from "@/lib/config";
+import type { ConversationDetail } from "@/lib/types";
 
-// Server component: the API location is read at request time (lib/config.ts).
 export const dynamic = "force-dynamic";
+
+// The browser calls our own origin, and app/api/[...path] forwards to the real
+// API from the server. Handing a client component API_URL directly would have
+// it fetch localhost:8000 from the laptop, which is nothing.
+const BROWSER_API = "/api";
 
 /** A stored conversation, as the exchanges the chat shows (F8, REQ-C9). */
 function exchanges(detail: ConversationDetail): Exchange[] {
@@ -31,19 +35,19 @@ export default async function Home({
 }: {
   searchParams: Promise<{ c?: string }>;
 }) {
-  const apiUrl = configuredApiUrl();
   const { c } = await searchParams;
-  if (!c) return <Chat apiUrl={apiUrl} />;
+  if (!c) return <Chat apiUrl={BROWSER_API} />;
 
+  // Server side: this page reads the conversation from the API directly.
   let detail: ConversationDetail;
   try {
-    detail = await conversation(apiUrl, c);
+    detail = await conversation(configuredApiUrl(), c);
   } catch (error) {
     const message =
       error instanceof ApiError && error.status === 404
         ? "That conversation could not be found."
         : "That conversation could not be loaded.";
-    return <Chat apiUrl={apiUrl} notice={message} />;
+    return <Chat apiUrl={BROWSER_API} notice={message} />;
   }
-  return <Chat key={c} apiUrl={apiUrl} conversationId={c} initial={exchanges(detail)} />;
+  return <Chat key={c} apiUrl={BROWSER_API} conversationId={c} initial={exchanges(detail)} />;
 }
