@@ -81,7 +81,7 @@ curl -s -X POST $API/ask -H 'content-type: application/json' \
 - Every question is refused: the index is empty or the wrong one.
 - `/ask` returns 503 "policy search is unavailable" or "conversation store is
   unavailable": Qdrant or Postgres is unreachable.
-- The app says "Could not reach the API": `API_URL` or `ALLOWED_ORIGINS` on Railway.
+- The app shows "The API did not respond at …": the web service's `API_URL` on Railway (the browser reaches the API only through the web service's `/api` proxy).
 - Answers appear with no citations, or a superseded section is not marked. That is a
   defect, and we roll back.
 
