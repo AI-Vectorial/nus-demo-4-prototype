@@ -10,6 +10,7 @@ build first. START-HERE.md is your first two minutes.
 
 from __future__ import annotations
 
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -18,6 +19,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import ask, conversations, corpus, health
 from app.core import database
+
+# The application's own troubleshooting lines -- ids, outcomes, latency, never
+# a question's text (NFR-6, C22) -- at INFO; everything else at WARNING.
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s %(message)s")
+logging.getLogger("app").setLevel(logging.INFO)
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
 ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
