@@ -449,7 +449,7 @@ will be asked at the gate — and *"the agent picked it"* is not an answer.
 |---|---|---|
 | **D0** | **Embedding model and dimensions** | 1536 is cheaper, 3072 is better. **The Qdrant collection is fixed at the dimension you first index with** — changing later means re-indexing |
 | **D1** | **Chunk size, and whether chunks overlap** | Too large and citations are vague; too small and passages lose the clause that gives them meaning |
-| **D2** | **The refusal threshold** — and **how you arrived at it** | Tune it against `EVALUATION.md`; do not guess |
+| **D2** | **The refusal threshold** — and **how you arrived at it** | Tune it against `EVALUATION.md`; do not guess. ⚠️ **It is tuned against D0 and D1** — change either and this number is stale, and the product refuses everything while every test stays green |
 | **D3** | **How many passages to retrieve** | More context, or more noise |
 | **D4** | **Whether superseded policies are shown, hidden or flagged** | The corpus contains one. Whatever you choose, be able to say why |
 | **D5** | **What a refusal says** | *"I don't know"* is not enough. The user needs to know where to go |
