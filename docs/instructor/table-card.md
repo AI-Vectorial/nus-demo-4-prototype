@@ -84,6 +84,14 @@ the button out of the top bar with the feature. The bar only shows what exists.
 
 ---
 
+## Copying out of the terminal
+
+**Select it with the mouse — that copies it.** No keystroke needed.
+
+> `Ctrl+C` with nothing selected sends an interrupt to whatever is running, and
+> says *"the terminal has no selection to copy"*. Mid-build, that stops your
+> agent. Select, then paste with **right-click**.
+
 ## Useful commands
 
 ```bash
