@@ -54,6 +54,17 @@ else
   echo "frontend  starting on :3000 (first compile takes a moment)"
   if wait_up 3000; then
     echo "frontend  ready"
+    # Open it ourselves, now that it answers.
+    #
+    # onAutoForward would do this at bind time, which is before next dev has
+    # compiled anything -- the preview opens on a dead socket and says
+    # "connection failed". And the forwarded *.app.github.dev URL needs a
+    # browser cookie the proxy cannot always get, which is the 502. The
+    # in-editor preview goes through the VS Code connection instead, so
+    # neither applies to it.
+    if [ -n "${BROWSER:-}" ]; then
+      "$BROWSER" http://localhost:3000 >/dev/null 2>&1 || true
+    fi
   else
     echo
     echo "  !! frontend did not come up. The reason is in /tmp/frontend.log:"
@@ -70,9 +81,12 @@ fi
 # Rather than let anyone lose twenty minutes to that, say it up front.
 if [ -n "${CODESPACE_NAME:-}" ]; then
   echo
-  echo "  If the forwarded :3000 URL shows HTTP 502, the port is private:"
+  echo "  Your app is open in the editor preview -- use that."
+  echo
+  echo "  The forwarded *.app.github.dev URL is a separate thing, and it needs"
+  echo "  a port set to Public to work from an outside browser:"
   echo "    PORTS tab -> right-click 3000 -> Port Visibility -> Public"
-  echo "  That is a GitHub setting, not a fault in your build."
+  echo "  A 502 there is that setting, never a fault in your build."
 fi
 
 echo

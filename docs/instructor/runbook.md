@@ -184,7 +184,7 @@ build whose health check never passed. Five separate deployments.
 
 | Red | Do |
 |---|---|
-| **A table's app shows 502** | ⚠️ **Expect this, probably more than once.** PORTS tab → right-click 3000 → Port Visibility → **Public**. The port is private; `curl` from their terminal says 200 the whole time, so it looks like a broken build and is not |
+| **A table's app shows 502** | They are on the `*.app.github.dev` URL. **Point them at the editor preview**, which opens itself and needs no visibility. If they want the external URL: PORTS → right-click 3000 → **Public**. `curl` says 200 the whole time, so it looks like a broken build and is not |
 | **scope check** | ⚠️ **Do not fix it.** Send them back to revert. This is the lesson |
 | backend / frontend | send them back; the agent fixes it |
 | deploy | re-run the job — it already retries three times |

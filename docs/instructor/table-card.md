@@ -92,13 +92,16 @@ pytest -q                             # your acceptance criteria
 curl localhost:8000/healthz           # what is up, what is down
 ```
 
-> ### If your app shows HTTP 502
+> ### Where your app is
 >
-> **PORTS tab → right-click 3000 → Port Visibility → Public.** Then reload.
+> **It opens by itself in the editor, once it is ready.** That preview is the
+> one to use — it goes through your editor connection and always works.
 >
-> A forwarded port starts private, and a private one needs a browser cookie the
-> proxy cannot always get. It is a GitHub setting, not a fault in your build —
-> and `curl localhost:3000` from the terminal will say 200 the whole time.
+> The `*.app.github.dev` URL is a different route and starts **private**, so an
+> outside browser gets **502** until you set
+> **PORTS → right-click 3000 → Port Visibility → Public**. That is a GitHub
+> setting, never a fault in your build — `curl localhost:3000` says 200 the
+> whole time.
 
 **Stuck for ten minutes? Ask an instructor.** That is what they are for.
 
