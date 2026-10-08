@@ -16,7 +16,7 @@ the lesson**, which means the rules below matter more here than the code you wri
 pipeline/            .github/            ci/
 AGENTS.md            CLAUDE.md           START-HERE.md
 docs/PRD.md          docs/features.md    docs/project-brief.md
-backend/corpus/      scripts/            docs/instructor/
+backend/corpus/      scripts/            docs/table-card.md
 ```
 
 **If you believe one of these must change: stop and say so. Do not change it.**

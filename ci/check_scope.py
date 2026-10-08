@@ -40,7 +40,7 @@ PROTECTED = (
     "docs/project-brief.md",
     "backend/corpus/",
     "scripts/",
-    "docs/instructor/",
+    "docs/table-card.md",
 )
 
 # What a table may freely change.

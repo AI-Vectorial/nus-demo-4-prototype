@@ -29,3 +29,10 @@ Thumbs.db
 docs/v1/
 docs/v2/
 docs/CV-NUS_*
+
+# Same reason, and the worst offender: fast-path.md carries every D0-D9
+# value with its reasoning, and review-example-answers.md gives away the
+# planted defect. Both sat on every table branch. The material now lives on
+# the `instructor` branch; keeping the directory ignored means it can also sit
+# here locally without ever being committed back.
+docs/instructor/
