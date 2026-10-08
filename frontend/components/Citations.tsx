@@ -7,9 +7,14 @@
  * D7 (table 3): the API keeps one citation per section; here they are grouped
  * under their document and version, so a reader sees "Travel and Expense
  * Policy v3.1 -- current" once with its sections beneath. Grouping is
- * presentation only: every section keeps its own row.
+ * presentation only: every section keeps its own row, and each opens the
+ * section it names (REQ-U15).
  */
 
+import Link from "next/link";
+
+import Markdown from "@/components/Markdown";
+import { sectionHref } from "@/lib/slug";
 import type { Citation } from "@/lib/types";
 
 type Group = { key: string; first: Citation; sections: Citation[] };
@@ -49,8 +54,10 @@ export default function Citations({
             <ul className="sections">
               {sections.map((c) => (
                 <li key={c.section}>
-                  <span className="section">{c.section}</span>
-                  {showText && c.text && <p className="passage">{c.text}</p>}
+                  <Link className="section" href={sectionHref(c.document_id, c.version, c.section)}>
+                    {c.section}
+                  </Link>
+                  {showText && c.text && <Markdown>{c.text}</Markdown>}
                 </li>
               ))}
             </ul>

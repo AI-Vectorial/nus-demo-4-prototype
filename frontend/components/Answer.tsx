@@ -6,12 +6,13 @@
  */
 
 import Citations from "@/components/Citations";
+import Markdown from "@/components/Markdown";
 import type { AskResponse } from "@/lib/types";
 
 export default function Answer({ response }: { response: AskResponse }) {
   return (
     <div className="answer">
-      <div className="answer-text">{response.answer}</div>
+      <Markdown>{response.answer ?? ""}</Markdown>
       <Citations citations={response.citations} />
     </div>
   );

@@ -314,3 +314,99 @@ code {
   .composer { flex-direction: column; }
   .question { max-width: 100%; }
 }
+
+/* ---------------------------------------------------------------------------
+   Markdown, the corpus browser. F7.
+   --------------------------------------------------------------------------- */
+
+.markdown > :first-child { margin-top: 0; }
+.markdown > :last-child { margin-bottom: 0; }
+
+/* REQ-U12: the tables carry the numbers. Wide ones scroll, the page does not. */
+.markdown table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown th { background: var(--surface-tint); }
+
+.markdown blockquote {
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.9rem;
+  border-left: 3px solid var(--warn-border);
+  background: var(--warn-surface);
+}
+
+.back { margin: 0; font-size: 0.9rem; }
+.back a, .documents a, .toc a, .citation a.section { color: var(--text); }
+.meta { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}
+
+.version { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); }
+
+.documents { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+
+.documents li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.documents li a { font-weight: 600; }
+.documents li .meta { flex-basis: 100%; }
+
+.documents li.superseded {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 6%, transparent);
+}
+
+.toc {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+
+.toc ul { margin: 0; padding-left: 1rem; columns: 2 16rem; }
+.toc li.group { font-weight: 600; list-style: none; margin-left: -1rem; }
+
+.policy-section { scroll-margin-top: 4rem; }
+.policy-section h2 { margin: 1rem 0 0; font-size: 1.15rem; }
+.policy-section h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+
+/* The section a citation opened: impossible to miss (C18). */
+.policy-section:target {
+  padding: 0.75rem;
+  margin: 0 -0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  outline: 2px solid var(--accent);
+}

@@ -44,3 +44,19 @@ export interface Health {
   environment: string;
   dependencies: Record<string, string>;
 }
+
+/** GET /corpus -- every document, both travel versions included. */
+export interface DocumentSummary {
+  id: string;
+  title: string;
+  owner: string;
+  version: string;
+  effective: string;
+  status: "current" | "superseded";
+  sections: string[];
+}
+
+/** GET /corpus/{id}?version= */
+export interface PolicyDocument extends Omit<DocumentSummary, "sections"> {
+  sections: { heading: string; text: string }[];
+}
