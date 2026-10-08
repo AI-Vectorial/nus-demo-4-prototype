@@ -4,7 +4,7 @@
 **Feature:** F4 Generate
 **Covers:** REQ-G1, REQ-G2, REQ-G3, REQ-G4, REQ-G5, REQ-G6
 **Criteria:** C4 (grounded-answer half), C8, C30
-**Status:** `todo`
+**Status:** `in progress` — code and tests in; C4 answer half waits on D2, C30 wording on the live model
 
 ## Done when
 

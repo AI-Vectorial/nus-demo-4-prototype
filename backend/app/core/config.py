@@ -99,6 +99,9 @@ class Settings:
 
     corpus_dir: Path = Path(os.getenv("CORPUS_DIR", str(_BACKEND / "corpus")))
 
+    # Versioned prompt and refusal text (REQ-G4), outside the code.
+    prompts_dir: Path = Path(os.getenv("PROMPTS_DIR", str(_BACKEND / "prompts")))
+
     @property
     def database_configured(self) -> bool:
         return bool(self.database_url)

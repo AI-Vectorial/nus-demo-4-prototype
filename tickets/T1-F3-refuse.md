@@ -4,7 +4,7 @@
 **Feature:** F3 Refuse
 **Covers:** REQ-R2, REQ-R3, REQ-R4, REQ-R6
 **Criteria:** C5, C6, C7
-**Status:** `todo`
+**Status:** `in progress` — code and tests in; C5 waits on D2
 
 ## Done when
 
