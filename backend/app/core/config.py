@@ -8,11 +8,32 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+# backend/, so the corpus resolves the same from a checkout and from the image.
+_BACKEND = Path(__file__).resolve().parents[2]
 
 
 def _origins() -> list[str]:
     raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
     return [o.strip() for o in raw.split(",") if o.strip()]
+
+
+def _optional(name: str, cast):
+    """A team decision has no fallback in code: unset stays None until used."""
+    raw = os.getenv(name, "").strip()
+    return cast(raw) if raw else None
+
+
+class MissingSetting(RuntimeError):
+    """A decision the team has to make was not supplied by the environment."""
+
+
+def require(value, name: str):
+    """The value, or a message that names the setting that is missing."""
+    if value is None:
+        raise MissingSetting(f"{name} is not set. It is a team decision -- see docs/design/.")
+    return value
 
 
 @dataclass(frozen=True)
@@ -61,15 +82,22 @@ class Settings:
     # Turning generation off must leave a working policy search behind.
     generation_enabled: bool = os.getenv("GENERATION_ENABLED", "true").lower() != "false"
 
-    # How many recent turns a follow-up question is answered with. Yours -- D8.
-    # Retrieval still runs on every turn: context informs the answer, it never
-    # replaces the search.
+    # How many recent messages (rows, not turns) a follow-up sees -- D8. The
+    # same window supplies the user questions retrieval runs on -- D9.
     context_messages: int = int(os.getenv("CONTEXT_MESSAGES", "5"))
 
-    # Below this, retrieval is treated as having found nothing and the
-    # assistant refuses rather than composing an answer from weak matches.
-    # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # Below this a passage is discarded, and with none left the assistant
+    # refuses -- D2. No fallback: the value is measured, then signed off.
+    min_score: float | None = _optional("MIN_SCORE", float)
+
+    # One passage per section, the ceiling only a guard -- D1.
+    chunk_max_tokens: int | None = _optional("CHUNK_MAX_TOKENS", int)
+    chunk_overlap_tokens: int | None = _optional("CHUNK_OVERLAP_TOKENS", int)
+
+    # A ceiling on passages fetched before the threshold -- D3.
+    retrieve_top_k: int | None = _optional("RETRIEVE_TOP_K", int)
+
+    corpus_dir: Path = Path(os.getenv("CORPUS_DIR", str(_BACKEND / "corpus")))
 
     @property
     def database_configured(self) -> bool:

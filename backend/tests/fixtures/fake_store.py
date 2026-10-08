@@ -33,6 +33,10 @@ class FakeVectorStore:
     def ensure_ready(self) -> None:
         self.ready = True
 
+    def reset(self) -> None:
+        self._passages.clear()
+        self.ready = False
+
     def upsert(self, passages: list[Passage]) -> int:
         for passage in passages:
             self._passages[passage.id] = passage

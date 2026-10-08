@@ -53,6 +53,13 @@ class VectorStore(Protocol):
         Must be safe to call repeatedly -- it runs on every boot.
         """
 
+    def reset(self) -> None:
+        """Remove everything, so the next ensure_ready() starts empty.
+
+        What `python -m app.ingest --force` needs after a change of model,
+        dimension or chunking.
+        """
+
     def upsert(self, passages: list[Passage]) -> int:
         """Store passages, replacing any with the same id. Returns the count."""
 
