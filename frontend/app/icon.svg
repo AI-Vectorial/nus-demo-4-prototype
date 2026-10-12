@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Policy Assistant">
+  <!--
+    The mark is a blockquote: a rule, and the passage beside it.
+
+    That is the product's one distinguishing behaviour -- it answers only from
+    passages it can point at -- and it is already the visual language of the app,
+    where a cited section carries a left rule in the accent colour.
+
+    Deliberately not a chat bubble (every assistant has one) and not a document
+    (every policy tool has one). Deliberately a filled tile rather than a line
+    drawing: a favicon sits on browser chrome that may be light or dark, and an
+    ink-on-transparent mark disappears against one of them.
+
+    Sized for 16px. The bars are 10 units in a 64 unit box, so they survive being
+    scaled down by four; at 6 units they turn to grey mush on a standard-density
+    screen. Everything is centred on 32 both ways.
+  -->
+  <rect width="64" height="64" rx="14" fill="#00ad6d"/>
+  <rect x="13.5" y="17" width="8" height="30" rx="4" fill="#ffffff"/>
+  <rect x="27.5" y="18" width="23" height="10" rx="5" fill="#ffffff"/>
+  <rect x="27.5" y="36" width="16" height="10" rx="5" fill="#ffffff"/>
+</svg>
