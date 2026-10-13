@@ -8,7 +8,7 @@ Build what the approved plan says. Nothing else.
 
 ## Inputs
 
-`tickets/T1.md` · `tickets/T1-F*.md` · `tickets/T1-plan.md` **(approved)** · `docs/PRD.md`
+**`tickets/T0-alignment.md`** · `tickets/T1.md` · `tickets/T1-F*.md` · `tickets/T1-plan.md` **(approved)**
 
 ## Output
 
@@ -22,29 +22,66 @@ Working code, passing tests, committed to `work/table-N`.
 
 # The prompt
 
+> **Run it with four words.** Tell your agent:
+>
+> ```
+> Follow the prompt in pipeline/03-build.md
+> ```
+>
+> It reads the block below itself. Pasting it also works — but a paste that loses a
+> line is a long way to debug, and an edited prompt reaches every table for free.
+
 ```
 The plan is approved. Build it.
 
-Work in the order the plan sets out. After each piece:
-  - run the tests
-  - show me what passed and what did not
-  - commit, with a message saying what changed and why
+Do NOT re-plan. Do not re-read the PRD end to end, do not restate the
+plan back to me, do not write a build plan of your own. Read
+tickets/T0-alignment.md and tickets/T1-plan.md, go to item 1, and write
+code.
+
+Work in the order the plan sets out. After each piece: run the tests,
+commit, and print ONE status line in exactly this shape --
+
+  [F1 ingest] tests 12/12 ok | ruff ok | commit a1b2c3d | next F2
+
+-- then CONTINUE to the next piece without waiting for me.
+
+Stop and wait only if one of these is true:
+  - a test has failed twice and you do not know why
+  - you need a dependency we do not already have
+  - the plan turns out to be wrong
+
+I am reading the status lines. If I want you to stop, I will say so.
+
+== The one planned stop: when F5 is done ==
+
+F5 is where the product first works end to end. Everything after it --
+F6 follow-up, F7 corpus, F8 history -- is cuttable by design.
+
+So when F5 is done, STOP and wait, even though nothing has gone wrong.
+Report which features are done, what remains, and anything you are
+worried about. Then ask me exactly one question:
+
+  "How far do we go -- F6, F7, F8, or stop here and move to stage 04?"
+
+Do not answer it yourself and do not assume we are continuing. Stopping
+at F5 is a normal answer, not a failure: F1 to F5 is a complete product.
+
+Whatever I cut -- here, or at any point if I tell you to cut earlier --
+record it in tickets/T1.md under "Out of scope" with my reason, take the
+matching actions out of the top bar, and go no further. A feature left
+half-built is worse than a feature cut.
 
 Write the test before the code where you reasonably can. Our acceptance
-criteria are the specification.
+criteria are the specification. Never weaken or skip a test to get a
+green build, and take configuration from the environment, not literals.
 
-Rules:
-  - Stop and ask before adding any dependency
-  - Stop and ask if the plan turns out to be wrong
-  - Never weaken or skip a test to get a green build
-  - Configuration comes from the environment, not from literals
+When a feature is finished, set its child ticket's Status to done and
+paste in the one command and its output that show the "Done when" line
+is satisfied. A ticket marked done with nothing behind it is a claim,
+not a record. Do this as you go -- do not save it all for the end.
 
-When a feature is finished, before starting the next one: set its
-child ticket's Status to done and paste in the output that shows its
-"Done when" line is satisfied. A ticket marked done with nothing
-behind it is a claim, not a record.
-
-Start with the first item in the plan.
+Begin.
 ```
 
 ---
@@ -87,6 +124,15 @@ means changing all of them.
 
 **Say so, and cut scope — never cut a stage.**
 
+**The agent stops once on its own, when F5 is done**, and asks how far to go. That is
+deliberate: F5 is where the product first works end to end, and everything after it is
+the cuttable tail. One stop, at the only point where there is genuinely something to
+decide — you should not have to interrupt a running agent to make a decision this
+deliberate.
+
+**You can also cut earlier**, at any moment, by saying so. If the clock says you will
+not reach F5, cut inside the critical path and say which requirement goes with it.
+
 **Cut from the back: F8, then F7, then F6.** They are cuttable by design. Record the cut
 in the ticket as out of scope, take the matching action out of the top bar, and move on
 to stage 04 with the time it bought you.
@@ -102,6 +148,7 @@ are only what it is assessed on.
 - [ ] `ruff check` and `bandit -r app/ -ll` are clean
 - [ ] No literal model name, URL, dimension or threshold in code
 - [ ] The top bar offers **nothing that does not exist** — every action opens a route
+- [ ] The cut decision was **taken out loud and answered**, not drifted past
 - [ ] Anything cut is written down as cut, not left half-built
 - [ ] No test was skipped, weakened or deleted to get here
 - [ ] `/healthz` reports passages indexed, not zero
