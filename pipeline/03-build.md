@@ -8,7 +8,7 @@ Build what the approved plan says. Nothing else.
 
 ## Inputs
 
-`tickets/T1.md` · `tickets/T1-F*.md` · `tickets/T1-plan.md` **(approved)** · `docs/PRD.md`
+**`tickets/T0-alignment.md`** · `tickets/T1.md` · `tickets/T1-F*.md` · `tickets/T1-plan.md` **(approved)**
 
 ## Output
 
@@ -22,29 +22,47 @@ Working code, passing tests, committed to `work/table-N`.
 
 # The prompt
 
+> **Run it with four words.** Tell your agent:
+>
+> ```
+> Follow the prompt in pipeline/03-build.md
+> ```
+>
+> It reads the block below itself. Pasting it also works — but a paste that loses a
+> line is a long way to debug, and an edited prompt reaches every table for free.
+
 ```
 The plan is approved. Build it.
 
-Work in the order the plan sets out. After each piece:
-  - run the tests
-  - show me what passed and what did not
-  - commit, with a message saying what changed and why
+Do NOT re-plan. Do not re-read the PRD end to end, do not restate the
+plan back to me, do not write a build plan of your own. Read
+tickets/T0-alignment.md and tickets/T1-plan.md, go to item 1, and write
+code.
+
+Work in the order the plan sets out. After each piece: run the tests,
+commit, and print ONE status line in exactly this shape --
+
+  [F1 ingest] tests 12/12 ok | ruff ok | commit a1b2c3d | next F2
+
+-- then CONTINUE to the next piece without waiting for me.
+
+Stop and wait only if one of these is true:
+  - a test has failed twice and you do not know why
+  - you need a dependency we do not already have
+  - the plan turns out to be wrong
+
+I am reading the status lines. If I want you to stop, I will say so.
 
 Write the test before the code where you reasonably can. Our acceptance
-criteria are the specification.
+criteria are the specification. Never weaken or skip a test to get a
+green build, and take configuration from the environment, not literals.
 
-Rules:
-  - Stop and ask before adding any dependency
-  - Stop and ask if the plan turns out to be wrong
-  - Never weaken or skip a test to get a green build
-  - Configuration comes from the environment, not from literals
+When a feature is finished, set its child ticket's Status to done and
+paste in the one command and its output that show the "Done when" line
+is satisfied. A ticket marked done with nothing behind it is a claim,
+not a record. Do this as you go -- do not save it all for the end.
 
-When a feature is finished, before starting the next one: set its
-child ticket's Status to done and paste in the output that shows its
-"Done when" line is satisfied. A ticket marked done with nothing
-behind it is a claim, not a record.
-
-Start with the first item in the plan.
+Begin.
 ```
 
 ---
