@@ -350,7 +350,9 @@ def agent(lane: str, system: str, user: str, tools: Tools, tool_names: set[str],
             if name == submit_name:
                 log(f"  [{lane}] submitted")
                 return args
-            shown = args.get("path") or args.get("pattern") or ""
+            shown = args.get("path") or ""
+            if name == "grep":
+                shown = f"/{args.get('pattern', '')}/ " + (shown or ".")
             if name == "read_file" and args.get("start_line"):
                 shown += f":{args.get('start_line')}-{args.get('end_line', '')}"
             log(f"  [{lane}] {name} {shown}")
@@ -452,7 +454,7 @@ SUBMIT_REQUIREMENTS = {"type": "function", "function": {
             "criterion": {"type": "string", "description": "The criterion, shortened to one line"},
             "refs": {"type": "string", "description": "REQ ids it covers, if any"},
             "status": {"type": "string", "enum": ["met", "partial", "missing", "unverifiable"]},
-            "evidence": {"type": "string", "description": "file:line references, or what a human should check"},
+            "evidence": {"type": "string", "description": "At most two sentences: the file:line that does it, or what a human should check"},
             "left": {"type": "string", "description": "What is left. Empty when met"},
             "how": {"type": "string", "description": "How to implement what is left. Empty when met"}},
             "required": ["criterion", "status", "evidence"]}},
@@ -622,7 +624,7 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         check = [c for c in criteria if c.get("status") == "unverifiable"]
         if check:
             out += ["#### For a human to check", ""]
-            out += [f"- 👀 **{cell(c.get('criterion'))}** — {cell(c.get('evidence'))}" for c in check]
+            out += [f"- 👀 {cell(c.get('criterion'))}" for c in check]
             out.append("")
 
     children = req.get("children", [])
