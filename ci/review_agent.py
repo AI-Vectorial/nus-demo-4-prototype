@@ -75,6 +75,8 @@ PARALLEL = 4
 SKIP_PREFIXES = (
     ".github/", "ci/", "pipeline/", "scripts/", "backend/corpus/",
     "docs/instructor/", "docs/v1/", "docs/v2/",
+    "AGENTS.md", "CLAUDE.md", "START-HERE.md", "docs/PRD.md", "docs/features.md",
+    "docs/project-brief.md", "docs/table-card.md",
 )
 SKIP_SUFFIXES = (
     "package-lock.json", ".lock", ".png", ".jpg", ".jpeg", ".gif", ".ico",
