@@ -349,3 +349,103 @@ code {
   color: var(--text-dim);
   text-align: center;
 }
+
+/* ---------------------------------------------------------------------------
+   F5 -- the assistant.
+   --------------------------------------------------------------------------- */
+
+/* REQ-U9: one bar, product name left, actions right. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar .product { font-weight: 650; letter-spacing: -0.01em; }
+
+.topbar button {
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.topbar button:hover { background: var(--surface-tint); }
+
+/* REQ-U1: centred, inviting a question, with a send control. */
+.empty {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 18vh 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+}
+
+.empty h1 { font-size: 1.9rem; }
+.empty .composer { margin-top: 0.5rem; text-align: left; }
+
+.wrap { padding-top: 1.5rem; }
+
+.thread { display: flex; flex-direction: column; gap: 1.75rem; flex: 1; }
+.turn { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.question {
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  background: var(--accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.answer p, .refusal p { margin: 0 0 0.6rem; }
+.answer ul, .refusal ul { margin: 0 0 0.6rem; padding-left: 1.2rem; }
+
+.not-a-decision {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  border-top: 1px solid var(--divider);
+  padding-top: 0.5rem;
+}
+
+.citations-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* REQ-U5: an error is the product failing -- not a refusal, not an answer. */
+.error {
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--danger);
+  font-size: 0.92rem;
+}
+
+.composer { position: sticky; bottom: 0; padding: 0.75rem 0; background: var(--bg); }
+
+/* REQ-U10: phone width. */
+@media (max-width: 480px) {
+  .wrap { padding: 1rem 0.9rem; }
+  .empty { padding-top: 10vh; }
+  .empty h1 { font-size: 1.5rem; }
+  .question { max-width: 100%; }
+  .composer button { padding: 0.75rem 1rem; }
+}

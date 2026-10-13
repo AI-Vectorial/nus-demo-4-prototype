@@ -25,12 +25,16 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
   } catch {
-    throw new ApiError(`Could not reach the API at ${apiUrl}.`);
+    throw new ApiError("Could not reach the assistant.");
   }
 
   if (!response.ok) {
+    const detail = await response
+      .json()
+      .then((body: { detail?: unknown }) => (typeof body.detail === "string" ? body.detail : ""))
+      .catch(() => "");
     throw new ApiError(
-      `The API returned ${response.status} for ${path}.`,
+      `The service returned ${response.status}${detail ? `: ${detail}` : ""}.`,
       response.status,
     );
   }
@@ -49,10 +53,14 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
  * outcome: "refused" with 200. Treating it as a failure would render the
  * product's defining behaviour as a bug.
  */
-export function ask(apiUrl: string, question: string): Promise<AskResponse> {
+export function ask(
+  apiUrl: string,
+  question: string,
+  conversationId: string | null,
+): Promise<AskResponse> {
   return request<AskResponse>(apiUrl, "/ask", {
     method: "POST",
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, conversation_id: conversationId }),
   });
 }
 

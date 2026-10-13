@@ -1,115 +1,126 @@
 "use client";
 
 /**
- * The page a table lands on before they have built anything.
+ * The assistant. F5.
  *
- * It says what is running, what is not, and where to start -- and it says the
- * true thing. An earlier version claimed "the corpus is indexed and waiting",
- * which was false: indexing it is F1, the first thing a table builds. A
- * scaffold that misreports its own state teaches the wrong lesson on the first
- * screen anyone sees.
+ * Empty state -> ask -> pending -> one of three outcomes, or an error. Each
+ * renders differently (REQ-U5): an answer is a panel with its sources, a
+ * refusal is dashed and neutral, degraded is flagged in red, and an error --
+ * the product failing, not declining -- is its own solid red notice.
  *
- * Replacing this with the real assistant is F5. Nothing here is precious.
+ * Later questions join the same conversation, so every turn is recorded
+ * together. Follow-up context (REQ-C3) is F6; Reset starts a new conversation.
  */
 
-import { useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 
-type Health = {
-  status: string;
-  build: string;
-  environment: string;
-  dependencies: Record<string, string>;
+import { ApiError, ask } from "@/lib/api";
+import type { AskResponse } from "@/lib/types";
+
+import Answer from "./Answer";
+import Degraded from "./Degraded";
+import Refusal from "./Refusal";
+import TopBar from "./TopBar";
+
+type Turn = {
+  question: string;
+  response?: AskResponse;
+  error?: string;
 };
 
-export default function Chat({ apiUrl }: { apiUrl: string }) {
-  const [health, setHealth] = useState<Health | null>(null);
-  const [reachable, setReachable] = useState<boolean | null>(null);
+function Outcome({ turn }: { turn: Turn }) {
+  if (turn.error) {
+    return (
+      <div className="error" role="alert">
+        <strong>Something went wrong — this is an error, not an answer.</strong>{" "}
+        {turn.error} Try again in a moment.
+      </div>
+    );
+  }
+  const response = turn.response;
+  if (!response) return <p className="pending">Searching the policy set…</p>;
+  switch (response.outcome) {
+    case "answered":
+      return <Answer response={response} />;
+    case "refused":
+      return <Refusal reason={response.answer ?? ""} />;
+    case "degraded":
+      return <Degraded citations={response.citations} />;
+  }
+}
 
-  useEffect(() => {
-    fetch(`${apiUrl}/healthz`)
-      .then((r) => r.json())
-      .then((data: Health) => {
-        setHealth(data);
-        setReachable(true);
-      })
-      .catch(() => setReachable(false));
-  }, [apiUrl]);
+export default function Chat({ apiUrl }: { apiUrl: string }) {
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const pending = turns.some((t) => !t.response && !t.error);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const question = draft.trim();
+    if (!question || pending) return;
+
+    setDraft("");
+    setTurns((all) => [...all, { question }]);
+    const settle = (patch: Partial<Turn>) =>
+      setTurns((all) => all.map((t, i) => (i === all.length - 1 ? { ...t, ...patch } : t)));
+
+    try {
+      const response = await ask(apiUrl, question, conversationId);
+      setConversationId(response.conversation_id);
+      settle({ response });
+    } catch (error) {
+      settle({ error: error instanceof ApiError ? error.message : "Unexpected failure." });
+    }
+  }
+
+  function reset() {
+    setTurns([]);
+    setConversationId(null);
+    setDraft("");
+  }
+
+  const composer = (
+    <form className="composer" onSubmit={submit}>
+      <input
+        aria-label="Your policy question"
+        placeholder="Ask a policy question in your own words"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        disabled={pending}
+        autoFocus
+      />
+      <button type="submit" disabled={pending || !draft.trim()}>
+        Ask
+      </button>
+    </form>
+  );
 
   return (
-    <main className="welcome">
-      <header className="welcome-head">
-        <p className="eyebrow">M04 · AI-Native Development Lifecycle</p>
-        <h1>Policy Assistant</h1>
-        <p className="lede">
-          You are going to build this, and deploy it. A staff member at
-          Aldermere Bank asks a policy question in plain language; the assistant
-          answers <strong>only</strong> from the bank&rsquo;s policy corpus and
-          shows which sections it used. When the corpus cannot support an
-          answer, <strong>it says so and stops.</strong>
-        </p>
-      </header>
-
-      <section className="card">
-        <h2>What is running</h2>
-        <ul className="status-list">
-          <li>
-            <span className="status-name">API</span>
-            <span className={reachable === false ? "status-bad" : "status-ok"}>
-              {reachable === null
-                ? "checking…"
-                : reachable
-                  ? "reachable on :8000"
-                  : `unreachable at ${apiUrl}`}
-            </span>
-          </li>
-          {health &&
-            Object.entries(health.dependencies).map(([name, detail]) => (
-              <li key={name}>
-                <span className="status-name">{name.replace(/_/g, " ")}</span>
-                <span
-                  className={
-                    detail.startsWith("down") ? "status-bad" : "status-ok"
-                  }
-                >
-                  {detail}
-                </span>
-              </li>
+    <>
+      <TopBar onReset={reset} />
+      {turns.length === 0 ? (
+        <main className="empty">
+          <h1>What do you need to check?</h1>
+          <p className="lede">
+            Answers come only from Aldermere&rsquo;s policy set, with the sections
+            they came from. If the policies do not cover it, you will be told who to ask.
+          </p>
+          {composer}
+        </main>
+      ) : (
+        <main className="wrap">
+          <div className="thread">
+            {turns.map((turn, i) => (
+              <section key={i} className="turn">
+                <p className="question">{turn.question}</p>
+                <Outcome turn={turn} />
+              </section>
             ))}
-        </ul>
-        <p className="note">
-          Postgres and Qdrant are running beside you in this Codespace, and they
-          are yours alone. <strong>The corpus is not indexed yet</strong> —
-          indexing it is the first thing you build.
-        </p>
-      </section>
-
-      <section className="card">
-        <h2>Where to start</h2>
-        <ol className="start-list">
-          <li>
-            <code>START-HERE.md</code> — ninety seconds, already open in your
-            editor
-          </li>
-          <li>
-            <code>docs/PRD.md</code> — what must be true. The contract.{" "}
-            <strong>§10 is the one to read twice</strong>
-          </li>
-          <li>
-            <code>pipeline/01-shape.md</code> — then follow the six stages in
-            order
-          </li>
-        </ol>
-        <p className="note">
-          Ten decisions in §10 are deliberately left to you.{" "}
-          <strong>You will be asked to defend them</strong>, and{" "}
-          <em>&ldquo;the agent chose it&rdquo;</em> is a failed answer.
-        </p>
-      </section>
-
-      <p className="footnote">
-        Aldermere Bank is fictional. This screen is scaffolding — replacing it
-        is F5.
-      </p>
-    </main>
+          </div>
+          {composer}
+        </main>
+      )}
+    </>
   );
 }

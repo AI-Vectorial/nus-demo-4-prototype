@@ -21,19 +21,14 @@ tickets/
   T1-F3-refuse.md        depends on. Ticked off during stage 03
   T1-F4-generate.md
   T1-F5-ask-and-ui.md
-  T1-F6-follow-up.md     cuttable -- see features.md
-  T1-F7-corpus.md        cuttable
-  T1-F8-history.md       cuttable
 
   T1-plan.md             stage 02. The decisions, YOUR reasons, build order
   T1-review.md           stage 04. Five passes, a decision per finding
   T1-release.md          stage 05. How it ships, and how it comes back
 ```
 
-> **One epic, one plan, one review, one release — and one pull request.** The children
-> track *progress*; they do not each run the pipeline. **F6, F7 and F8 are cuttable**: a
-> child you drop moves to the epic's Out of scope with a line saying why, and its button
-> never appears in the interface. Five passes through six stages does not fit
+> **One epic, one plan, one review, one release.** The children track *progress*;
+> they do not each run the pipeline. Five passes through six stages does not fit
 > 150 minutes, and would not teach anything the first pass did not.
 
 ---
