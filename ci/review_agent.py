@@ -627,7 +627,8 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
     if children:
         out += ["### Feature tickets", "", "| Ticket | Claims | Evidence |", "|---|---|---|"]
         for ch in children:
-            ok = "✅" if ch.get("backed") else "❌"
+            done = "done" in str(ch.get("claimed", "")).lower()
+            ok = "✅" if ch.get("backed") else ("❌" if done else "⏳")
             out.append(f"| {cell(ch.get('ticket'))} | {cell(ch.get('claimed'))} | {ok} {cell(ch.get('note'))} |")
         out.append("")
 
