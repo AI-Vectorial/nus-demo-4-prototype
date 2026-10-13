@@ -53,6 +53,25 @@ Stop and wait only if one of these is true:
 
 I am reading the status lines. If I want you to stop, I will say so.
 
+== The one planned stop: when F5 is done ==
+
+F5 is where the product first works end to end. Everything after it --
+F6 follow-up, F7 corpus, F8 history -- is cuttable by design.
+
+So when F5 is done, STOP and wait, even though nothing has gone wrong.
+Report which features are done, what remains, and anything you are
+worried about. Then ask me exactly one question:
+
+  "How far do we go -- F6, F7, F8, or stop here and move to stage 04?"
+
+Do not answer it yourself and do not assume we are continuing. Stopping
+at F5 is a normal answer, not a failure: F1 to F5 is a complete product.
+
+Whatever I cut -- here, or at any point if I tell you to cut earlier --
+record it in tickets/T1.md under "Out of scope" with my reason, take the
+matching actions out of the top bar, and go no further. A feature left
+half-built is worse than a feature cut.
+
 Write the test before the code where you reasonably can. Our acceptance
 criteria are the specification. Never weaken or skip a test to get a
 green build, and take configuration from the environment, not literals.
@@ -105,6 +124,15 @@ means changing all of them.
 
 **Say so, and cut scope — never cut a stage.**
 
+**The agent stops once on its own, when F5 is done**, and asks how far to go. That is
+deliberate: F5 is where the product first works end to end, and everything after it is
+the cuttable tail. One stop, at the only point where there is genuinely something to
+decide — you should not have to interrupt a running agent to make a decision this
+deliberate.
+
+**You can also cut earlier**, at any moment, by saying so. If the clock says you will
+not reach F5, cut inside the critical path and say which requirement goes with it.
+
 **Cut from the back: F8, then F7, then F6.** They are cuttable by design. Record the cut
 in the ticket as out of scope, take the matching action out of the top bar, and move on
 to stage 04 with the time it bought you.
@@ -120,6 +148,7 @@ are only what it is assessed on.
 - [ ] `ruff check` and `bandit -r app/ -ll` are clean
 - [ ] No literal model name, URL, dimension or threshold in code
 - [ ] The top bar offers **nothing that does not exist** — every action opens a route
+- [ ] The cut decision was **taken out loud and answered**, not drifted past
 - [ ] Anything cut is written down as cut, not left half-built
 - [ ] No test was skipped, weakened or deleted to get here
 - [ ] `/healthz` reports passages indexed, not zero
