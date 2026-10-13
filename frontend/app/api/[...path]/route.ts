@@ -1,46 +1,43 @@
 /**
- * Same-origin proxy to the API.
+ * The browser's way to the API: same origin, forwarded server-side.
  *
- * The browser cannot reach the API directly. `API_URL` is a server-side value
- * -- in a Codespace it is `http://localhost:8000`, which from a browser means
- * the laptop rather than the container, so a client-side fetch to it fails
- * while everything looks correct from the terminal.
+ * The browser never calls API_URL itself. In a Codespace "localhost:8000" is
+ * the viewer's own machine and the forwarded port is private; on Railway the
+ * backend would need every frontend origin allowed. Forwarding from here
+ * sidesteps both, and API_URL is read per request, so repointing the frontend
+ * needs a restart, not a rebuild.
  *
- * So the browser calls `/api/...` on the page's own origin, and this route --
- * running on the server, inside the container -- forwards to wherever the API
- * actually is. That holds in a Codespace, on Railway, and on a laptop without
- * any of them needing to know about the others.
+ * Only the routes the interface uses are forwarded -- this is not an open proxy.
  */
-
-import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-// 127.0.0.1, not localhost. Node resolves localhost to ::1 first, and uvicorn
-// binds 0.0.0.0 -- which is IPv4 only -- so a fetch to localhost from the
-// server fails with a connection refused that looks exactly like the API being
-// down. The browser does not have this problem, which is why it only appears
-// once the call moves server-side.
-const API = process.env.API_URL ?? "http://127.0.0.1:8000";
+const FORWARDED = new Set(["ask", "healthz"]);
 
-async function forward(request: NextRequest, path: string[]) {
-  const target = `${API}/${path.join("/")}${request.nextUrl.search}`;
+async function forward(
+  request: Request,
+  { params }: { params: Promise<{ path: string[] }> },
+): Promise<Response> {
+  const path = (await params).path.join("/");
+  if (!FORWARDED.has(path)) {
+    return Response.json({ detail: "not found" }, { status: 404 });
+  }
+
+  const apiUrl = process.env.API_URL;
+  if (!apiUrl) {
+    return Response.json({ detail: "API_URL is not set" }, { status: 503 });
+  }
 
   let upstream: Response;
   try {
-    upstream = await fetch(target, {
+    upstream = await fetch(`${apiUrl}/${path}`, {
       method: request.method,
       headers: { "Content-Type": "application/json" },
       body: request.method === "GET" ? undefined : await request.text(),
       cache: "no-store",
     });
   } catch {
-    // The API is down, not the page. Say which, because a 502 from the page
-    // itself sends people looking at the wrong half of the system.
-    return Response.json(
-      { detail: `The API did not respond at ${API}.` },
-      { status: 502 },
-    );
+    return Response.json({ detail: `could not reach the API at ${apiUrl}` }, { status: 502 });
   }
 
   return new Response(upstream.body, {
@@ -49,10 +46,4 @@ async function forward(request: NextRequest, path: string[]) {
   });
 }
 
-export async function GET(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
-  return forward(request, (await context.params).path);
-}
-
-export async function POST(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
-  return forward(request, (await context.params).path);
-}
+export { forward as GET, forward as POST };

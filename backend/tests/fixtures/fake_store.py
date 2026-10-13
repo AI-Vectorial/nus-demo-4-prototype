@@ -29,9 +29,15 @@ class FakeVectorStore:
     def __init__(self) -> None:
         self._passages: dict[str, Passage] = {}
         self.ready = False
+        self.recreated = False
 
     def ensure_ready(self) -> None:
         self.ready = True
+
+    def recreate(self) -> None:
+        self._passages.clear()
+        self.recreated = True
+        self.ensure_ready()
 
     def upsert(self, passages: list[Passage]) -> int:
         for passage in passages:

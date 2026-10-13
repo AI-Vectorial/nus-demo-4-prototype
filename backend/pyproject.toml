@@ -1,6 +1,9 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+# The evaluation set needs the live index and provider; run it with `pytest -m live`.
+markers = ["live: needs the indexed collection and the embedding provider"]
+addopts = "-m 'not live'"
 
 [tool.ruff]
 line-length = 100
