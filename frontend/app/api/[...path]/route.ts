@@ -14,14 +14,13 @@
 
 import { NextRequest } from "next/server";
 
+import { apiUrl } from "@/lib/config";
+
 export const dynamic = "force-dynamic";
 
-// 127.0.0.1, not localhost. Node resolves localhost to ::1 first, and uvicorn
-// binds 0.0.0.0 -- which is IPv4 only -- so a fetch to localhost from the
-// server fails with a connection refused that looks exactly like the API being
-// down. The browser does not have this problem, which is why it only appears
-// once the call moves server-side.
-const API = process.env.API_URL ?? "http://127.0.0.1:8000";
+// One definition of where the API is, shared with the server components --
+// see lib/config.ts for why the default is 127.0.0.1 and not localhost.
+const API = apiUrl();
 
 async function forward(request: NextRequest, path: string[]) {
   const target = `${API}/${path.join("/")}${request.nextUrl.search}`;

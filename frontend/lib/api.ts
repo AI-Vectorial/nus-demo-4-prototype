@@ -5,7 +5,14 @@
  * so a component never has to interpret a fetch rejection.
  */
 
-import type { AskResponse, Health } from "./types";
+import type {
+  AskResponse,
+  ConversationDetail,
+  ConversationSummary,
+  DocumentSummary,
+  Health,
+  PolicyDocument,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -49,13 +56,38 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
  * outcome: "refused" with 200. Treating it as a failure would render the
  * product's defining behaviour as a bug.
  */
-export function ask(apiUrl: string, question: string): Promise<AskResponse> {
+export function ask(
+  apiUrl: string,
+  question: string,
+  conversationId: string | null,
+): Promise<AskResponse> {
   return request<AskResponse>(apiUrl, "/ask", {
     method: "POST",
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, conversation_id: conversationId }),
   });
 }
 
 export function health(apiUrl: string): Promise<Health> {
   return request<Health>(apiUrl, "/healthz");
+}
+
+export function corpus(apiUrl: string): Promise<DocumentSummary[]> {
+  return request<DocumentSummary[]>(apiUrl, "/corpus", { cache: "no-store" });
+}
+
+export function policy(apiUrl: string, id: string, version?: string): Promise<PolicyDocument> {
+  const query = version ? `?version=${encodeURIComponent(version)}` : "";
+  return request<PolicyDocument>(apiUrl, `/corpus/${encodeURIComponent(id)}${query}`, {
+    cache: "no-store",
+  });
+}
+
+export function conversations(apiUrl: string): Promise<ConversationSummary[]> {
+  return request<ConversationSummary[]>(apiUrl, "/conversations?limit=50", { cache: "no-store" });
+}
+
+export function conversation(apiUrl: string, id: string): Promise<ConversationDetail> {
+  return request<ConversationDetail>(apiUrl, `/conversations/${encodeURIComponent(id)}`, {
+    cache: "no-store",
+  });
 }
