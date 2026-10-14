@@ -4,6 +4,7 @@
 #
 #   ./scripts/reset_table.sh 1          reset table 1
 #   ./scripts/reset_table.sh 1 --data   reset the data only, keep the branch
+#   ./scripts/reset_table.sh facilitator   the facilitator's demo table
 #
 # Three things get reset:
 #   the Postgres database   dropped and recreated, empty
@@ -14,14 +15,17 @@
 set -euo pipefail
 
 N="${1:-}"
-[[ "$N" =~ ^[1-5]$ ]] || { echo "usage: $0 <1-5> [--data]"; exit 1; }
+[[ "$N" =~ ^([1-5]|facilitator)$ ]] || { echo "usage: $0 <1-5|facilitator> [--data]"; exit 1; }
 DATA_ONLY=false
 [[ "${2:-}" == "--data" ]] && DATA_ONLY=true
 
-DB="table_${N}"
-COLLECTION="policy_passages_table_${N}"
+# 3 -> table-3 / table_3, facilitator -> facilitator / facilitator
+SLUG="table-${N}"
+[[ "$N" == "facilitator" ]] && SLUG="facilitator"
+DB="${SLUG//-/_}"
+COLLECTION="policy_passages_${DB}"
 
-echo "Resetting table ${N}"
+echo "Resetting ${SLUG}"
 echo
 
 # --- Postgres ---------------------------------------------------------------
@@ -42,7 +46,7 @@ if [[ -n "$URL" ]] && command -v psql >/dev/null; then
   echo "  database    ${DB} dropped and recreated"
 else
   STAMP="$(date +%H%M%S)"
-  if railway variables --service "api-table-${N}" \
+  if railway variables --service "api-${SLUG}" \
        --set "DATABASE_NAME=${DB}_${STAMP}" >/dev/null 2>&1; then
     echo "  database    unreachable from here; repointed to ${DB}_${STAMP}"
   else
@@ -67,7 +71,7 @@ if [[ -n "$QURL" ]]; then
     # Repointing is the reliable equivalent: the API indexes from empty on its
     # next boot, because it indexes whenever the collection count is zero.
     STAMP="$(date +%H%M%S)"
-    railway variables --service "api-table-${N}" \
+    railway variables --service "api-${SLUG}" \
       --set "QDRANT_COLLECTION=${COLLECTION}_${STAMP}" >/dev/null 2>&1 \
       && echo "  collection  unreachable (HTTP ${CODE}); repointed to ${COLLECTION}_${STAMP}" \
       || echo "  collection  SKIPPED (HTTP ${CODE}, and could not repoint the service)"
@@ -79,15 +83,15 @@ fi
 # --- Branches ---------------------------------------------------------------
 if ! $DATA_ONLY; then
   git fetch origin --quiet
-  git push origin --delete "work/table-${N}" 2>/dev/null && \
-    echo "  branch      work/table-${N} deleted" || \
-    echo "  branch      work/table-${N} did not exist"
-  git push origin "origin/main:refs/heads/table-${N}" --force-with-lease 2>/dev/null && \
-    echo "  branch      table-${N} reset to main" || \
-    echo "  branch      table-${N} NOT reset -- remove the ruleset bypass block first"
+  git push origin --delete "work/${SLUG}" 2>/dev/null && \
+    echo "  branch      work/${SLUG} deleted" || \
+    echo "  branch      work/${SLUG} did not exist"
+  git push origin "origin/main:refs/heads/${SLUG}" --force-with-lease 2>/dev/null && \
+    echo "  branch      ${SLUG} reset to main" || \
+    echo "  branch      ${SLUG} NOT reset -- remove the ruleset bypass block first"
 else
   echo "  branch      left alone (--data)"
 fi
 
 echo
-echo "Table ${N} is clean. The next ingest will recreate the collection."
+echo "${SLUG} is clean. The next ingest will recreate the collection."

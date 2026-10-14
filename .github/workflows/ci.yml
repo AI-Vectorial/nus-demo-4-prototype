@@ -17,11 +17,15 @@ name: pipeline
 # Work branches are work/table-N, NOT table-N/build: git cannot hold both
 # refs/heads/table-3 and refs/heads/table-3/build, because the first is a file
 # and the second would need it to be a directory.
+#
+# facilitator is a sixth table, run at the front of the room for everyone to
+# follow: work/facilitator -> facilitator -> api-facilitator / web-facilitator.
+# Same checks, same gate, same review, same deploy.
 on:
   push:
-    branches: [main, "table-[1-5]", reference]
+    branches: [main, "table-[1-5]", facilitator, reference]
   pull_request:
-    branches: [main, "table-[1-5]", reference]
+    branches: [main, "table-[1-5]", facilitator, reference]
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -146,6 +150,49 @@ jobs:
         run: npm run lint
 
   # ---------------------------------------------------------------------------
+  # AI REVIEW. A second, independent reviewer on every pull request.  [M04.4]
+  #
+  # The table reviewed its own work at stage 04, with its own agent. This one
+  # has never seen that conversation. It checks every acceptance criterion in
+  # tickets/T1.md against the code, runs the five passes over the diff, and
+  # posts one comment on the pull request -- "Review passed, good for merge"
+  # or "Changes requested", with what is left and how to do it.
+  #
+  # Watch it work: Actions -> this run -> "AI review". Every file it opens and
+  # every search it runs is printed as it happens.
+  #
+  # ADVISORY. The gate does not need it, so a red review never blocks a merge.
+  # A model can be wrong; the merge is a human's decision, and stays one.
+  # Any OpenRouter model can do the job: change REVIEW_MODEL, nothing else.
+  # ---------------------------------------------------------------------------
+  review:
+    name: AI review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    # A second push while a review is running makes that review stale.
+    concurrency:
+      group: review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: review
+        run: python ci/review_agent.py
+        env:
+          REVIEW_API: ${{ secrets.REVIEW_API }}
+          REVIEW_MODEL: anthropic/claude-haiku-5.5
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+
+  # ---------------------------------------------------------------------------
   # GATE. The single required status check.
   #
   # Always runs, so a skipped job never leaves a pull request waiting on a check
@@ -194,15 +241,17 @@ jobs:
       always() &&
       needs.gate.result == 'success' &&
       github.event_name == 'push' &&
-      (startsWith(github.ref, 'refs/heads/table-') || github.ref == 'refs/heads/reference')
+      (startsWith(github.ref, 'refs/heads/table-') ||
+       github.ref == 'refs/heads/facilitator' ||
+       github.ref == 'refs/heads/reference')
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
 
       # The branch decides which pair of services it reaches. Table 3's merge
-      # can only ever touch table 3's deployment, and the reference branch can
-      # only ever touch the reference pair.
+      # can only ever touch table 3's deployment, the facilitator's only the
+      # facilitator pair, and the reference branch only the reference pair.
       - name: which deployment is this
         id: table
         run: |
@@ -212,6 +261,11 @@ jobs:
             echo "api=api"      >> "$GITHUB_OUTPUT"
             echo "web=web"      >> "$GITHUB_OUTPUT"
             echo "deploying the reference build"
+          elif [ "$BRANCH" = "facilitator" ]; then
+            echo "n=facilitator"         >> "$GITHUB_OUTPUT"
+            echo "api=api-facilitator"   >> "$GITHUB_OUTPUT"
+            echo "web=web-facilitator"   >> "$GITHUB_OUTPUT"
+            echo "deploying the facilitator's build"
           else
             N="${BRANCH#table-}"
             echo "n=$N"              >> "$GITHUB_OUTPUT"
@@ -251,7 +305,7 @@ jobs:
         run: |
           DOMAIN="$(railway variables --service "${{ steps.table.outputs.api }}" --json                     | python -c 'import json,sys;print(json.load(sys.stdin).get("RAILWAY_PUBLIC_DOMAIN",""))')"
           if [ -z "$DOMAIN" ]; then
-            echo "::error::api-table-${{ steps.table.outputs.n }} has no public domain."
+            echo "::error::${{ steps.table.outputs.api }} has no public domain."
             echo "::error::Run: railway domain --service ${{ steps.table.outputs.api }}"
             exit 1
           fi
