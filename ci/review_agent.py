@@ -67,7 +67,7 @@ MARKER = "<!-- m04-ai-review -->"
 LANE_BUDGET = 80_000      # characters of diff per code lane, roughly 20k tokens
 FILE_DIFF_CAP = 60_000    # one file's diff beyond this is truncated; the lane can read_file
 CODE_TOOL_ROUNDS = 8
-REQ_TOOL_ROUNDS = 20
+REQ_TOOL_ROUNDS = 30
 PARALLEL = 4
 
 # Not reviewed at all. The scope check already refuses protected paths, and
@@ -409,19 +409,29 @@ section. docs/PRD.md is the product requirements document the REQ-* ids refer to
 
 For EVERY acceptance criterion in T1.md, find the code that satisfies it. Use read_diff,
 read_file and grep -- do not mark a criterion met because a ticket says it is. Status:
-  met           you found the code (and ideally a test) that does it; cite file:line
-  partial       some of it is there; say exactly what is missing
-  missing       you looked and it is not there
-  unverifiable  it cannot be checked by reading code (a latency target, a live demo);
-                say what a human should check
+  met           you found the code that does it; cite file:line. A missing automated
+                test alone does not make a criterion partial -- note it in the evidence
+  partial       some of the BEHAVIOUR the criterion requires is not in the code; name
+                exactly which part
+  missing       you looked and the behaviour is not there at all
+  accepted      the team's tickets record this criterion as a known limitation,
+                deferral or deliberate deviation, WITH a reason. Accepting a gap on
+                purpose is a legitimate decision; quote their reason
+  unverifiable  it can only be checked on the running app (a latency target, a
+                browser check); say what a human should check
+
+Judge each criterion against its own words, nothing more. Do not fail a criterion for
+something it does not ask for.
 
 For every criterion that is partial or missing, say what is left and how to implement
 it: which file, which function, what to add. Be concrete enough that the team can act on
 it without asking you a question.
 
 For EVERY child ticket, report the status it claims and whether its Evidence section
-actually backs that up. A child marked done with no evidence, or with evidence that
-does not show its "Done when" line passing, is not done.
+backs it. backed = true when the Evidence section contains command output, test results
+or a transcript that shows the "Done when" line passing. backed = false only when the
+evidence is absent, is a bare claim ("works", "tested"), or shows something other than
+the "Done when" line. Do not mark it unbacked for being terse.
 
 Work through the criteria one by one. You have a budget of about {REQ_TOOL_ROUNDS} tool
 rounds; several tool calls in one round are fine and encouraged.
@@ -453,7 +463,7 @@ SUBMIT_REQUIREMENTS = {"type": "function", "function": {
         "criteria": {"type": "array", "items": {"type": "object", "properties": {
             "criterion": {"type": "string", "description": "The criterion, shortened to one line"},
             "refs": {"type": "string", "description": "REQ ids it covers, if any"},
-            "status": {"type": "string", "enum": ["met", "partial", "missing", "unverifiable"]},
+            "status": {"type": "string", "enum": ["met", "partial", "missing", "accepted", "unverifiable"]},
             "evidence": {"type": "string", "description": "At most two sentences: the file:line that does it, or what a human should check"},
             "left": {"type": "string", "description": "What is left. Empty when met"},
             "how": {"type": "string", "description": "How to implement what is left. Empty when met"}},
@@ -551,7 +561,8 @@ def verdict(req: dict, findings: list[dict], trail_missing: list[str]) -> list[s
     """Every reason the review cannot pass. Empty means it passes.
 
     Passing means: the evidence trail exists, every acceptance criterion is met
-    (or can only be checked by a human), every child marked done has evidence
+    (or accepted on purpose by the team, or can only be checked by a human), every
+    child marked done has evidence
     behind it, and nothing was found that must not merge.
     """
     reasons = [f"`{p}` is missing" for p in trail_missing]
@@ -576,7 +587,7 @@ def where(f: dict) -> str:
 
 
 def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seconds, error=None) -> str:
-    icon = {"met": "✅", "partial": "⚠️", "missing": "❌", "unverifiable": "👀"}
+    icon = {"met": "✅", "partial": "⚠️", "missing": "❌", "accepted": "🤝", "unverifiable": "👀"}
     out = [MARKER]
     if error:
         out += ["## 🤖 AI code review — could not run", "",
@@ -620,6 +631,11 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
                 out.append(f"{i}. **{cell(c.get('criterion'))}** — {cell(c.get('left'))}")
                 if c.get("how"):
                     out.append(f"   *How:* {cell(c.get('how'))}")
+            out.append("")
+        accepted = [c for c in criteria if c.get("status") == "accepted"]
+        if accepted:
+            out += ["#### Accepted by the team, on purpose", ""]
+            out += [f"- 🤝 **{cell(c.get('criterion'))}** — {cell(c.get('evidence'))}" for c in accepted]
             out.append("")
         check = [c for c in criteria if c.get("status") == "unverifiable"]
         if check:
@@ -665,7 +681,7 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         out += ["", "</details>", ""]
 
     out += ["---",
-            "<sub>Passes when the evidence trail exists, every acceptance criterion is met, every "
+            "<sub>Passes when the evidence trail exists, every acceptance criterion is met or accepted on purpose, every "
             "ticket marked done has evidence, and there are no blockers. Tests, lint and scope are "
             "the `gate` job's — this review reads the code, it does not run it. "
             "Push again to re-review.</sub>"]
