@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Create the five table branches and the ruleset that makes the gate real.
+# Create the five table branches, the facilitator's, and the ruleset that
+# makes the gate real.
 #
 #   table-N          the table's production branch. Deploys to api/web-table-N
 #   work/table-N    where they work. No protection -- they push here freely
@@ -12,19 +13,26 @@
 set -euo pipefail
 
 REPO="${REPO:-AI-Vectorial/nus-demo-4-prototype}"
-TABLES="${TABLES:-1 2 3 4 5}"
+TABLES="${TABLES:-1 2 3 4 5 facilitator}"
+
+# A table is a number or "facilitator", the sixth table run at the front of the
+# room:  3 -> table-3,   facilitator -> facilitator
+slug() { [[ "$1" =~ ^[0-9]+$ ]] && echo "table-$1" || echo "$1"; }
 
 command -v gh >/dev/null || { echo "gh CLI not found"; exit 1; }
 
 echo "1. Branches"
 MAIN_SHA="$(gh api "repos/${REPO}/git/ref/heads/main" --jq .object.sha)"
+INCLUDE=""
 for N in $TABLES; do
-  if gh api "repos/${REPO}/git/ref/heads/table-${N}" >/dev/null 2>&1; then
-    echo "   table-${N}    already exists"
+  B="$(slug "$N")"
+  INCLUDE="${INCLUDE:+${INCLUDE},}\"refs/heads/${B}\""
+  if gh api "repos/${REPO}/git/ref/heads/${B}" >/dev/null 2>&1; then
+    echo "   ${B}    already exists"
   else
     gh api -X POST "repos/${REPO}/git/refs" \
-      -f "ref=refs/heads/table-${N}" -f "sha=${MAIN_SHA}" >/dev/null
-    echo "   table-${N}    created at main"
+      -f "ref=refs/heads/${B}" -f "sha=${MAIN_SHA}" >/dev/null
+    echo "   ${B}    created at main"
   fi
 done
 
@@ -37,13 +45,13 @@ echo "2. Ruleset on table-*"
 #
 # The pre-flight check is therefore "no participant has admin", which is a
 # stronger control than removing the bypass and hoping nobody needs it at 17:15.
-cat > /tmp/table-ruleset.json <<'JSON'
+cat > /tmp/table-ruleset.json <<JSON
 {
   "name": "table protection",
   "target": "branch",
   "enforcement": "active",
   "conditions": {
-    "ref_name": { "include": ["refs/heads/table-1","refs/heads/table-2","refs/heads/table-3","refs/heads/table-4","refs/heads/table-5"], "exclude": [] }
+    "ref_name": { "include": [${INCLUDE}], "exclude": [] }
   },
   "bypass_actors": [
     { "actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "always" }

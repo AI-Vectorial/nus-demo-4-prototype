@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Provision the M04 lab on Railway: five tables, each with their own API and
-# web service, sharing one Postgres instance and one Qdrant instance.
+# Provision the M04 lab on Railway: five tables and the facilitator, each with
+# their own API and web service, sharing one Postgres instance and one Qdrant instance.
 #
 #   Postgres   one instance, five databases      table_1 .. table_5
 #   qdrant     one instance, five collections    policy_passages_table_N
@@ -18,7 +18,12 @@
 set -euo pipefail
 
 PROJECT="${RAILWAY_PROJECT:-nus-module-4}"
-TABLES="${TABLES:-1 2 3 4 5}"
+TABLES="${TABLES:-1 2 3 4 5 facilitator}"
+
+# A table is a number or "facilitator", the sixth table run at the front of the
+# room:  3 -> table-3 / table_3,   facilitator -> facilitator / facilitator
+slug() { [[ "$1" =~ ^[0-9]+$ ]] && echo "table-$1" || echo "$1"; }
+db()   { local s; s="$(slug "$1")"; echo "${s//-/_}"; }
 DRY_RUN=false
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
 
@@ -74,7 +79,7 @@ say "2. Per-table services"
 
 for N in $TABLES; do
   for KIND in api web; do
-    SVC="${KIND}-table-${N}"
+    SVC="${KIND}-$(slug "$N")"
     if has_service "$SVC"; then
       note "$SVC        already exists"
     else
@@ -88,17 +93,17 @@ done
 say "3. Wiring -- each table sees only its own database and collection"
 
 for N in $TABLES; do
-  API="api-table-${N}"
-  WEB="web-table-${N}"
+  API="api-$(slug "$N")"
+  WEB="web-$(slug "$N")"
 
   # The backend reaches Postgres and Qdrant over Railway's private network.
   # DATABASE_URL points at this table's OWN database, not the default one.
   run railway variables --service "$API" \
     --set "DATABASE_URL=\${{Postgres.DATABASE_URL}}" \
-    --set "DATABASE_NAME=table_${N}" \
+    --set "DATABASE_NAME=$(db "$N")" \
     --set "QDRANT_URL=http://\${{qdrant.RAILWAY_PRIVATE_DOMAIN}}:6333" \
     --set "QDRANT_API_KEY=\${{qdrant.QDRANT__SERVICE__API_KEY}}" \
-    --set "QDRANT_COLLECTION=policy_passages_table_${N}" \
+    --set "QDRANT_COLLECTION=policy_passages_$(db "$N")" \
     --set "TABLE_ID=${N}"
 
   # The browser calls the API directly, so it needs the public address and the
@@ -110,7 +115,7 @@ for N in $TABLES; do
   run railway variables --service "$API" \
     --set "ALLOWED_ORIGINS=https://\${{${WEB}.RAILWAY_PUBLIC_DOMAIN}}"
 
-  note "table ${N}             db=table_${N}  collection=policy_passages_table_${N}"
+  note "$(slug "$N")    db=$(db "$N")  collection=policy_passages_$(db "$N")"
 done
 
 # -----------------------------------------------------------------------------
@@ -118,9 +123,9 @@ say "4. Public domains"
 
 for N in $TABLES; do
   for KIND in api web; do
-    run railway domain --service "${KIND}-table-${N}" >/dev/null 2>&1 || true
+    run railway domain --service "${KIND}-$(slug "$N")" >/dev/null 2>&1 || true
   done
-  note "table ${N}             domains requested"
+  note "$(slug "$N")    domains requested"
 done
 
 # -----------------------------------------------------------------------------
@@ -132,7 +137,7 @@ cat <<'NEXT'
     1. Create the five databases on the Postgres instance:
          ./scripts/create_databases.sh
 
-    2. Set the OpenRouter key on each api-table-N service:
+    2. Set the OpenRouter key on each api-table-N (and api-facilitator) service:
          railway variables --service api-table-N --set "OPENROUTER_API_KEY=..."
 
     3. Confirm isolation before the lab:
