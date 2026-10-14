@@ -11,6 +11,7 @@ on purpose, and the gate is where they defend them.
 
 | | |
 |---|---|
+| **`tickets/T0-alignment.md`** | **read this first — it is already corrected** |
 | `tickets/T1-*.md` | the ticket from stage 01 |
 | `docs/PRD.md` §4–§7 | the fixed contracts |
 | **`docs/PRD.md` §10** | **the decisions that are yours** |
@@ -32,7 +33,20 @@ on purpose, and the gate is where they defend them.
 
 **This happens before any plan is written.**
 
+> **Run it with four words.** Tell your agent:
+>
+> ```
+> Follow the prompt in pipeline/02-plan.md
+> ```
+>
+> It reads the block below itself. Pasting it also works — but a paste that loses a
+> line is a long way to debug, and an edited prompt reaches every table for free.
+
 ```
+Read tickets/T0-alignment.md first. It is the corrected statement of what we
+are building and where things live -- use it instead of re-reading the PRD,
+the brief and the feature list end to end.
+
 Before you write a plan, run the decision interview.
 
 docs/PRD.md section 10 lists decisions that are deliberately left to us.

@@ -14,15 +14,28 @@
 
 ## Output
 
-`tickets/T1-<short-name>.md`, from `pipeline/templates/ticket.md`.
+| | |
+|---|---|
+| `tickets/T0-alignment.md` | from `pipeline/templates/alignment.md` — **written first** |
+| `tickets/T1.md` + `T1-F1..F8` | from `pipeline/templates/ticket.md` and `feature-ticket.md` |
 
 ## The gate
 
-> **The acceptance criteria are written by the team, in the team's words.**
+> **A human has corrected the alignment document, and the acceptance criteria are
+> written by the team, in the team's words.**
 
 ---
 
 # The prompt
+
+> **Run it with four words.** Tell your agent:
+>
+> ```
+> Follow the prompt in pipeline/01-shape.md
+> ```
+>
+> It reads the block below itself. Pasting it also works — but a paste that loses a
+> line is a long way to debug, and an edited prompt reaches every table for free.
 
 ```
 We are table N.   <- your number
@@ -33,21 +46,36 @@ it. table-N itself is protected and cannot be pushed to -- everything we
 build lands on work/table-N and reaches table-N through a pull request
 at stage 05.
 
-Then read docs/project-brief.md, docs/PRD.md and docs/features.md, and
-help me shape our first ticket.
+== Part A -- alignment, before any ticket ==
 
-Do NOT write acceptance criteria for me. Instead:
+Read docs/project-brief.md, docs/PRD.md and docs/features.md, then look
+over the repository as it stands. Write tickets/T0-alignment.md using
+pipeline/templates/alignment.md. Fill in every section, in your own
+words, including where things live in this scaffold and the commands
+that run it.
 
-1. Summarise in five lines what you believe we are building, so I can
-   correct you if you have it wrong.
+List the PRD section 10 decisions under "Still open" and leave every one
+of them unanswered. You do not decide these. If you find yourself
+needing one of them to continue, say so and stop.
 
-2. Tell me which requirement IDs from the PRD fall inside F1 to F8.
+Then STOP and ask me to read it and correct it. Do not write any ticket
+until I have.
 
-3. Ask me, one at a time, the questions you need answered to know when
-   we are done. After each answer, play it back as a single
-   pass-or-fail statement and ask me to confirm the wording.
+== Part B -- the ticket ==
 
-4. When I confirm we have enough, write:
+Once I have corrected the alignment document:
+
+1. Tell me which requirement IDs from the PRD fall inside F1 to F8.
+
+2. Ask me, in ONE message, every question you need answered to know
+   when we are done. Number them. Do not ask them one at a time, and
+   do not answer any of them yourself.
+
+3. When I reply, write all the criteria back as a numbered list of
+   pass-or-fail statements, in MY words, and ask me once:
+   "correct any of these, or say go."
+
+4. On "go", write:
 
    tickets/T1.md -- the epic, using pipeline/templates/ticket.md, with
    MY wording in the acceptance criteria.
@@ -62,8 +90,25 @@ Do NOT write acceptance criteria for me. Instead:
    The epic holds the acceptance criteria. The children hold the
    tracking -- do not duplicate the criteria into them.
 
-Stop after step 1 and wait for me.
+Write all of step 4 in one pass. Do not stop between tickets.
 ```
+
+---
+
+## Why there is an alignment document before the ticket
+
+It costs about two minutes and it buys three things.
+
+**It is the cheapest gate in the session.** A human reads five lines at minute three and
+says *"no, that is not what we are building"* — before a ticket, a plan or a line of code
+has been written on top of the misunderstanding.
+
+**Stages 02 to 06 read it instead of re-reading the repository.** One short corrected file
+is faster than three long ones, and on a slow agent that difference is minutes per stage.
+
+**It records what has *not* been decided.** The ten §10 decisions are listed and left
+blank on purpose. If a value for one of them later turns up in the plan, you can see
+exactly where it came from — which is the finding stage 02's gate exists to produce.
 
 ---
 
@@ -90,6 +135,8 @@ gate costs the session.
 
 ## Before you leave this stage
 
+- [ ] `tickets/T0-alignment.md` exists, and **a human corrected something in it**
+- [ ] Its "Still open" list has all ten §10 decisions, **all still blank**
 - [ ] The ticket exists in `tickets/`
 - [ ] Every acceptance criterion is **pass or fail** — no "properly", "correctly", "well"
 - [ ] Every criterion names a requirement ID from the PRD

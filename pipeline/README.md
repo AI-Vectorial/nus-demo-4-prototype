@@ -12,12 +12,23 @@ Six stages. Each has one job, one output, and one gate.
 
 | | Produces | Gate |
 |---|---|---|
-| **01 shape** | `tickets/T1-*.md` | the team wrote the acceptance criteria |
+| **01 shape** | `tickets/T0-alignment.md`, then `tickets/T1-*.md` | a human corrected the alignment, and the team wrote the acceptance criteria |
 | **02 plan** | `tickets/T1-plan.md` | ⚠️ **a human approves or rejects** |
 | **03 build** | working code | their criteria pass |
 | **04 review** | `tickets/T1-review.md` | a decision per finding |
 | **05 release** | `tickets/T1-release.md` + **one PR, the whole product** | a rollback, written before merge |
 | **06 verify** | a live URL | it answers on the deployed application |
+
+## Running a stage
+
+You do not paste prompts. Open the stage file, read it, then tell your agent:
+
+```
+Follow the prompt in pipeline/01-shape.md
+```
+
+**Read the stage file anyway.** The checklist at the bottom of each one is yours, not
+the agent's, and nothing downstream checks it for you.
 
 ## Two rules
 

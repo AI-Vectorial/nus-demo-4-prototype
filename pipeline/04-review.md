@@ -10,7 +10,7 @@ never looked for is not.
 
 ## Inputs
 
-The diff on `work/table-N` · `tickets/T1-plan.md` · `docs/PRD.md`
+The diff on `work/table-N` · **`tickets/T0-alignment.md`** · `tickets/T1-plan.md`
 
 ## Output
 
@@ -25,9 +25,20 @@ The diff on `work/table-N` · `tickets/T1-plan.md` · `docs/PRD.md`
 
 # The prompt
 
+> **Run it with four words.** Tell your agent:
+>
+> ```
+> Follow the prompt in pipeline/04-review.md
+> ```
+>
+> It reads the block below itself. Pasting it also works — but a paste that loses a
+> line is a long way to debug, and an edited prompt reaches every table for free.
+
 ```
-Review the diff on this branch in five separate passes. Do them ONE AT A
-TIME and show me each before moving on -- do not merge them into one list.
+Review the diff on this branch in five separate passes. Keep them
+separate -- print each pass under its own heading, do not merge them
+into one list -- and go straight on to the next pass without waiting
+for me.
 
   Pass 1  CORRECTNESS      does it do what the ticket says? edge cases?
                            off-by-one? what happens on empty, null, huge?
