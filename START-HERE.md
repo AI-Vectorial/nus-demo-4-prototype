@@ -50,8 +50,17 @@ Nobody else can reach them, and you cannot reach anybody else's.
             or rejected                                     approved, then merges
 ```
 
-Open **`pipeline/01-shape.md`** and follow it. Each stage says what to give your
+Open **`pipeline/01-shape.md`** and read it. Each stage says what to give your
 agent and what has to be true before you move on.
+
+**You do not paste prompts.** Read the stage file, then tell your agent:
+
+```
+Follow the prompt in pipeline/01-shape.md
+```
+
+It opens the file and follows the block itself. Read the file anyway — the checklist
+at the bottom of each stage is yours to run, and nothing downstream checks it for you.
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## Inputs
 
-`tickets/T1-review.md` · a green build on `work/table-N`
+**`tickets/T0-alignment.md`** · `tickets/T1-review.md` · a green build on `work/table-N`
 
 ## Output
 
@@ -20,6 +20,15 @@ request** into `table-N` carrying the whole product.
 ---
 
 # The prompt
+
+> **Run it with four words.** Tell your agent:
+>
+> ```
+> Follow the prompt in pipeline/05-release.md
+> ```
+>
+> It reads the block below itself. Pasting it also works — but a paste that loses a
+> line is a long way to debug, and an edited prompt reaches every table for free.
 
 ```
 Write tickets/T1-release.md using pipeline/templates/release-plan.md.
