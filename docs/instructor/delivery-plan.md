@@ -109,12 +109,23 @@ check all five screens are on it by 0:12.
 
 ### 🎥 Projector: ~3 min, then get off the screen
 
-Paste your shape prompt. Let the agent produce its five-line summary. Then:
+You do not paste a prompt any more. Type the four words and let them watch:
 
-> *"Look what it did. It told me what it thinks we're building and asked me to
-> correct it — before writing a line. **That is the whole stage.** You are not
-> getting requirements from the agent. You are giving them to it, in your words,
-> so that later you can say whether they were met."*
+```
+Follow the prompt in pipeline/01-shape.md
+```
+
+Let it write `tickets/T0-alignment.md`, then **open the file on the projector**
+and correct something in it out loud. Then:
+
+> *"Look what it did. Before writing a single ticket, it told me what it thinks
+> we're building — and I just corrected it. That took nine seconds. Finding that
+> out at the release gate costs you the session. **That is the whole stage.**
+> You are not getting requirements from the agent. You are giving them to it, in
+> your words, so that later you can say whether they were met."*
+
+> **Correct something real, even something small.** A room that watches you read
+> it and say "yep, fine" has learned that this document is a formality.
 
 **Then stop sharing and let them work.** They have twelve minutes.
 
@@ -128,6 +139,7 @@ Paste your shape prompt. Let the agent produce its five-line summary. Then:
 
 | Seen on screen | Means | Do |
 |---|---|---|
+| Alignment document accepted unread, no edits | ❌ the cheapest gate skipped | *"What did it get wrong?"* Wait them out |
 | Agent wrote the criteria, team said "yes looks good" | ❌ the stage failed silently | *"Whose words are those?"* Nothing more |
 | Criteria that cannot fail — "the system is reliable" | ❌ untestable | *"Show me the test that proves that"* |
 | Team arguing about what "refuses" means | ✅ **this is the stage working** | Walk away |
@@ -226,6 +238,13 @@ to glance at the screen than to raise a hand.
 > a stage.** Say your number out loud to each other now."*
 
 Then **go quiet for a full ten seconds.** Let them actually decide.
+
+> **Their agent is about to ask them the same question.** It stops once on its
+> own when F5 is done — *"how far do we go: F6, F7, F8, or stop here?"* — so your
+> call and its question land together. A table that has already said its number
+> out loud answers in five seconds. A table that has not will sit there arguing
+> with a stopped agent, which is exactly the moment you want the roamer at their
+> shoulder.
 
 ### 👁️ Roamer — the four failures, in the order they appear
 

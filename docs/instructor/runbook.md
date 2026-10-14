@@ -46,9 +46,13 @@ the homework."*
 
 # 0:10 — Stage 01 shape  ·  *15 min*
 
-They write a ticket with acceptance criteria **in their own words**.
+Two outputs now. First `tickets/T0-alignment.md` — the agent writes what it
+believes it is building, and **a human corrects it before any ticket exists**.
+Then the ticket, with acceptance criteria **in their own words**.
 
-**Roam and check:** are the criteria theirs, or did the agent write them?
+**Roam and check:** did anybody actually correct the alignment document, or did
+they skim it and say yes? And are the criteria theirs, or did the agent write
+them?
 
 > *"Read me your third acceptance criterion. Now tell me how you would know it
 > was false."*
