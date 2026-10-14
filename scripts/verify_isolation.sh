@@ -7,17 +7,22 @@
 # matters most, because five agents will be writing storage code at once.
 #
 set -euo pipefail
-TABLES="${TABLES:-1 2 3 4 5}"
+TABLES="${TABLES:-1 2 3 4 5 facilitator}"
+
+# A table is a number or "facilitator", the sixth table run at the front of the
+# room:  3 -> table-3 / table_3,   facilitator -> facilitator / facilitator
+slug() { [[ "$1" =~ ^[0-9]+$ ]] && echo "table-$1" || echo "$1"; }
+db()   { local s; s="$(slug "$1")"; echo "${s//-/_}"; }
 
 echo "Reading passage counts from each table's /healthz"
 declare -A BEFORE
 for N in $TABLES; do
-  URL="$(railway variables --service "api-table-${N}" --json 2>/dev/null \
+  URL="$(railway variables --service "api-$(slug "$N")" --json 2>/dev/null \
         | python -c 'import json,sys;print(json.load(sys.stdin).get("RAILWAY_PUBLIC_DOMAIN",""))')"
-  [[ -n "$URL" ]] || { echo "  table ${N}: no public domain yet -- skipping"; continue; }
+  [[ -n "$URL" ]] || { echo "  $(slug "$N"): no public domain yet -- skipping"; continue; }
   BEFORE[$N]="$(curl -s --max-time 20 "https://${URL}/healthz" \
                | python -c 'import json,sys;print(json.load(sys.stdin)["dependencies"]["vector_store"])' 2>/dev/null || echo unknown)"
-  echo "  table ${N}: ${BEFORE[$N]}"
+  echo "  $(slug "$N"): ${BEFORE[$N]}"
 done
 
 cat <<'NEXT'

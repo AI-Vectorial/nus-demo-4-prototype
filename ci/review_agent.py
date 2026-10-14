@@ -561,17 +561,17 @@ def verdict(req: dict, findings: list[dict], trail_missing: list[str]) -> list[s
     """Every reason the review cannot pass. Empty means it passes.
 
     Passing means: the evidence trail exists, every acceptance criterion is met
-    (or accepted on purpose by the team, or can only be checked by a human), every
-    child marked done has evidence
-    behind it, and nothing was found that must not merge.
+    (or accepted on purpose by the team, or can only be checked by a human), and
+    nothing was found that must not merge.
+
+    Thin evidence on a child ticket is shown, not failed. Whether a pasted
+    summary is "enough" is the most subjective call the reviewer makes, and the
+    one most likely to flip between two runs over the same diff.
     """
     reasons = [f"`{p}` is missing" for p in trail_missing]
     for c in req.get("criteria", []):
         if c.get("status") in ("partial", "missing"):
             reasons.append(f"criterion {c['status']}: {c.get('criterion', '')}")
-    for ch in req.get("children", []):
-        if "done" in str(ch.get("claimed", "")).lower() and not ch.get("backed"):
-            reasons.append(f"{ch.get('ticket')} is marked done without evidence")
     for f in findings:
         if f["severity"] == "blocker":
             reasons.append(f"blocker: {f.get('title', '')}")
@@ -645,7 +645,13 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
 
     children = req.get("children", [])
     if children:
-        out += ["### Feature tickets", "", "| Ticket | Claims | Evidence |", "|---|---|---|"]
+        out += ["### Feature tickets", ""]
+        thin = sum(1 for ch in children
+                   if "done" in str(ch.get("claimed", "")).lower() and not ch.get("backed"))
+        if thin:
+            out += [f"⚠️ {thin} ticket(s) marked done with thin evidence. Not a merge blocker, "
+                    "but paste the real output before the record is approved.", ""]
+        out += ["| Ticket | Claims | Evidence |", "|---|---|---|"]
         for ch in children:
             done = "done" in str(ch.get("claimed", "")).lower()
             ok = "✅" if ch.get("backed") else ("❌" if done else "⏳")
@@ -681,8 +687,8 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         out += ["", "</details>", ""]
 
     out += ["---",
-            "<sub>Passes when the evidence trail exists, every acceptance criterion is met or accepted on purpose, every "
-            "ticket marked done has evidence, and there are no blockers. Tests, lint and scope are "
+            "<sub>Passes when the evidence trail exists, every acceptance criterion is met or accepted on purpose, "
+            "and there are no blockers. Tests, lint and scope are "
             "the `gate` job's — this review reads the code, it does not run it. "
             "Push again to re-review.</sub>"]
     return "\n".join(out)

@@ -10,7 +10,8 @@
 #
 # Secrets are repository-wide, so all five land in every Codespace. This picks
 # the one belonging to whichever table's branch is checked out, which keeps the
-# rate limits and the spend separate.
+# rate limits and the spend separate. The facilitator's branches (facilitator,
+# work/facilitator) use OPENROUTER_API_KEY_FACILITATOR.
 #
 # OPENROUTER_API_KEY set directly still wins, so one shared key works for a dry
 # run before five exist.
@@ -19,9 +20,11 @@ if [ -z "${OPENROUTER_API_KEY:-}" ]; then
   _repo="${CODESPACE_VSCODE_FOLDER:-/workspaces/nus-demo-4-prototype}"
   _branch="$(git -C "$_repo" branch --show-current 2>/dev/null || echo '')"
   _table="$(printf '%s' "$_branch" | grep -oE 'table-[1-5]' | head -1 | tr -d 'table-')"
+  case "$_branch" in facilitator|work/facilitator) _table="facilitator" ;; esac
 
   if [ -n "$_table" ]; then
     _var="OPENROUTER_API_KEY_TABLE_${_table}"
+    [ "$_table" = "facilitator" ] && _var="OPENROUTER_API_KEY_FACILITATOR"
     eval "_key=\${${_var}:-}"
     if [ -n "$_key" ]; then
       export OPENROUTER_API_KEY="$_key"
@@ -33,7 +36,7 @@ if [ -z "${OPENROUTER_API_KEY:-}" ]; then
     unset _var _key
   elif [ -n "$_branch" ]; then
     echo "  !! No OpenRouter key, and branch '${_branch}' does not name a table."
-    echo "  !! Expected something like 'work/table-3'."
+    echo "  !! Expected something like 'work/table-3' or 'work/facilitator'."
   fi
   unset _repo _branch _table
 fi
