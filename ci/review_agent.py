@@ -433,6 +433,19 @@ missing.
 Judge each criterion against its own words, nothing more. Do not fail a criterion for
 something it does not ask for.
 
+BE FAIR. This is a 150-minute lab, and a team that built the behaviour has done the
+work. Criteria are about what the PRODUCT does:
+  - if the code clearly does what the criterion says, it is met -- even when the
+    team's proof (a pasted run, a live check) is missing. Say "proof not attached" in
+    the evidence; the feature tickets section is where thin evidence is reported
+  - a criterion about scope or process ("done when F1-F5 pass", "every stage
+    completed") is met when the code for each feature it names is present. Judge the
+    features, not the paperwork
+  - partial means a specific piece of BEHAVIOUR is absent from the code. Name the
+    piece. Missing proof, missing tests or an unrun live check are never partial
+  - when in doubt between met and partial, and the code does the main thing, choose met
+    and note the doubt in the evidence
+
 For every criterion that is partial or missing, say what is left and how to implement
 it: which file, which function, what to add. Be concrete enough that the team can act on
 it without asking you a question.
@@ -484,7 +497,7 @@ SUBMIT_REQUIREMENTS = {"type": "function", "function": {
             "backed": {"type": "boolean", "description": "Does the Evidence section back the claim?"},
             "note": {"type": "string"}},
             "required": ["ticket", "claimed", "backed"]}},
-        "summary": {"type": "string", "description": "Two sentences: how complete is this increment?"}},
+        "summary": {"type": "string", "description": "Two or three sentences, written to the team: what is built and working first, then the one or two most important follow-ups. Fair and specific, never a list of everything unproven."}},
         "required": ["criteria", "children", "summary"]}}}
 
 
@@ -567,26 +580,35 @@ def run_requirements_lane(base: str, head: str, files: list[Changed]) -> dict:
 # VERDICT AND REPORT
 # ---------------------------------------------------------------------------
 
-def verdict(req: dict, findings: list[dict], trail_missing: list[str]) -> list[str]:
-    """Every reason the review cannot pass. Empty means it passes.
+def verdict(req: dict, findings: list[dict], trail_missing: list[str]) -> tuple[list[str], list[str]]:
+    """(blocking, follow_ups). The review passes when blocking is empty.
 
-    Passing means: the evidence trail exists, every acceptance criterion is met
-    (or accepted or cut on purpose by the team, with a reason, or can only be
-    checked by a human), and
-    nothing was found that must not merge.
+    Blocking is kept to what genuinely should not merge yet: a missing piece of
+    the evidence trail, an acceptance criterion with no code behind it at all,
+    and a blocker finding.
 
-    Thin evidence on a child ticket is shown, not failed. Whether a pasted
-    summary is "enough" is the most subjective call the reviewer makes, and the
-    one most likely to flip between two runs over the same diff.
+    Everything a reasonable reviewer would merge and then fix is a follow-up: a
+    criterion that is partly built, a high finding, thin evidence on a ticket.
+    A team that built the product in 150 minutes has done the work; a review
+    that greets that with a wall of red teaches them to stop reading it.
     """
-    reasons = [f"`{p}` is missing" for p in trail_missing]
+    blocking = [f"`{p}` is missing" for p in trail_missing]
+    follow_ups = []
     for c in req.get("criteria", []):
-        if c.get("status") in ("partial", "missing"):
-            reasons.append(f"criterion {c['status']}: {c.get('criterion', '')}")
+        if c.get("status") == "missing":
+            blocking.append(f"not built: {c.get('criterion', '')}")
+        elif c.get("status") == "partial":
+            follow_ups.append(f"partly built: {c.get('criterion', '')}")
     for f in findings:
         if f["severity"] == "blocker":
-            reasons.append(f"blocker: {f.get('title', '')}")
-    return reasons
+            blocking.append(f"blocker: {f.get('title', '')}")
+        elif f["severity"] == "high":
+            follow_ups.append(f"high: {f.get('title', '')}")
+    thin = sum(1 for ch in req.get("children", [])
+               if "done" in str(ch.get("claimed", "")).lower() and not ch.get("backed"))
+    if thin:
+        follow_ups.append(f"{thin} ticket(s) marked done need their evidence pasted in")
+    return blocking, follow_ups
 
 
 def cell(text) -> str:
@@ -597,7 +619,8 @@ def where(f: dict) -> str:
     return f"`{f.get('file', '?')}:{f['line']}`" if f.get("line") else f"`{f.get('file', '?')}`"
 
 
-def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seconds, error=None) -> str:
+def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seconds, error=None,
+           follow_ups=()) -> str:
     icon = {"met": "✅", "partial": "⚠️", "missing": "❌", "accepted": "🤝", "cut": "✂️", "unverifiable": "👀"}
     out = [MARKER]
     if error:
@@ -608,6 +631,8 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
 
     if reasons:
         out.append(f"## 🤖 AI code review — ❌ Changes requested ({len(reasons)})")
+    elif follow_ups:
+        out.append(f"## 🤖 AI code review — ✅ Good for merge, with {len(follow_ups)} follow-up(s)")
     else:
         out.append("## 🤖 AI code review — ✅ Review passed, good for merge")
     reviewed = sum(1 for f in files if f.kind != "skip")
@@ -620,7 +645,10 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         out += [f"> {cell(req['summary'])}", ""]
 
     if reasons:
-        out += ["**Why it did not pass**", ""] + [f"- {r}" for r in reasons] + [""]
+        out += ["**What has to change before merge**", ""] + [f"- ❌ {r}" for r in reasons] + [""]
+    if follow_ups:
+        out += ["**Follow-ups** — worth fixing, not blocking the merge", ""]
+        out += [f"- {r}" for r in follow_ups] + [""]
 
     if trail_missing:
         out += ["### Evidence trail", ""]
@@ -655,7 +683,7 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
             out.append("")
         check = [c for c in criteria if c.get("status") == "unverifiable"]
         if check:
-            out += ["#### For a human to check", ""]
+            out += ["#### Check on the live app (stage 06) — the code is there, it needs a run", ""]
             out += [f"- 👀 {cell(c.get('criterion'))}" for c in check]
             out.append("")
 
@@ -665,13 +693,13 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         thin = sum(1 for ch in children
                    if "done" in str(ch.get("claimed", "")).lower() and not ch.get("backed"))
         if thin:
-            out += [f"⚠️ {thin} ticket(s) marked done with thin evidence. Not a merge blocker, "
-                    "but paste the real output before the record is approved.", ""]
+            out += [f"📝 {thin} ticket(s) marked done need their evidence pasted in — the command "
+                    "output or transcript that shows the \"Done when\" line passing. Not a merge blocker.", ""]
         out += ["| Ticket | Claims | Evidence |", "|---|---|---|"]
         for ch in children:
             done = "done" in str(ch.get("claimed", "")).lower()
             cut = "cut" in str(ch.get("claimed", "")).lower()
-            ok = "✂️" if cut else "✅" if ch.get("backed") else ("❌" if done else "⏳")
+            ok = "✂️" if cut else "✅" if ch.get("backed") else ("📝" if done else "⏳")
             out.append(f"| {cell(ch.get('ticket'))} | {cell(ch.get('claimed'))} | {ok} {cell(ch.get('note'))} |")
         out.append("")
 
@@ -704,8 +732,8 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         out += ["", "</details>", ""]
 
     out += ["---",
-            "<sub>Passes when the evidence trail exists, every acceptance criterion is met, or accepted or cut on purpose, "
-            "and there are no blockers. Tests, lint and scope are "
+            "<sub>❌ only for what should not merge yet: a missing record, a criterion with no code behind it, "
+            "or a blocker. Everything else is a follow-up. Tests, lint and scope are "
             "the `gate` job's — this review reads the code, it does not run it. "
             "Push again to re-review.</sub>"]
     return "\n".join(out)
@@ -813,9 +841,9 @@ def main() -> int:
                        error=str(e)), a.out)
         return 2
 
-    reasons = verdict(req, findings, trail_missing)
+    reasons, follow_ups = verdict(req, findings, trail_missing)
     report = render(reasons, req, findings, files, lanes, trail_missing,
-                    Tools.total, time.time() - started)
+                    Tools.total, time.time() - started, follow_ups=follow_ups)
     publish(report, a.out)
 
     log("")
@@ -826,6 +854,11 @@ def main() -> int:
         for r in reasons:
             log(f"  - {r}")
         return 1
+    if follow_ups:
+        log(f"VERDICT: good for merge, with {len(follow_ups)} follow-up(s)")
+        for r in follow_ups:
+            log(f"  - {r}")
+        return 0
     log("VERDICT: review passed -- good for merge")
     return 0
 

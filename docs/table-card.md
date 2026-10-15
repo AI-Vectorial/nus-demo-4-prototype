@@ -21,8 +21,11 @@ vector store are running in your Codespace. You set up nothing.
 ## First five minutes
 
 ```bash
-claude                            # or: codex
+claude
 ```
+
+**Claude Code, on Haiku.** Chosen for speed — you have sixty minutes to build in, and
+the stage 03 prompt is written to start producing files inside the first two.
 
 **Your agent creates `work/table-N` itself** — stage 01's first instruction.
 You do not need to.

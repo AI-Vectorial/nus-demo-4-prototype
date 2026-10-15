@@ -6,7 +6,8 @@ correcting it is still cheap.*
 **Table:** N
 **Branch:** work/table-N
 **Written:** <date, time>
-**Corrected by:** <your name, once you have read it and fixed what is wrong>
+**Corrected by the team:** <what you changed, once you have read it>
+*(the team, not a named person — nobody signs anything today)*
 
 ---
 
@@ -41,6 +42,18 @@ re-reading the whole repository.*
 | Corpus | |
 | Tickets | |
 | Configuration | |
+
+## What is already built, and must not be built again
+
+*The single most expensive mistake in a sixty-minute build is writing something
+the scaffold already gave you. List it here, by name, so no later stage has to
+go looking.*
+
+| | |
+|---|---|
+| Test fixtures (`conftest.py`) | |
+| Given modules | |
+| What `backend/tests/README.md` says | |
 
 **Commands**
 

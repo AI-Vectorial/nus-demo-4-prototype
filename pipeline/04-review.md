@@ -54,6 +54,17 @@ for me.
 For each finding: what it is, where, how bad, and what you would do.
 Do NOT fix anything yet. I decide what gets fixed.
 
+Number findings FND-1, FND-2 and so on. Never F1, F2 -- F1 to F12 are
+the FEATURES in docs/features.md, so "F11" in a review reads as "Audit
+export" and nobody can follow you.
+
+Check before you assert. Do not say "all dependencies are permissive"
+unless you have read them; say "I have not checked every transitive
+dependency" instead. If you do turn out to be wrong, correct it in one
+line and move on -- do not write a paragraph revising your earlier
+self. We are reading this for findings, not for your reasoning about
+your reasoning.
+
 When you are done, commit what this stage produced to work/table-N:
 
   git add tickets/

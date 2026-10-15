@@ -53,6 +53,34 @@ Nobody else can reach them, and you cannot reach anybody else's.
 Open **`pipeline/01-shape.md`** and read it. Each stage says what to give your
 agent and what has to be true before you move on.
 
+## What each stage leaves behind
+
+Every stage produces **a file you can point at.** That is deliberate: at 2:15 somebody
+will ask you to show your work, and "we talked about it" is not an artefact.
+
+| Stage | What you get | Why it exists |
+|---|---|---|
+| **01 shape** | `tickets/T0-alignment.md` | **What the agent thinks you are building, before it builds any of it.** Five lines, the scaffold map, the commands, and the ten §10 decisions listed *unanswered*. You read it and correct it — at minute three, when correcting it is free |
+| | `tickets/T1.md` + `T1-F1..F8` | the epic carries **your** acceptance criteria; the children carry the tracking |
+| **02 plan** | `tickets/T1-plan.md` | the ten decisions **with your reasons next to them**, the build order, and the riskiest part. ⚠️ a human approves or rejects it |
+| **03 build** | working code, committed per feature | each feature's child ticket set to `done` with the command and output that prove it |
+| **04 review** | `tickets/T1-review.md` | five passes, and **a decision on every finding** — fixed, accepted or deferred, with a reason |
+| **05 release** | `tickets/T1-release.md` + one PR | the rollback, **written before the merge** |
+| **06 verify** | a live URL, evidence in the ticket | ⚠️ a human approves, then it deploys |
+
+> ### Why the alignment document exists
+>
+> It is the cheapest gate in the day. A misunderstanding caught at minute three costs a
+> sentence; the same misunderstanding caught at the release gate costs the session.
+>
+> It does two more things quietly. **Stages 02–06 read it instead of re-reading the PRD,
+> the brief and the feature list** — one short corrected file beats three long ones, and
+> on a slow agent that is minutes back per stage. And it **lists the ten decisions
+> unanswered on purpose**: if a value for one later turns up in the plan, you can see
+> exactly where it came from. That is the finding the plan gate exists to produce.
+
+---
+
 **You do not paste prompts.** Read the stage file, then tell your agent:
 
 ```
