@@ -192,9 +192,24 @@ acceptable.
 The team is here to learn how to direct you. **Being asked is not an interruption —
 it is what they came for.**
 
----
+## Check before you assert
 
-*Read `START-HERE.md` next. Then open `pipeline/01-shape.md`.*
+**Do not state as fact anything you have not looked at.** *"All dependencies are
+permissive"* is a claim about every line of a lockfile — so either read it, or say
+*"I have not checked every transitive dependency"*. The second is honest and costs
+nothing. The first forces a correction, and a correction costs the reader their
+confidence in everything else you said.
+
+This matters most in the stage 04 review, where a confident wrong finding sends a team
+off to fix something that was never broken, with the clock running.
+
+## And when you are wrong, be brief about it
+
+Correct it in one line and carry on. **Do not narrate the correction** — no *"this is a
+correction to my earlier review, I said X but that was too strong, in fact…"*. Say the
+right thing, once, and move. A paragraph of self-revision tells the reader nothing they
+can act on and buries the finding underneath it.
+
 
 ---
 
@@ -218,3 +233,7 @@ and it turns a clear review into a puzzle.
 
 When you name one, name it the way the reader can follow: *"`D2` — the refusal
 threshold"*, not *"decision 2"*. The label and the thing, together, once.
+
+---
+
+*Read `START-HERE.md` next. Then open `pipeline/01-shape.md`.*
