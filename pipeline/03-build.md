@@ -41,6 +41,31 @@ writing a paragraph before the first edit, delete it and make the edit.
 Do not re-plan. Do not re-read the PRD end to end. Do not restate the
 plan back to me. It is approved -- that argument is over.
 
+== Do not build these. You already have them ==
+
+  backend/tests/README.md   READ THIS FIRST. Two minutes, and it is the
+                            difference between a test you write and a
+                            test harness you write
+
+  Fixtures in conftest.py, ready to use by name:
+    client          the API loaded, for asserting on real responses
+    store           an empty in-memory vector store
+    loaded_store    the same, with three passages already in it
+    model           a model that never touches the network
+    failing_model   a model that is always unreachable
+    passages        sample passages, already embedded
+    sample_corpus   a small fixture corpus
+
+  Given modules -- use them, do not rewrite them:
+    retrieve/store.py        Passage, Hit, the VectorStore interface
+    retrieve/qdrant_store.py the only module importing the Qdrant client
+    generate/client.py       the only module importing the model SDK
+    frontend/lib/            the typed API client and shared types
+
+Your tests need no Qdrant, no Postgres and no network. If you find
+yourself writing a mock, stop -- it already exists. The whole suite runs
+in about two seconds, so run it often.
+
 Open tickets/T1-plan.md, take item 1, and for every item run this loop:
 
    write the test -> run it RED -> write the code -> run it GREEN ->
@@ -49,6 +74,9 @@ Open tickets/T1-plan.md, take item 1, and for every item run this loop:
 The status line, exactly this shape, then CONTINUE without waiting:
 
   [F1 ingest] tests 12/12 ok | ruff ok | commit a1b2c3d | next F2
+
+Do not run `npm run build` inside the loop -- it is slow and CI does it
+for you. `npm run typecheck` is the fast check while you work.
 
 Budget about 7 minutes per feature. The stage is 60 minutes and there
 are five features on the critical path. Thinking is not progress; a red

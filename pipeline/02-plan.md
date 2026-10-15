@@ -49,7 +49,8 @@ the brief and the feature list end to end.
 
 Before you write a plan, run the decision interview.
 
-docs/PRD.md section 10 lists decisions that are deliberately left to us.
+docs/PRD.md section 10 lists the TEN decisions, D0 to D9, that are
+deliberately left to us.
 For EACH one, in a single message, give me:
 
   - the decision, in one line
@@ -60,8 +61,19 @@ For EACH one, in a single message, give me:
 Then STOP and wait for my answers. All of them, in one block -- do not
 ask them one at a time, and do not start the plan until I have replied.
 
-You may not choose any of these for me. If I say "you decide", give me
-your recommendation and ask me to confirm it.
+You may not choose any of these for me. If I say "you decide", or I
+accept your recommendations, do this and nothing more:
+
+  - play the full set back ONCE, numbered: the decision, the value, and
+    your one-line reason for each
+  - ask exactly one question: "correct anything, or say go"
+  - on "go", write the plan
+
+Then stop asking. Do not walk back through them one by one, do not ask
+me to justify any of them, do not ask "are you sure". I answered. Put
+YOUR reason in the Why column, marked as accepted -- "accepted: 400
+keeps a policy clause whole in one chunk" -- and move on. A blank cell
+fails the gate. A reason I agreed to does not.
 
 Present the decisions and stop. Do not preface them by telling me what
 you have or have not decided, and do not explain the rules back to me

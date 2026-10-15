@@ -50,6 +50,32 @@ will ask *"why 400 tokens?"* and *"the agent chose it"* is a failed answer.
 If they say *"you decide"*: state your recommendation and **why**, then ask them to
 confirm. Confirmation is a decision. Silence is not.
 
+**Ask once. Then take the answer.**
+
+If they accept your recommendations, play the whole set back one time — *"here is what
+we are going with; correct anything, or say go"* — and on "go", **go**. Write your own
+reason into the record as the reason, marked as accepted: *"accepted the recommendation:
+400 keeps a policy clause whole in one chunk."*
+
+**Do not then ask them to justify it.** Not per decision, not "can you say why", not "are
+you sure". They answered. A second pass asking for reasoning they have already delegated
+to you is not diligence — it is the same question wearing a different hat, and it burns a
+stage they cannot get back.
+
+The record needs a reason beside every value. It does not need the human to have typed
+it. What fails at the gate is a blank cell or a value nobody will stand behind — **not
+the fact that you suggested it first.**
+
+**Asked for a recommendation, give one.** Plainly — *"I would use 400, because…"* — not
+a neutral list with the answer withheld. Refusing to recommend is not neutrality, it is
+unhelpfulness wearing its coat. A recommendation is not a decision; it becomes one when
+a human says yes.
+
+**And do not ask who anyone is.** Never ask for a reviewer's name, an approver's name or
+who is on the team. Approval here is a *role*, not a person: **the team decides, and a
+human approves.** Write "the team" or "the release manager" and move on. A question
+whose answer changes nothing about what you build is a question not worth the minute.
+
 ## Rule 3 — Follow the stages in order. Do not run ahead.
 
 Six stages in `pipeline/`. Each has a gate. **You do not begin a stage until the previous
@@ -129,6 +155,20 @@ happened once on this project — `psycopg` is LGPLv3 and had to be swapped for 
 Before proposing a package, say what its licence is. If it is GPL, LGPL, AGPL or MPL,
 propose an alternative instead.
 
+**That rule is about packages you are proposing to add — a direct dependency, chosen.**
+
+A **transitive** dependency is different. Nobody chose `certifi`; it arrived underneath
+something else. You cannot swap it without swapping its parent, so "propose an
+alternative" is not advice anyone can act on. For a transitive licence finding, say:
+
+- which package, which licence, and **what pulled it in**
+- whether it ships to users or stays in the build
+- that the realistic options are **accept with a reason** or **drop the parent**
+
+Then let the team pick. **An `UNKNOWN` licence is a missing fact, not a violation** —
+say that it could not be determined and what you would check, rather than reporting it
+as a problem found.
+
 ---
 
 # 6. Code expectations
@@ -167,6 +207,48 @@ acceptable.
 
 The team is here to learn how to direct you. **Being asked is not an interruption —
 it is what they came for.**
+
+## Check before you assert
+
+**Do not state as fact anything you have not looked at.** *"All dependencies are
+permissive"* is a claim about every line of a lockfile — so either read it, or say
+*"I have not checked every transitive dependency"*. The second is honest and costs
+nothing. The first forces a correction, and a correction costs the reader their
+confidence in everything else you said.
+
+This matters most in the stage 04 review, where a confident wrong finding sends a team
+off to fix something that was never broken, with the clock running.
+
+## And when you are wrong, be brief about it
+
+Correct it in one line and carry on. **Do not narrate the correction** — no *"this is a
+correction to my earlier review, I said X but that was too strong, in fact…"*. Say the
+right thing, once, and move. A paragraph of self-revision tells the reader nothing they
+can act on and buries the finding underneath it.
+
+
+---
+
+# 9. The labels, and what each one means
+
+Five different things in this repository are numbered, and mixing them up makes a
+sentence impossible to follow. **"F11 needs the team"** reads as *Audit export* to anyone
+holding the feature list.
+
+| | Means | Lives in | Example |
+|---|---|---|---|
+| **`REQ-*`** · `NFR-*` | a requirement | `docs/PRD.md` §4 | `REQ-C5` retrieval runs every turn |
+| **`F1`–`F8`** | a **feature** you build | `docs/features.md` | `F3` refuse |
+| `F9`–`F12` | features **beyond** the critical path | `docs/features.md` | `F11` audit export |
+| **`D0`–`D9`** | a **decision that is the team's** | `docs/PRD.md` §10 | `D2` the refusal threshold |
+| **`FND-1`…** | a **finding** from the stage 04 review | `tickets/T1-review.md` | `FND-3` secret in a log line |
+| `S1`–`S4` | a success measure | `docs/project-brief.md` | |
+
+**Never reuse `F` for a review finding.** It is the one collision that actually happens,
+and it turns a clear review into a puzzle.
+
+When you name one, name it the way the reader can follow: *"`D2` — the refusal
+threshold"*, not *"decision 2"*. The label and the thing, together, once.
 
 ---
 
