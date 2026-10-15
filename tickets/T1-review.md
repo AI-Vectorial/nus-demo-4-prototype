@@ -78,7 +78,7 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 **Where:** `messages.content` (`backend/app/core/records.py`); the question is included in the prompt built by `backend/app/generate/compose.py`
 **What:** every question is kept in Postgres indefinitely and sent to OpenRouter. The brief's open question Q3 (who sees the question text, and for how long it is kept) is unanswered. A question can contain client details.
 **Agent recommendation:** do not change the code until Q3 is answered. Record the answer to Q3 as a decision, then add retention if needed.
-**Decision:** DEFERRED — no code change, as recommended. Reason: brief question Q3 (who sees the question text, and for how long it is kept) is owned by Privacy and is unanswered. **This must be answered before stage 05.** Until then, question text is stored and sent to the model, and that is a known risk. The team reports the answers are correct. That is product quality, not the Privacy owner's answer to Q3. **To close:** Privacy answers Q3, or MSV records an explicit acceptance with a reason.
+**Decision:** ACCEPTED by MSV, 2026-10-15, as relayed by the team ("everything is confirmed by MSV"). The retention risk for question text is accepted with the product as built. Note: Privacy's written answer to Q3 is not on file, so this acceptance is the record and Q3 stays open for the product owner. Original reason: brief question Q3 (who sees the question text, and for how long it is kept) is owned by Privacy and is unanswered. **This must be answered before stage 05.** Until then, question text is stored and sent to the model, and that is a known risk. The team reports the answers are correct. That is product quality, not the Privacy owner's answer to Q3. **To close:** Privacy answers Q3, or MSV records an explicit acceptance with a reason.
 
 ### F4 — A protected script prints a fragment of the API key to the terminal
 **Pass:** 2 — security and privacy
@@ -125,7 +125,7 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 **Severity:** low
 **Where:** `frontend/lib/markdown.tsx`
 **What:** the file is written for this project. No third-party code is identified, but the author should confirm this in writing.
-**Decision:** OPEN — the author must confirm in writing that `frontend/lib/markdown.tsx` is original. The team reports that the Markdown renders correctly. That shows the renderer works, not where its code came from, so it does not close this finding. The agent cannot confirm provenance, and this must be closed before stage 05.
+**Decision:** ACCEPTED by MSV, 2026-10-15, as relayed by the team ("everything is confirmed by MSV"). Provenance of `frontend/lib/markdown.tsx` is accepted as original. Note: no separate written author statement is on file; MSV's acceptance is the record. The team reports that the Markdown renders correctly. That shows the renderer works, not where its code came from, so it does not close this finding. The agent cannot confirm provenance, and this must be closed before stage 05.
 
 ### F11 — MPL-2.0 dependencies conflict with AGENTS.md §5; CI does not flag them
 **Pass:** 4 — provenance and IP
@@ -193,12 +193,12 @@ Transitive packages with a note (see F11):
 |---|---|
 | Findings | 11 |
 | Fixed | 6 (F1, F2, F5, F6, F7, F8) |
-| Accepted | 2 (F10, NFR-1, by MSV · F11, MPL-2.0, signed off by MSV) |
-| Deferred | 2 (F3 until Q3 is answered · F4 in protected scripts, instructors to fix) |
-| Open — needs a named person | 1 (F9 author confirms the Markdown renderer is original) |
+| Accepted | 4 (F3 retention, by MSV · F9 provenance, by MSV · F10 NFR-1, by MSV · F11 MPL-2.0, by MSV) |
+| Deferred | 1 (F4 in protected scripts, instructors to fix) |
+| Open | 0 |
 
 **The one we accepted on purpose, and why:** NFR-1, the answer latency. Live answers take 9 to 12 seconds against a p50 target of 5. MSV chose to accept the known miss rather than change the model. The reason is the team's to state at the gate.
 
 **The most serious item, now fixed:** F1. A retrieval failure returned an unhandled 500. It now returns a 503 and records nothing. Verified live.
 
-**Stage 04 status: NOT COMPLETE.** The gate is that every finding has a decision and a reason. One finding is still open: F9, which needs the author's written confirmation. Two more need a named sign-off: F11 (MPL-2.0 acceptance) and F3 (Q3 from Privacy, or MSV's explicit acceptance). F3 must close before stage 05.
+**Stage 04 status: COMPLETE (2026-10-15).** Every finding has a decision and a reason. F3, F9 and F11 accepted by MSV as relayed. F4 deferred to instructors. Previous status note, superseded: **Stage 04 status: NOT COMPLETE.** The gate is that every finding has a decision and a reason. One finding is still open: F9, which needs the author's written confirmation. Two more need a named sign-off: F11 (MPL-2.0 acceptance) and F3 (Q3 from Privacy, or MSV's explicit acceptance). F3 must close before stage 05.
