@@ -91,6 +91,15 @@ Once I have corrected the alignment document:
    tracking -- do not duplicate the criteria into them.
 
 Write all of step 4 in one pass. Do not stop between tickets.
+
+When you are done, commit what this stage produced to work/table-N:
+
+  git add tickets/
+  git commit -m "01 shape: alignment and T1, criteria in our words"
+
+Commit at the end of every stage. A Codespace that dies at 1:30 with
+four stages of uncommitted work costs the session; the same crash with
+four commits behind it costs nothing.
 ```
 
 ---
@@ -137,7 +146,7 @@ gate costs the session.
 
 - [ ] `tickets/T0-alignment.md` exists, and **a human corrected something in it**
 - [ ] Its "Still open" list has all ten §10 decisions, **all still blank**
-- [ ] The ticket exists in `tickets/`
+- [ ] The ticket exists in `tickets/` — **and is committed to `work/table-N`**
 - [ ] Every acceptance criterion is **pass or fail** — no "properly", "correctly", "well"
 - [ ] Every criterion names a requirement ID from the PRD
 - [ ] The team can read each one aloud and say what they would type to check it

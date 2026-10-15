@@ -103,6 +103,15 @@ It must include:
   - the riskiest part, and what you will do if it does not work
 
 Keep it to one page. I have to read it and decide.
+
+When you are done, commit what this stage produced to work/table-N:
+
+  git add tickets/
+  git commit -m "02 plan: the decisions, and why we made them"
+
+Commit at the end of every stage. A Codespace that dies at 1:30 with
+four stages of uncommitted work costs the session; the same crash with
+four commits behind it costs nothing.
 ```
 
 ---
@@ -131,4 +140,5 @@ Five questions. **Be ready to answer without opening the code.**
 - [ ] It names the riskiest part
 - [ ] It says what is **not** being done
 - [ ] ⚠️ **A human has approved it — recorded in the ticket, with a timestamp**
+- [ ] The plan is **committed to `work/table-N`**
 - [ ] **No code has been written yet**
