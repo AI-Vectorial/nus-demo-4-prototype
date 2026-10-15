@@ -49,7 +49,11 @@ at stage 05.
 == Part A -- alignment, before any ticket ==
 
 Read docs/project-brief.md, docs/PRD.md and docs/features.md, then look
-over the repository as it stands. Write tickets/T0-alignment.md using
+over the repository as it stands. Read backend/tests/README.md and
+backend/tests/conftest.py too, and list every fixture and given module
+you find under "What is already built" -- by name. Anything you miss
+there gets written from scratch at stage 03, and that is the most
+expensive mistake available in a sixty-minute build. Write tickets/T0-alignment.md using
 pipeline/templates/alignment.md. Fill in every section, in your own
 words, including where things live in this scaffold and the commands
 that run it.

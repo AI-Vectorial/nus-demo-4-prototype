@@ -43,6 +43,18 @@ re-reading the whole repository.*
 | Tickets | |
 | Configuration | |
 
+## What is already built, and must not be built again
+
+*The single most expensive mistake in a sixty-minute build is writing something
+the scaffold already gave you. List it here, by name, so no later stage has to
+go looking.*
+
+| | |
+|---|---|
+| Test fixtures (`conftest.py`) | |
+| Given modules | |
+| What `backend/tests/README.md` says | |
+
 **Commands**
 
 | | |
