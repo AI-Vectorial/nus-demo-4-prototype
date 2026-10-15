@@ -68,9 +68,19 @@ Do not answer it yourself and do not assume we are continuing. Stopping
 at F5 is a normal answer, not a failure: F1 to F5 is a complete product.
 
 Whatever I cut -- here, or at any point if I tell you to cut earlier --
-record it in tickets/T1.md under "Out of scope" with my reason, take the
-matching actions out of the top bar, and go no further. A feature left
-half-built is worse than a feature cut.
+do all four of these, then go no further:
+
+  1. Set that child ticket's Status to cut -- not todo, not done
+  2. MOVE its acceptance criteria out of the criteria list in
+     tickets/T1.md and into "Out of scope", with my reason. Do not
+     leave them sitting in the list unticked. A criterion we chose not
+     to meet and a criterion we failed to meet look identical on the
+     page and mean opposite things -- one is a decision, the other is
+     a gap
+  3. Take its action out of the top bar
+  4. Commit, with a message saying what was cut and why
+
+A feature left half-built is worse than a feature cut.
 
 Write the test before the code where you reasonably can. Our acceptance
 criteria are the specification. Never weaken or skip a test to get a
@@ -150,6 +160,8 @@ are only what it is assessed on.
 - [ ] The top bar offers **nothing that does not exist** — every action opens a route
 - [ ] The cut decision was **taken out loud and answered**, not drifted past
 - [ ] Anything cut is written down as cut, not left half-built
+- [ ] A cut feature's criteria are **in "Out of scope"** — not unticked in the list
+- [ ] Each feature was committed **as it finished**, not all at the end
 - [ ] No test was skipped, weakened or deleted to get here
 - [ ] `/healthz` reports passages indexed, not zero
 - [ ] The evaluation set has been run **against the live index since the last
