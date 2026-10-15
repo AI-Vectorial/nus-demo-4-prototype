@@ -417,8 +417,18 @@ read_file and grep -- do not mark a criterion met because a ticket says it is. S
   accepted      the team's tickets record this criterion as a known limitation,
                 deferral or deliberate deviation, WITH a reason. Accepting a gap on
                 purpose is a legitimate decision; quote their reason
+  cut           the feature this criterion belongs to was cut on purpose: T1.md's
+                "Out of scope" section, or that feature's child ticket, records the cut
+                WITH a reason. Quote the reason. Do not look for its code
   unverifiable  it can only be checked on the running app (a latency target, a
                 browser check); say what a human should check
+
+Read T1.md's "Out of scope" section FIRST. F6, F7 and F8 are cuttable by design --
+"cut scope, never a stage" -- so a cut feature recorded with a reason is a governed
+decision, not a gap. Report every criterion of a cut feature as cut, including any the
+team moved into "Out of scope" rather than leaving in the criteria list, so the record
+shows what was cut. A feature that is simply absent, with no cut recorded anywhere, is
+missing.
 
 Judge each criterion against its own words, nothing more. Do not fail a criterion for
 something it does not ask for.
@@ -463,8 +473,8 @@ SUBMIT_REQUIREMENTS = {"type": "function", "function": {
         "criteria": {"type": "array", "items": {"type": "object", "properties": {
             "criterion": {"type": "string", "description": "The criterion, shortened to one line"},
             "refs": {"type": "string", "description": "REQ ids it covers, if any"},
-            "status": {"type": "string", "enum": ["met", "partial", "missing", "accepted", "unverifiable"]},
-            "evidence": {"type": "string", "description": "At most two sentences: the file:line that does it, or what a human should check"},
+            "status": {"type": "string", "enum": ["met", "partial", "missing", "accepted", "cut", "unverifiable"]},
+            "evidence": {"type": "string", "description": "At most two sentences: the file:line that does it, the team's recorded reason (accepted or cut), or what a human should check"},
             "left": {"type": "string", "description": "What is left. Empty when met"},
             "how": {"type": "string", "description": "How to implement what is left. Empty when met"}},
             "required": ["criterion", "status", "evidence"]}},
@@ -561,7 +571,8 @@ def verdict(req: dict, findings: list[dict], trail_missing: list[str]) -> list[s
     """Every reason the review cannot pass. Empty means it passes.
 
     Passing means: the evidence trail exists, every acceptance criterion is met
-    (or accepted on purpose by the team, or can only be checked by a human), and
+    (or accepted or cut on purpose by the team, with a reason, or can only be
+    checked by a human), and
     nothing was found that must not merge.
 
     Thin evidence on a child ticket is shown, not failed. Whether a pasted
@@ -587,7 +598,7 @@ def where(f: dict) -> str:
 
 
 def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seconds, error=None) -> str:
-    icon = {"met": "✅", "partial": "⚠️", "missing": "❌", "accepted": "🤝", "unverifiable": "👀"}
+    icon = {"met": "✅", "partial": "⚠️", "missing": "❌", "accepted": "🤝", "cut": "✂️", "unverifiable": "👀"}
     out = [MARKER]
     if error:
         out += ["## 🤖 AI code review — could not run", "",
@@ -632,6 +643,11 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
                 if c.get("how"):
                     out.append(f"   *How:* {cell(c.get('how'))}")
             out.append("")
+        cut = [c for c in criteria if c.get("status") == "cut"]
+        if cut:
+            out += ["#### Cut on purpose — scope, not a stage", ""]
+            out += [f"- ✂️ **{cell(c.get('criterion'))}** — {cell(c.get('evidence'))}" for c in cut]
+            out.append("")
         accepted = [c for c in criteria if c.get("status") == "accepted"]
         if accepted:
             out += ["#### Accepted by the team, on purpose", ""]
@@ -654,7 +670,8 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         out += ["| Ticket | Claims | Evidence |", "|---|---|---|"]
         for ch in children:
             done = "done" in str(ch.get("claimed", "")).lower()
-            ok = "✅" if ch.get("backed") else ("❌" if done else "⏳")
+            cut = "cut" in str(ch.get("claimed", "")).lower()
+            ok = "✂️" if cut else "✅" if ch.get("backed") else ("❌" if done else "⏳")
             out.append(f"| {cell(ch.get('ticket'))} | {cell(ch.get('claimed'))} | {ok} {cell(ch.get('note'))} |")
         out.append("")
 
@@ -687,7 +704,7 @@ def render(reasons, req, findings, files, lanes, trail_missing, tool_calls, seco
         out += ["", "</details>", ""]
 
     out += ["---",
-            "<sub>Passes when the evidence trail exists, every acceptance criterion is met or accepted on purpose, "
+            "<sub>Passes when the evidence trail exists, every acceptance criterion is met, or accepted or cut on purpose, "
             "and there are no blockers. Tests, lint and scope are "
             "the `gate` job's — this review reads the code, it does not run it. "
             "Push again to re-review.</sub>"]
