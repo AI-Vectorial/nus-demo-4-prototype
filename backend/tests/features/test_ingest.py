@@ -133,6 +133,22 @@ def test_embedding_requests_are_split_into_batches(monkeypatch):
     assert [len(batch) for batch in requests] == [2, 2, 1]
 
 
+# Amendment 2 -- the embedded text carries the title and section; the stored text does not
+
+
+def test_the_vector_is_built_from_title_and_section_but_the_stored_text_is_unchanged(
+    model: FakeModel,
+):
+    documents = read_documents(FIXTURE_CORPUS)
+
+    passages = build_passages(documents, model.embed)
+
+    embedded = {text for call in model.embed_calls for text in call}
+    for passage in passages:
+        assert passage.text in {t.split("\n\n", 1)[1] for t in embedded}
+        assert f"{passage.document_title} — {passage.section}" in " ".join(embedded)
+
+
 # REQ-I7 -- superseded documents are indexed WITH their status, not excluded
 
 

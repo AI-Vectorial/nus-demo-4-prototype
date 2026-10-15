@@ -72,7 +72,10 @@ class Settings:
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # Set to 0.518, the midpoint of the measured gap between the weakest
+    # answerable question (Q3, 0.5260) and the strongest unanswerable one
+    # (Q11, 0.5103), on the index built with Amendment 2. See T1-plan.md.
+    min_score: float = float(os.getenv("MIN_SCORE", "0.518"))
 
     # Where the policy documents live. Read, never written (REQ-B5).
     corpus_dir: str = os.getenv("CORPUS_DIR", str(_BACKEND / "corpus"))

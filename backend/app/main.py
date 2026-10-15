@@ -16,7 +16,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import ask, conversations, corpus, health
 from app.core import database
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
@@ -43,6 +43,8 @@ async def lifespan(_: FastAPI):
     """
     ok, detail = database.ensure_database()
     print(f"database: {detail}")
+    ok, detail = database.create_tables()
+    print(f"tables: {detail}")
     yield
 
 
@@ -62,12 +64,9 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
-
-# Your routers are mounted here.
-#
-#   app.include_router(ask.router)    F5 -- the endpoint that makes it a product
-#
-# See docs/features.md for what to build and in what order.
+app.include_router(ask.router)           # F5
+app.include_router(conversations.router) # F8
+app.include_router(corpus.router)        # F7
 
 
 @app.get("/")

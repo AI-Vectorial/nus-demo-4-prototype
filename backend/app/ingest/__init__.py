@@ -21,6 +21,7 @@ from app.retrieve.store import Passage, VectorStore
 __all__ = [
     "IngestResult",
     "build_passages",
+    "embedding_text",
     "ingest",
     "read_documents",
     "split_sections",
@@ -41,6 +42,11 @@ class IngestResult:
     indexed: int
 
 
+def embedding_text(doc: Document, section: str, text: str) -> str:
+    """What gets embedded: the document title and section, then the passage."""
+    return f"{doc.title} — {section}\n\n{text}"
+
+
 def build_passages(
     documents: list[Document], embed: Embedder, max_tokens: int | None = None
 ) -> list[Passage]:
@@ -57,7 +63,10 @@ def build_passages(
     if not records:
         return []
 
-    vectors = embed([text for _, _, text in records])
+    # Amendment 2: the vector is built from the title and section heading as
+    # well as the text, so a question about "refresh" can reach "Refresh
+    # cycles". The stored text and citation fields are unchanged.
+    vectors = embed([embedding_text(doc, section, text) for doc, section, text in records])
     return [
         Passage(
             id=str(uuid.uuid5(_NAMESPACE, f"{doc.id}|{doc.version}|{section}|{text}")),

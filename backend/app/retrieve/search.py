@@ -33,8 +33,13 @@ def search(
     question: str,
     *,
     top_k: int | None = None,
+    min_score: float = 0.0,
 ) -> list[Hit]:
-    """Return up to top_k passages for the question, best first, with D4 applied."""
+    """Return up to top_k passages for the question, best first, with D4 applied.
+
+    min_score is passed to the store, which drops weaker matches. Refusal on
+    what remains is decided in app.retrieve.ground, not here.
+    """
     limit = settings.retrieve_top_k if top_k is None else top_k
     [vector] = embed([question])
-    return prefer_current(store.search(vector, limit=limit))[:limit]
+    return prefer_current(store.search(vector, limit=limit, min_score=min_score))[:limit]
