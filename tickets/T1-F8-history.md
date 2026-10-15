@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F8 history
 **Covers:** REQ-C8, REQ-C9, REQ-A6, REQ-U13, REQ-U14
-**Status:** `todo`
+**Status:** `done`
 **Cuttable:** yes — cut first
 
 ## Done when

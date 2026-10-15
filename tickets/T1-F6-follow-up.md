@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F6 follow-up
 **Covers:** REQ-C3, REQ-C4, REQ-C5, REQ-C6, REQ-C7, REQ-A3, REQ-U8
-**Status:** `todo`
+**Status:** `done`
 **Cuttable:** yes — cut third, after F8 and F7
 
 ## Done when

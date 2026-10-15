@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F3 refuse
 **Covers:** REQ-R2, REQ-R3, REQ-R4, REQ-R6
-**Status:** `todo`
+**Status:** `done`
 **Cuttable:** no
 
 ## Done when

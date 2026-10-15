@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F2 retrieve
 **Covers:** REQ-R1, REQ-R5
-**Status:** `in progress` — **blocked on MSV decision (REQ-R5 not met)**
+**Status:** `done` — REQ-R5 passes after Amendment 2 (approved by MSV)
 **Cuttable:** no
 
 ## Done when

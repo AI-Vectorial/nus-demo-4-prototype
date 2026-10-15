@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F7 corpus browser
 **Covers:** REQ-B1, REQ-B2, REQ-B3, REQ-B4, REQ-B5, REQ-B6, REQ-A4, REQ-U12, REQ-U15
-**Status:** `todo`
+**Status:** `done` (citation-to-section link not yet browser-verified)
 **Cuttable:** yes — cut second, after F8
 
 ## Done when
