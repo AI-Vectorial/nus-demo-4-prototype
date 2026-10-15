@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -19,6 +20,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import ask, conversations, corpus, health
 from app.core import database
+from app.generate import embed
+from app.ingest import index_if_empty
+from app.retrieve import get_vector_store
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
 ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
@@ -33,6 +37,25 @@ ALLOWED_ORIGINS = [
     for origin in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
     if origin.strip()
 ]
+
+def _index_corpus_if_empty() -> None:
+    """Build the index on a fresh deployment, in the background (F13).
+
+    Runs off the startup path, so the server answers /healthz during the build.
+    Only an empty store is indexed here. A failure is logged by type and shows in
+    /healthz as zero passages. It never stops the server (NFR-5).
+    """
+    try:
+        result = index_if_empty(get_vector_store(), embed)
+    except Exception as error:  # noqa: BLE001 - logged by type, visible in /healthz
+        log.warning("index: not built at startup (%s); run python -m app.ingest",
+                    type(error).__name__)
+        return
+    if result is None:
+        log.info("index: already populated, nothing to build")
+    else:
+        log.info("index: built %d documents, %d passages", result.documents, result.passages)
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -50,6 +73,7 @@ async def lifespan(_: FastAPI):
     (log.info if ok else log.warning)("database: %s", detail)
     ok, detail = database.create_tables()
     (log.info if ok else log.warning)("tables: %s", detail)
+    threading.Thread(target=_index_corpus_if_empty, name="index-corpus", daemon=True).start()
     yield
 
 

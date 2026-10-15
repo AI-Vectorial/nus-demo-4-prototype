@@ -130,7 +130,12 @@ def _answer(
     db.add(user_turn)
 
     try:
-        result = ground(get_vector_store(), embed, query)
+        store = get_vector_store()
+        if store.count() == 0:
+            # An empty index says nothing about the policy. Refusing here would tell a user
+            # the policy does not cover a question it was never indexed for (F13).
+            raise RetrievalUnavailable("the policy index is empty")
+        result = ground(store, embed, query)
     except (ProviderError, RetrievalUnavailable) as error:
         # Roll back the pending conversation and user turn, so a failed search
         # leaves no record behind (review F1).

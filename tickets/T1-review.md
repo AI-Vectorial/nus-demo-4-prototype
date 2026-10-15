@@ -139,6 +139,15 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 - The packages marked `UNKNOWN` are not a problem. Their package metadata is permissive (MIT, BSD, Apache-2.0, PSF-2.0). `pip-licenses` failed to read them.
 - AGENTS.md §5 asks for an alternative to be proposed when MPL appears. No alternative keeps the deployment unchanged, so none is proposed. **Sign-off:** ACCEPTED by MSV, 2026-10-15, as relayed by the team ("confirmed, from MSV"). Recorded as a licence policy decision for the two unmodified MPL-2.0 libraries `certifi` and `tqdm`.
 
+### F13 — Production answered 500 because the corpus was never indexed on the deployment
+**Pass:** 5 — production fitness
+**Severity:** high
+**Where:** `backend/Dockerfile` (the image did not include the corpus), `backend/app/retrieve/qdrant_store.py` (a 404 from a missing collection was not caught), `backend/app/main.py` (nothing built the index on a fresh deploy)
+**What:** after PR #17 merged, `/ask` returned 500 on production for every question. `/healthz` showed `vector_store: reachable, collection not created yet`, so the collection was never built. The F1 fix only caught an unreachable Qdrant (`ResponseHandlingException`). A missing collection raises `UnexpectedResponse` (404), which escaped as a 500. **That was a gap in my F1 fix.** I had tested only a dead host, not a missing collection.
+**Decision:** FIXED — 2026-10-15. (1) A 404 from Qdrant is now `RetrievalUnavailable`, so the API returns 503 and records nothing. (2) An empty index is unavailable, not a refusal: before the build, a question returns 503 instead of telling the user the policy does not cover it. (3) On startup, the server builds the index only if the store is empty, in a background thread, so `/healthz` answers during the build. Refreshing an existing index stays an explicit `python -m app.ingest`. (4) The image includes `corpus/`, read-only. Tests: `tests/regression/test_deploy_index.py` (5). Live: during a build the question returned 503; after the build, 130 passages, and the partner question was correctly refused.
+**Process note:** I had merged without checking the live URL, and `/healthz` already showed the problem. Stage 06 must check `/healthz` for the passage count before any question is asked.
+**Needs approval:** `backend/Dockerfile` is not in the owned or protected lists, so it needs MSV's explicit approval. Indexing at startup is a change to the deploy process, and it also needs MSV's approval.
+
 ### F12 — A slow model returns a 504 from the gateway instead of degrading
 **Pass:** 5 — production fitness
 **Severity:** high
@@ -198,8 +207,8 @@ Transitive packages with a note (see F11):
 
 | | |
 |---|---|
-| Findings | 12 |
-| Fixed | 7 (F1, F2, F5, F6, F7, F8, F12) |
+| Findings | 13 |
+| Fixed | 8 (F1, F2, F5, F6, F7, F8, F12, F13) |
 | Accepted | 4 (F3 retention, by MSV · F9 provenance, by MSV · F10 NFR-1, by MSV · F11 MPL-2.0, by MSV) |
 | Deferred | 1 (F4 in protected scripts, instructors to fix) |
 | Open | 0 |

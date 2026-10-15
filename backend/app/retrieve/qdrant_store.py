@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 
 from qdrant_client import QdrantClient
-from qdrant_client.http.exceptions import ResponseHandlingException
+from qdrant_client.http.exceptions import ResponseHandlingException, UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from app.core.config import settings
@@ -88,6 +88,10 @@ class QdrantVectorStore:
         except ResponseHandlingException as error:
             # Store down or unreachable. Callers see one error type, not the client's (F1).
             raise RetrievalUnavailable(type(error).__name__) from error
+        except UnexpectedResponse as error:
+            # A 404 here means the collection was never built on this deployment (F13).
+            # It is an unavailable index, not a crash.
+            raise RetrievalUnavailable(f"HTTP {error.status_code}") from error
 
         hits: list[Hit] = []
         for r in results:
@@ -106,9 +110,12 @@ class QdrantVectorStore:
         return hits
 
     def count(self) -> int:
-        if not self._client.collection_exists(self.collection):
-            return 0
-        return int(self._client.count(self.collection, exact=True).count)
+        try:
+            if not self._client.collection_exists(self.collection):
+                return 0
+            return int(self._client.count(self.collection, exact=True).count)
+        except (ResponseHandlingException, UnexpectedResponse) as error:
+            raise RetrievalUnavailable(type(error).__name__) from error
 
     def health(self) -> tuple[bool, str]:
         """Never raises: /healthz must answer even when Qdrant is down."""

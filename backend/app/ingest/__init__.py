@@ -22,6 +22,7 @@ __all__ = [
     "IngestResult",
     "build_passages",
     "embedding_text",
+    "index_if_empty",
     "ingest",
     "read_documents",
     "split_sections",
@@ -101,3 +102,19 @@ def ingest(
     passages = build_passages(documents, embed)
     indexed = store.upsert(passages)
     return IngestResult(documents=len(documents), passages=len(passages), indexed=indexed)
+
+
+def index_if_empty(
+    store: VectorStore,
+    embed: Embedder,
+    directory: Path | str | None = None,
+) -> IngestResult | None:
+    """Build the index only when the store holds nothing (F13).
+
+    Used at startup, so a fresh deployment is never left with an empty index.
+    Refreshing an existing index stays an explicit `python -m app.ingest`.
+    Returns None when the store already had passages.
+    """
+    if store.count() > 0:
+        return None
+    return ingest(store, embed, directory)

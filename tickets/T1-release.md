@@ -29,6 +29,7 @@ A staff member can type a policy question and get a cited answer from Aldermere'
 ## Known limits, stated plainly
 
 - **Latency (NFR-1) misses its target.** Answers take about 9 to 12 seconds against a p50 target of 5. MSV accepted this (Option B).
+- **Fresh deploys build the index at startup (F13).** The corpus is in the image, and the server indexes it in the background if the store is empty. Until the build finishes, questions return 503, not a refusal. **Check `/healthz` shows 130 passages before any question is asked.**
 - **Slow model returns passages, not an answer (F12).** Each answer has a 25 second budget. If the model is slower, the product returns the retrieved passages with a degraded flag and no composed answer. A slow answer is no longer a 504.
 - **Refusal margin is thin.** Answerable Q3 scores 0.526 and refused Q11 scores 0.510, a gap of 0.016. Tuned on 13 questions only.
 - **Question text is stored and sent to the model.** Retention accepted by MSV (review F3). Q3 remains open for the product owner.
