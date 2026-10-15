@@ -90,6 +90,18 @@ Once I have corrected the alignment document:
    The epic holds the acceptance criteria. The children hold the
    tracking -- do not duplicate the criteria into them.
 
+   Fill in EVERY section of both templates. The children each need
+   "What this is", "How to check it" with a real runnable command,
+   "What this touches", and "Not in this feature". Leave the Evidence
+   block empty with its warning intact -- it gets filled at stage 03,
+   from real output, and CI reads it.
+
+   Leave the D0/D1/D2 table in T1.md blank. Those are stage 02's, and
+   a value appearing there now is exactly what the plan gate looks for.
+
+   Two lines per section, not two paragraphs. This is a ticket somebody
+   reads at 1:10 with the clock running, not a document.
+
 Write all of step 4 in one pass. Do not stop between tickets.
 
 When you are done, commit what this stage produced to work/table-N:
