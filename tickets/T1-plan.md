@@ -100,3 +100,17 @@ The approved plan says "about 500 tokens" but does not name a counting method. T
 - Consequence to note at the gate: chunk sizes are approximate, so "500 tokens" is a target, not an exact count. D1's verification (Q10's two clauses in the top three) is the real check.
 
 The "Reason not given" entries in the decisions table above are superseded by the reasons recorded at approval.
+
+## Amendment 2 — embed a context prefix with each passage (PROPOSED, NOT YET APPROVED)
+
+**Trigger:** F2 live check fails REQ-R5 for Q5 (KYC 6.1, rank 5) and Q10 (Records Retention 4.1, rank 4). The section heading is stored as metadata but is not in the embedded text.
+
+**Proposal (Option A):**
+- Each passage is embedded as `"{document_title} — {section}\n\n{text}"`. The stored `text` and citation fields are unchanged.
+- Re-ingest with `--force`, then re-run all 13 questions.
+- D2 (threshold) is re-measured on the new scores. The value is not set from the old run.
+- REQ-R5 stays a top-three check with no exceptions.
+
+**Risk:** the prefix may raise unanswerable scores (Q11–Q13) along with answerable ones. If separation is lost, report it; do not tune around it.
+
+**Approval:** *pending MSV. Not to be built until recorded here.*
