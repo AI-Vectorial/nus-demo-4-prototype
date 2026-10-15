@@ -4,7 +4,7 @@
 **Feature:** F6 follow-up
 **Covers:** REQ-C3, REQ-C4, REQ-C5, REQ-C6, REQ-C7, REQ-A3, REQ-U8
 **Status:** `todo`
-**Cuttable:** yes — first to cut after F8 and F7 is not the order; cut from the back: F8, then F7, then F6
+**Cuttable:** yes — cut third, after F8 and F7
 
 ## Done when
 
