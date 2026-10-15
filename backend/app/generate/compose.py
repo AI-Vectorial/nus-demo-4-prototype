@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.generate.client import generate
+from app.generate.client import ProviderError, generate
 from app.retrieve.store import Hit
 
 PROMPT_VERSION = "answer-v1"
@@ -49,8 +49,12 @@ def build_user_message(question: str, passages: list[Hit], earlier: list[str]) -
 
 
 def compose_answer(question: str, passages: list[Hit], earlier: list[str]) -> str:
-    return generate(
+    text = generate(
         build_user_message(question, passages, earlier),
         system=system_prompt(),
         temperature=0.0,
     )
+    if not text:
+        # An empty reply is a failed answer, not an answer (review F2).
+        raise ProviderError("the model returned an empty answer", retryable=True)
+    return text

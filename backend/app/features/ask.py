@@ -28,11 +28,15 @@ from app.generate import ProviderError, embed
 from app.generate.compose import PROMPT_VERSION, compose_answer
 from app.retrieve import get_vector_store
 from app.retrieve.ground import Insufficient, ground
-from app.retrieve.store import Hit
+from app.retrieve.store import Hit, RetrievalUnavailable
 
 
 class ConversationNotFound(LookupError):
     pass
+
+
+class SearchUnavailable(RuntimeError):
+    """Retrieval could not run. Nothing is recorded and nothing is answered (review F1)."""
 
 
 @dataclass(frozen=True)
@@ -113,7 +117,13 @@ def answer(
     )
     db.add(user_turn)
 
-    result = ground(get_vector_store(), embed, query)
+    try:
+        result = ground(get_vector_store(), embed, query)
+    except (ProviderError, RetrievalUnavailable) as error:
+        # Roll back the pending conversation and user turn, so a failed search
+        # leaves no record behind (review F1).
+        db.rollback()
+        raise SearchUnavailable(type(error).__name__) from error
 
     model: str | None = None
     prompt_version: str | None = None
