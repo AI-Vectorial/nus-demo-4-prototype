@@ -137,7 +137,7 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 - `certifi` (MPL-2.0) is a hard requirement of `httpx`, which `openai` requires. `tqdm` (MPL-2.0 AND MIT) is a hard requirement of `openai` above 4. Removing either means replacing or upgrading the model SDK, which is the only model path. That risks the deployment, and it is not justified for these licences.
 - MPL-2.0 is file-level copyleft. Its obligations apply only if an MPL file is modified. These are used unmodified.
 - The packages marked `UNKNOWN` are not a problem. Their package metadata is permissive (MIT, BSD, Apache-2.0, PSF-2.0). `pip-licenses` failed to read them.
-- AGENTS.md §5 asks for an alternative to be proposed when MPL appears. No alternative keeps the deployment unchanged, so none is proposed. **Sign-off required:** a named person must accept this in writing, because it is a licence policy decision. **Name:** [pending].
+- AGENTS.md §5 asks for an alternative to be proposed when MPL appears. No alternative keeps the deployment unchanged, so none is proposed. **Sign-off:** ACCEPTED by MSV, 2026-10-15, as relayed by the team ("confirmed, from MSV"). Recorded as a licence policy decision for the two unmodified MPL-2.0 libraries `certifi` and `tqdm`.
 
 ### F10 — NFR-1 latency misses the p50 target
 **Pass:** 1 — correctness (against the NFR, not a code defect)
@@ -193,7 +193,7 @@ Transitive packages with a note (see F11):
 |---|---|
 | Findings | 11 |
 | Fixed | 6 (F1, F2, F5, F6, F7, F8) |
-| Accepted | 2 (F10, NFR-1, by MSV · F11, MPL-2.0, sign-off pending) |
+| Accepted | 2 (F10, NFR-1, by MSV · F11, MPL-2.0, signed off by MSV) |
 | Deferred | 2 (F3 until Q3 is answered · F4 in protected scripts, instructors to fix) |
 | Open — needs a named person | 1 (F9 author confirms the Markdown renderer is original) |
 
