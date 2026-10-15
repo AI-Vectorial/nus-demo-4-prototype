@@ -53,6 +53,15 @@ for me.
 
 For each finding: what it is, where, how bad, and what you would do.
 Do NOT fix anything yet. I decide what gets fixed.
+
+When you are done, commit what this stage produced to work/table-N:
+
+  git add tickets/
+  git commit -m "04 review: five passes, a decision on each finding"
+
+Commit at the end of every stage. A Codespace that dies at 1:30 with
+four stages of uncommitted work costs the session; the same crash with
+four commits behind it costs nothing.
 ```
 
 **The agent reviews. The team decides.** An agent that finds and silently fixes has
