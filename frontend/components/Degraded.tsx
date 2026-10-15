@@ -14,7 +14,17 @@
 
 import type { Citation } from "@/lib/types";
 
+import Citations from "./Citations";
+
+/** REQ-U6: visibly degraded. The passages are shown as sources, never as an answer. */
 export default function Degraded({ citations }: { citations: Citation[] }) {
-  void citations;
-  return null;
+  return (
+    <div className="reply">
+      <div className="degraded" role="alert">
+        <strong>No answer was composed.</strong> The assistant could not compose an
+        answer right now. These are the policy sections it found; read them directly.
+      </div>
+      <Citations citations={citations} />
+    </div>
+  );
 }

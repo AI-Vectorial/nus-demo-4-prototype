@@ -43,6 +43,14 @@ class Hit:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
+class RetrievalUnavailable(RuntimeError):
+    """The vector store could not be searched.
+
+    Raised by a store implementation instead of its client library's exception,
+    so callers handle one type whatever store is behind the interface (review F1).
+    """
+
+
 @runtime_checkable
 class VectorStore(Protocol):
     """What the application needs from a vector store. Nothing more."""
@@ -52,6 +60,9 @@ class VectorStore(Protocol):
 
         Must be safe to call repeatedly -- it runs on every boot.
         """
+
+    def reset(self) -> None:
+        """Delete everything and create it again empty. Used by ingest --force only."""
 
     def upsert(self, passages: list[Passage]) -> int:
         """Store passages, replacing any with the same id. Returns the count."""

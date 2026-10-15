@@ -31,9 +31,54 @@ export interface AskResponse {
   /** The composed answer, or the reason for a refusal. null when degraded. */
   answer: string | null;
   citations: Citation[];
-  exchange_id: string;
+  /** PRD section 5: the conversation this exchange belongs to. */
+  conversation_id: string;
+  /** PRD section 5: the assistant's stored turn for this exchange. */
+  message_id: string;
   latency_ms: number;
 }
+
+export interface ConversationSummary {
+  id: string;
+  started_at: string;
+  last_at: string;
+  title: string;
+  message_count: number;
+}
+
+export interface StoredMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string | null;
+  outcome: Outcome | null;
+  created_at: string;
+  citations: Citation[];
+}
+
+export interface ConversationView {
+  id: string;
+  started_at: string;
+  last_at: string;
+  messages: StoredMessage[];
+}
+
+export interface Section {
+  heading: string;
+  text: string;
+}
+
+/** One corpus entry. id is "{document_id}-{version}", so both travel versions are distinct. */
+export interface DocumentDetail {
+  id: string;
+  title: string;
+  owner: string;
+  version: string;
+  effective: string;
+  status: "current" | "superseded";
+  sections: Section[];
+}
+
+export type DocumentSummary = DocumentDetail;
 
 export interface Health {
   status: string;

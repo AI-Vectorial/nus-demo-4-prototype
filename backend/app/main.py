@@ -10,17 +10,22 @@ build first. START-HERE.md is your first two minutes.
 
 from __future__ import annotations
 
+import logging
 import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import ask, conversations, corpus, health
 from app.core import database
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
 ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
+
+# Startup and per-exchange lines (F5, F6) need to reach stderr, not vanish.
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 # The Next.js frontend is a separate Railway service, so it is cross-origin.
 ALLOWED_ORIGINS = [
@@ -42,7 +47,9 @@ async def lifespan(_: FastAPI):
     at all, which is the opposite of useful.
     """
     ok, detail = database.ensure_database()
-    print(f"database: {detail}")
+    (log.info if ok else log.warning)("database: %s", detail)
+    ok, detail = database.create_tables()
+    (log.info if ok else log.warning)("tables: %s", detail)
     yield
 
 
@@ -53,21 +60,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Only the methods and headers the API uses (review F7). The browser never calls
+# the API directly, so credentials are not needed.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 app.include_router(health.router)
-
-# Your routers are mounted here.
-#
-#   app.include_router(ask.router)    F5 -- the endpoint that makes it a product
-#
-# See docs/features.md for what to build and in what order.
+app.include_router(ask.router)           # F5
+app.include_router(conversations.router) # F8
+app.include_router(corpus.router)        # F7
 
 
 @app.get("/")

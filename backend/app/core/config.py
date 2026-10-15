@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+_BACKEND = Path(__file__).resolve().parents[2]
 
 
 def _origins() -> list[str]:
@@ -69,7 +72,27 @@ class Settings:
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # Set to 0.518, the midpoint of the measured gap between the weakest
+    # answerable question (Q3, 0.5260) and the strongest unanswerable one
+    # (Q11, 0.5103), on the index built with Amendment 2. See T1-plan.md.
+    min_score: float = float(os.getenv("MIN_SCORE", "0.518"))
+
+    # Where the policy documents live. Read, never written (REQ-B5).
+    corpus_dir: str = os.getenv("CORPUS_DIR", str(_BACKEND / "corpus"))
+
+    # Chunking -- D1. Token counts are approximated from characters
+    # (CHARS_PER_TOKEN in app.ingest), with no tokenizer dependency. A value
+    # here is a target, not an exact count. Overlap is 0 by decision.
+    chunk_max_tokens: int = int(os.getenv("CHUNK_MAX_TOKENS", "500"))
+    chunk_overlap_tokens: int = int(os.getenv("CHUNK_OVERLAP_TOKENS", "0"))
+
+    # How many passages retrieval returns per question -- D3.
+    retrieve_top_k: int = int(os.getenv("RETRIEVE_TOP_K", "5"))
+
+    # Total seconds one answer may take across embedding, search and composition.
+    # Kept under the gateway's limit, so a slow model degrades (returns passages)
+    # instead of timing out as a 504. Configurable; see the stage 04 record F12.
+    answer_budget_seconds: float = float(os.getenv("ANSWER_BUDGET_SECONDS", "25"))
 
     @property
     def database_configured(self) -> bool:
