@@ -32,66 +32,68 @@ Working code, passing tests, committed to `work/table-N`.
 > line is a long way to debug, and an edited prompt reaches every table for free.
 
 ```
-The plan is approved. Build it.
+The plan is approved. START WRITING CODE NOW.
 
-Do NOT re-plan. Do not re-read the PRD end to end, do not restate the
-plan back to me, do not write a build plan of your own. Read
-tickets/T0-alignment.md and tickets/T1-plan.md, go to item 1, and write
-code.
+Your FIRST action is a file edit. Not a summary, not a plan of your own,
+not a message telling me what you are about to do. If you catch yourself
+writing a paragraph before the first edit, delete it and make the edit.
 
-Work in the order the plan sets out. After each piece: run the tests,
-commit, and print ONE status line in exactly this shape --
+Do not re-plan. Do not re-read the PRD end to end. Do not restate the
+plan back to me. It is approved -- that argument is over.
+
+Open tickets/T1-plan.md, take item 1, and for every item run this loop:
+
+   write the test -> run it RED -> write the code -> run it GREEN ->
+   commit -> print one status line -> next item, immediately
+
+The status line, exactly this shape, then CONTINUE without waiting:
 
   [F1 ingest] tests 12/12 ok | ruff ok | commit a1b2c3d | next F2
 
--- then CONTINUE to the next piece without waiting for me.
+Budget about 7 minutes per feature. The stage is 60 minutes and there
+are five features on the critical path. Thinking is not progress; a red
+test on screen is. Where the plan leaves something ambiguous, take the
+simplest option it allows, write one line in the ticket saying what you
+took, and keep going. Do not stop to ask me about a detail you could
+reverse in sixty seconds.
 
-Stop and wait only if one of these is true:
+STOP and wait only if:
   - a test has failed twice and you do not know why
   - you need a dependency we do not already have
   - the plan turns out to be wrong
+  - F5 is done -- the one planned stop, below
 
-I am reading the status lines. If I want you to stop, I will say so.
+== When F5 is done ==
 
-== The one planned stop: when F5 is done ==
-
-F5 is where the product first works end to end. Everything after it --
-F6 follow-up, F7 corpus, F8 history -- is cuttable by design.
-
-So when F5 is done, STOP and wait, even though nothing has gone wrong.
-Report which features are done, what remains, and anything you are
-worried about. Then ask me exactly one question:
+F5 is where the product first works end to end. F6, F7 and F8 are
+cuttable by design. So when F5 is done, stop even though nothing has
+gone wrong, say what is done and what remains, and ask exactly this:
 
   "How far do we go -- F6, F7, F8, or stop here and move to stage 04?"
 
-Do not answer it yourself and do not assume we are continuing. Stopping
-at F5 is a normal answer, not a failure: F1 to F5 is a complete product.
+Do not answer it yourself. Stopping at F5 is a normal answer, not a
+failure -- F1 to F5 is a complete product.
 
-Whatever I cut -- here, or at any point if I tell you to cut earlier --
-do all four of these, then go no further:
+== If I cut something ==
 
-  1. Set that child ticket's Status to cut -- not todo, not done
-  2. MOVE its acceptance criteria out of the criteria list in
-     tickets/T1.md and into "Out of scope", with my reason. Do not
-     leave them sitting in the list unticked. A criterion we chose not
-     to meet and a criterion we failed to meet look identical on the
-     page and mean opposite things -- one is a decision, the other is
-     a gap
+  1. Child ticket Status -> cut. Not todo, not done
+  2. MOVE its acceptance criteria from the criteria list in T1.md into
+     "Out of scope", with my reason. A criterion we chose not to meet
+     and one we failed to meet look identical unticked, and they are
+     opposite things
   3. Take its action out of the top bar
-  4. Commit, with a message saying what was cut and why
+  4. Commit, saying what was cut and why
 
-A feature left half-built is worse than a feature cut.
+== As you go, not at the end ==
 
-Write the test before the code where you reasonably can. Our acceptance
-criteria are the specification. Never weaken or skip a test to get a
-green build, and take configuration from the environment, not literals.
+Tests before code where you reasonably can; the acceptance criteria are
+the specification. Never weaken or skip a test for a green build.
+Configuration from the environment, never literals. When a feature is
+done, set its child ticket to done and paste the one command and output
+proving its "Done when" line -- a ticket marked done with nothing behind
+it is a claim, not a record.
 
-When a feature is finished, set its child ticket's Status to done and
-paste in the one command and its output that show the "Done when" line
-is satisfied. A ticket marked done with nothing behind it is a claim,
-not a record. Do this as you go -- do not save it all for the end.
-
-Begin.
+Item 1. Go.
 ```
 
 ---
@@ -115,6 +117,22 @@ the gate is worth anything.
 
 **Add each top-bar action when its route lands (REQ-U9).** **Corpus** with F7,
 **History** with F8. If a feature is cut, its button is cut too.
+
+## Why this prompt shouts
+
+The previous version of it was eleven hundred words of rules and ended with
+"Begin." Handed a policy document, an agent deliberates — one run spent twenty
+minutes of a sixty-minute stage without touching a file. That is not the model
+being slow, it is the prompt asking to be thought about.
+
+So the action is first, the governance is second, and the stage has a visible
+budget: **seven minutes a feature, five features on the critical path.** The
+loop is named — red, green, commit, status line, next — because an agent with a
+loop to run does not stop to design one.
+
+**If a table's agent is still talking at the five-minute mark, that is the
+roamer's cue**, not the table's. Say it out loud: *"it hasn't written a file
+yet — tell it to start with the test for F1."*
 
 ## Three places this usually goes wrong
 
