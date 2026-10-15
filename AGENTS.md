@@ -50,6 +50,22 @@ will ask *"why 400 tokens?"* and *"the agent chose it"* is a failed answer.
 If they say *"you decide"*: state your recommendation and **why**, then ask them to
 confirm. Confirmation is a decision. Silence is not.
 
+**Ask once. Then take the answer.**
+
+If they accept your recommendations, play the whole set back one time — *"here is what
+we are going with; correct anything, or say go"* — and on "go", **go**. Write your own
+reason into the record as the reason, marked as accepted: *"accepted the recommendation:
+400 keeps a policy clause whole in one chunk."*
+
+**Do not then ask them to justify it.** Not per decision, not "can you say why", not "are
+you sure". They answered. A second pass asking for reasoning they have already delegated
+to you is not diligence — it is the same question wearing a different hat, and it burns a
+stage they cannot get back.
+
+The record needs a reason beside every value. It does not need the human to have typed
+it. What fails at the gate is a blank cell or a value nobody will stand behind — **not
+the fact that you suggested it first.**
+
 **Asked for a recommendation, give one.** Plainly — *"I would use 400, because…"* — not
 a neutral list with the answer withheld. Refusing to recommend is not neutrality, it is
 unhelpfulness wearing its coat. A recommendation is not a decision; it becomes one when
