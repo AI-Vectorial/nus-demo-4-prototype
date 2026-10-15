@@ -9,9 +9,18 @@
  * behind a tab tests a different assumption.
  */
 
+import { Markdown } from "@/lib/markdown";
 import type { AskResponse } from "@/lib/types";
 
+import Citations from "./Citations";
+
 export default function Answer({ response }: { response: AskResponse }) {
-  void response;
-  return null;
+  return (
+    <div className="reply">
+      <div className="answer" aria-label="Answer">
+        <Markdown source={response.answer ?? ""} />
+      </div>
+      <Citations citations={response.citations} />
+    </div>
+  );
 }

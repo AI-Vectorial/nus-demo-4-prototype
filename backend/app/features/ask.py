@@ -51,7 +51,9 @@ def _now() -> datetime:
 
 def _load_or_start(db: Session, conversation_id: uuid.UUID | None) -> Conversation:
     if conversation_id is None:
-        conversation = Conversation(started_at=_now(), last_at=_now())
+        # The id is set here, not left to the database, because the turns that
+        # belong to this conversation are created before anything is flushed.
+        conversation = Conversation(id=uuid.uuid4(), started_at=_now(), last_at=_now())
         db.add(conversation)
         return conversation
     conversation = db.get(Conversation, conversation_id)

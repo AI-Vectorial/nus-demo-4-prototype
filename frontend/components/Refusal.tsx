@@ -11,7 +11,12 @@
  * know where to go instead.
  */
 
+/** REQ-U5: a refusal is neither an answer nor an error. It is the product working. */
 export default function Refusal({ reason }: { reason: string }) {
-  void reason;
-  return null;
+  return (
+    <div className="refusal" role="status">
+      <p className="lead">The policy documents do not cover this.</p>
+      <p className="next">{reason}</p>
+    </div>
+  );
 }

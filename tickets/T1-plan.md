@@ -113,4 +113,4 @@ The "Reason not given" entries in the decisions table above are superseded by th
 
 **Risk:** the prefix may raise unanswerable scores (Q11–Q13) along with answerable ones. If separation is lost, report it; do not tune around it.
 
-**Approval:** *pending MSV. Not to be built until recorded here.*
+**Approval:** APPROVED by MSV, 2026-10-15. Recorded as the approver's own instruction ("build option A"). Stored text and citation fields are unchanged.

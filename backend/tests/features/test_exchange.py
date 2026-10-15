@@ -261,6 +261,14 @@ def test_the_first_question_starts_a_conversation_and_both_turns_are_stored(clie
     assert roles == ["user", "assistant"]
 
 
+def test_every_turn_of_a_new_conversation_belongs_to_it(client, db):
+    body = client.post("/ask", json={"question": "threshold?"}).json()
+
+    turns = db.query(Message).all()
+    assert turns
+    assert all(t.conversation_id == uuid.UUID(body["conversation_id"]) for t in turns)
+
+
 def test_a_blank_question_is_rejected(client):
     assert client.post("/ask", json={"question": "   "}).status_code == 422
 

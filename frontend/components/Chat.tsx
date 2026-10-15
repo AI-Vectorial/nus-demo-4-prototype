@@ -1,115 +1,191 @@
 "use client";
 
 /**
- * The page a table lands on before they have built anything.
- *
- * It says what is running, what is not, and where to start -- and it says the
- * true thing. An earlier version claimed "the corpus is indexed and waiting",
- * which was false: indexing it is F1, the first thing a table builds. A
- * scaffold that misreports its own state teaches the wrong lesson on the first
- * screen anyone sees.
- *
- * Replacing this with the real assistant is F5. Nothing here is precious.
+ * The assistant. F5 (ask, and the three outcomes), F6 (follow-ups) and F8
+ * (a past conversation opened from History and continued).
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Health = {
-  status: string;
-  build: string;
-  environment: string;
-  dependencies: Record<string, string>;
-};
+import { ask, errorMessage, getConversation } from "@/lib/api";
+import { RESET_EVENT } from "@/lib/reset";
+import type { AskResponse, ConversationView, Outcome } from "@/lib/types";
 
-export default function Chat({ apiUrl }: { apiUrl: string }) {
-  const [health, setHealth] = useState<Health | null>(null);
-  const [reachable, setReachable] = useState<boolean | null>(null);
+import Answer from "./Answer";
+import Degraded from "./Degraded";
+import Refusal from "./Refusal";
+
+// REQ-U1b: three questions the corpus can answer or decline. One is about the
+// superseded travel policy, so the first thing anyone sees is a flagged citation.
+const EXAMPLES = [
+  "What is the approval threshold for a travel expense claim?",
+  "How long can a provider keep our client correspondence after we terminate?",
+  "Can I expense my partner's flight if they travel with me?",
+];
+
+type Turn =
+  | { kind: "question"; text: string }
+  | { kind: "reply"; response: AskResponse }
+  | { kind: "error"; text: string };
+
+function fromStored(view: ConversationView): Turn[] {
+  return view.messages.map((m): Turn =>
+    m.role === "user"
+      ? { kind: "question", text: m.content ?? "" }
+      : {
+          kind: "reply",
+          response: {
+            outcome: (m.outcome ?? "answered") as Outcome,
+            answer: m.content,
+            citations: m.citations,
+            conversation_id: view.id,
+            message_id: m.id,
+            latency_ms: 0,
+          },
+        },
+  );
+}
+
+function Reply({ response }: { response: AskResponse }) {
+  if (response.outcome === "refused") return <Refusal reason={response.answer ?? ""} />;
+  if (response.outcome === "degraded") return <Degraded citations={response.citations} />;
+  return <Answer response={response} />;
+}
+
+export default function Chat({
+  apiUrl,
+  initialConversationId = null,
+}: {
+  apiUrl: string;
+  initialConversationId?: string | null;
+}) {
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(initialConversationId);
+  const [draft, setDraft] = useState("");
+  const [pending, setPending] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  // Opening a past conversation from History (REQ-C9).
+  useEffect(() => {
+    if (!initialConversationId) return;
+    let cancelled = false;
+    getConversation(apiUrl, initialConversationId)
+      .then((view) => {
+        if (!cancelled) setTurns(fromStored(view));
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) setLoadError(errorMessage(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiUrl, initialConversationId]);
+
+  // Reset starts a fresh conversation with no prior context (REQ-C6).
+  useEffect(() => {
+    function reset() {
+      setTurns([]);
+      setConversationId(null);
+      setDraft("");
+      setLoadError(null);
+    }
+    window.addEventListener(RESET_EVENT, reset);
+    return () => window.removeEventListener(RESET_EVENT, reset);
+  }, []);
 
   useEffect(() => {
-    fetch(`${apiUrl}/healthz`)
-      .then((r) => r.json())
-      .then((data: Health) => {
-        setHealth(data);
-        setReachable(true);
-      })
-      .catch(() => setReachable(false));
-  }, [apiUrl]);
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [turns.length, pending]);
+
+  async function submit(text: string) {
+    const question = text.trim();
+    if (!question || pending) return;
+    setDraft("");
+    setPending(true);
+    setTurns((t) => [...t, { kind: "question", text: question }]);
+    try {
+      const response = await ask(apiUrl, question, conversationId);
+      setConversationId(response.conversation_id);
+      setTurns((t) => [...t, { kind: "reply", response }]);
+    } catch (e) {
+      setTurns((t) => [...t, { kind: "error", text: errorMessage(e) }]);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const empty = turns.length === 0 && !pending && !loadError;
 
   return (
-    <main className="welcome">
-      <header className="welcome-head">
-        <p className="eyebrow">M04 · AI-Native Development Lifecycle</p>
-        <h1>Policy Assistant</h1>
-        <p className="lede">
-          You are going to build this, and deploy it. A staff member at
-          Aldermere Bank asks a policy question in plain language; the assistant
-          answers <strong>only</strong> from the bank&rsquo;s policy corpus and
-          shows which sections it used. When the corpus cannot support an
-          answer, <strong>it says so and stops.</strong>
-        </p>
-      </header>
+    <main className="assistant">
+      <div className="transcript">
+        {empty && (
+          <section className="empty">
+            <h1>Ask a policy question</h1>
+            <p className="dim">
+              Answers come only from the Aldermere policy documents, with the sections
+              they came from. If the documents do not cover a question, the assistant
+              says so.
+            </p>
+            <div className="examples">
+              {EXAMPLES.map((q) => (
+                <button key={q} type="button" onClick={() => submit(q)} disabled={pending}>
+                  {q}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
-      <section className="card">
-        <h2>What is running</h2>
-        <ul className="status-list">
-          <li>
-            <span className="status-name">API</span>
-            <span className={reachable === false ? "status-bad" : "status-ok"}>
-              {reachable === null
-                ? "checking…"
-                : reachable
-                  ? "reachable on :8000"
-                  : `unreachable at ${apiUrl}`}
-            </span>
-          </li>
-          {health &&
-            Object.entries(health.dependencies).map(([name, detail]) => (
-              <li key={name}>
-                <span className="status-name">{name.replace(/_/g, " ")}</span>
-                <span
-                  className={
-                    detail.startsWith("down") ? "status-bad" : "status-ok"
-                  }
-                >
-                  {detail}
-                </span>
-              </li>
-            ))}
-        </ul>
-        <p className="note">
-          Postgres and Qdrant are running beside you in this Codespace, and they
-          are yours alone. <strong>The corpus is not indexed yet</strong> —
-          indexing it is the first thing you build.
-        </p>
-      </section>
+        {loadError && (
+          <p className="error-box" role="alert">
+            {loadError}
+          </p>
+        )}
 
-      <section className="card">
-        <h2>Where to start</h2>
-        <ol className="start-list">
-          <li>
-            <code>START-HERE.md</code> — ninety seconds, already open in your
-            editor
-          </li>
-          <li>
-            <code>docs/PRD.md</code> — what must be true. The contract.{" "}
-            <strong>§10 is the one to read twice</strong>
-          </li>
-          <li>
-            <code>pipeline/01-shape.md</code> — then follow the six stages in
-            order
-          </li>
-        </ol>
-        <p className="note">
-          Ten decisions in §10 are deliberately left to you.{" "}
-          <strong>You will be asked to defend them</strong>, and{" "}
-          <em>&ldquo;the agent chose it&rdquo;</em> is a failed answer.
-        </p>
-      </section>
+        {turns.map((turn, index) => {
+          if (turn.kind === "question") {
+            return (
+              <p key={index} className="question">
+                {turn.text}
+              </p>
+            );
+          }
+          if (turn.kind === "error") {
+            return (
+              <p key={index} className="error-box" role="alert">
+                {turn.text}
+              </p>
+            );
+          }
+          return <Reply key={index} response={turn.response} />;
+        })}
 
-      <p className="footnote">
-        Aldermere Bank is fictional. This screen is scaffolding — replacing it
-        is F5.
-      </p>
+        {pending && <p className="pending">Searching the policy and composing an answer…</p>}
+        <div ref={endRef} />
+      </div>
+
+      <form
+        className="composer"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit(draft);
+        }}
+      >
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="Ask about policy…"
+          aria-label="Your question"
+          maxLength={2000}
+          disabled={pending}
+        />
+        <button type="submit" disabled={pending || !draft.trim()}>
+          Ask
+        </button>
+      </form>
     </main>
   );
 }
+
