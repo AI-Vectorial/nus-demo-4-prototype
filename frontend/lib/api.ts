@@ -28,6 +28,14 @@ export function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Something went wrong.";
 }
 
+function statusMessage(status: number, path: string): string {
+  if (status === 504) {
+    // The gateway gave up waiting. Say so, rather than showing a bare code.
+    return "The service took too long to respond. Try the question again in a moment.";
+  }
+  return `The API returned ${status} for ${path}.`;
+}
+
 async function request<T>(apiUrl: string, path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
@@ -49,7 +57,7 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
       detail = undefined;
     }
     throw new ApiError(
-      typeof detail === "string" ? detail : `The API returned ${response.status} for ${path}.`,
+      typeof detail === "string" ? detail : statusMessage(response.status, path),
       response.status,
     );
   }

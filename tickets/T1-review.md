@@ -139,6 +139,13 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 - The packages marked `UNKNOWN` are not a problem. Their package metadata is permissive (MIT, BSD, Apache-2.0, PSF-2.0). `pip-licenses` failed to read them.
 - AGENTS.md §5 asks for an alternative to be proposed when MPL appears. No alternative keeps the deployment unchanged, so none is proposed. **Sign-off:** ACCEPTED by MSV, 2026-10-15, as relayed by the team ("confirmed, from MSV"). Recorded as a licence policy decision for the two unmodified MPL-2.0 libraries `certifi` and `tqdm`.
 
+### F12 — A slow model returns a 504 from the gateway instead of degrading
+**Pass:** 5 — production fitness
+**Severity:** high
+**Where:** `backend/app/generate/client.py` (retries and SDK timeout, no overall limit), `backend/app/features/ask.py`
+**What:** found in live testing, 2026-10-15, as a 504 on `/ask`. The API log shows two completed answers at 89 s and 108 s. Each provider call had its own 60 s timeout, and up to 3 attempts plus backoff ran for each step, so the total had no ceiling. The gateway gave up first, so the user saw an error, and the request kept running on the server, which can leave a record the user was never told about.
+**Decision:** FIXED — 2026-10-15. One time budget per answer, `ANSWER_BUDGET_SECONDS`, default 25 s. Embedding, retries and composition all share it. Each SDK call gets only the time left. Retries and backoff stop when it runs out, and the product returns `degraded` with the passages, as REQ-G6 requires. The default is below the gateway's limit, and it is configurable. **Trade-off, for the team to know:** an answer that takes longer than 25 s is now returned as passages with no composed answer. Previously it might have succeeded slowly. Tests: `tests/regression/test_time_budget.py` (6). Live: a normal answer took 9.6 s; with a 4 s budget the slow path returned `degraded` in 4.07 s, not a 504. **Frontend:** a 504 now shows "the service took too long to respond" instead of a bare code. **Not fixed:** a gateway 504 can still happen if the database or Qdrant is slow, so it stays a known residual risk.
+
 ### F10 — NFR-1 latency misses the p50 target
 **Pass:** 1 — correctness (against the NFR, not a code defect)
 **Severity:** high
@@ -191,8 +198,8 @@ Transitive packages with a note (see F11):
 
 | | |
 |---|---|
-| Findings | 11 |
-| Fixed | 6 (F1, F2, F5, F6, F7, F8) |
+| Findings | 12 |
+| Fixed | 7 (F1, F2, F5, F6, F7, F8, F12) |
 | Accepted | 4 (F3 retention, by MSV · F9 provenance, by MSV · F10 NFR-1, by MSV · F11 MPL-2.0, by MSV) |
 | Deferred | 1 (F4 in protected scripts, instructors to fix) |
 | Open | 0 |

@@ -13,12 +13,61 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 from openai import APIError, APITimeoutError, OpenAI, RateLimitError
 
 from app.core.config import settings
 
 log = logging.getLogger(__name__)
+
+# Clock and sleep are module-level so tests can drive them without waiting.
+_now = time.monotonic
+_sleep = time.sleep
+
+# One deadline per answer. Every provider call made inside time_budget() shares
+# it, so embedding, retries and composition together fit inside the budget.
+# Without it, retries multiply and a slow model outlives the gateway (504).
+_deadline: ContextVar[float | None] = ContextVar("provider_deadline", default=None)
+
+
+@contextmanager
+def time_budget(seconds: float) -> Iterator[None]:
+    token = _deadline.set(_now() + seconds)
+    try:
+        yield
+    finally:
+        _deadline.reset(token)
+
+
+def _remaining() -> float | None:
+    deadline = _deadline.get()
+    return None if deadline is None else deadline - _now()
+
+
+def _out_of_time() -> bool:
+    remaining = _remaining()
+    return remaining is not None and remaining <= 0
+
+
+def _timeout() -> float:
+    """The SDK timeout for one call: the configured limit, or what is left of the budget."""
+    limit = float(settings.llm_timeout_seconds)
+    remaining = _remaining()
+    if remaining is None:
+        return limit
+    return max(0.1, min(limit, remaining))
+
+
+def _pause(seconds: float) -> None:
+    """Back off, but never sleep past the budget."""
+    remaining = _remaining()
+    if remaining is not None:
+        seconds = min(seconds, max(0.0, remaining))
+    if seconds > 0:
+        _sleep(seconds)
 
 
 class ProviderError(RuntimeError):
@@ -44,7 +93,7 @@ def _client() -> OpenAI:
     return OpenAI(
         api_key=settings.openrouter_api_key,
         base_url=settings.openrouter_base_url,
-        timeout=settings.llm_timeout_seconds,
+        timeout=_timeout(),
         max_retries=0,  # retries are handled here, so backoff is visible
     )
 
@@ -53,13 +102,17 @@ def _call(operation, *, what: str, attempts: int):
     """Run a provider call with backoff, converting SDK errors to ProviderError."""
     last: Exception | None = None
     for attempt in range(1, attempts + 1):
+        if _out_of_time():
+            # The answer's time budget is spent. Stop now, so the caller can degrade
+            # rather than wait for the gateway to give up.
+            raise ProviderError(f"{what} stopped: the time budget is spent", retryable=True)
         try:
             return operation()
         except RateLimitError as error:
             last = error
             wait = attempt * 5
             log.warning("%s rate limited, waiting %ss (attempt %d)", what, wait, attempt)
-            time.sleep(wait)
+            _pause(wait)
         except APITimeoutError as error:
             last = error
             log.warning("%s timed out (attempt %d)", what, attempt)
@@ -69,7 +122,7 @@ def _call(operation, *, what: str, attempts: int):
                 raise ProviderError(f"{what} failed: {error}") from error
             last = error
             log.warning("%s provider error (attempt %d)", what, attempt)
-        time.sleep(1)
+        _pause(1)
 
     raise ProviderError(
         f"{what} failed after {attempts} attempts: {last}", retryable=True

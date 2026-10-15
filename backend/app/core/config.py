@@ -89,6 +89,11 @@ class Settings:
     # How many passages retrieval returns per question -- D3.
     retrieve_top_k: int = int(os.getenv("RETRIEVE_TOP_K", "5"))
 
+    # Total seconds one answer may take across embedding, search and composition.
+    # Kept under the gateway's limit, so a slow model degrades (returns passages)
+    # instead of timing out as a 504. Configurable; see the stage 04 record F12.
+    answer_budget_seconds: float = float(os.getenv("ANSWER_BUDGET_SECONDS", "25"))
+
     @property
     def database_configured(self) -> bool:
         return bool(self.database_url)

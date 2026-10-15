@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.records import Conversation, Message, MessageCitation
 from app.generate import ProviderError, embed
+from app.generate.client import time_budget
 from app.generate.compose import PROMPT_VERSION, compose_answer
 from app.retrieve import get_vector_store
 from app.retrieve.ground import Insufficient, ground
@@ -101,6 +102,17 @@ def answer(
     db: Session,
     question: str,
     conversation_id: uuid.UUID | None = None,
+) -> Exchange:
+    # One budget for the whole answer (review F12). Embedding, search and
+    # composition all draw on it, so the total stays under the gateway limit.
+    with time_budget(settings.answer_budget_seconds):
+        return _answer(db, question, conversation_id)
+
+
+def _answer(
+    db: Session,
+    question: str,
+    conversation_id: uuid.UUID | None,
 ) -> Exchange:
     started = time.perf_counter()
     question = question.strip()

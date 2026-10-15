@@ -29,6 +29,7 @@ A staff member can type a policy question and get a cited answer from Aldermere'
 ## Known limits, stated plainly
 
 - **Latency (NFR-1) misses its target.** Answers take about 9 to 12 seconds against a p50 target of 5. MSV accepted this (Option B).
+- **Slow model returns passages, not an answer (F12).** Each answer has a 25 second budget. If the model is slower, the product returns the retrieved passages with a degraded flag and no composed answer. A slow answer is no longer a 504.
 - **Refusal margin is thin.** Answerable Q3 scores 0.526 and refused Q11 scores 0.510, a gap of 0.016. Tuned on 13 questions only.
 - **Question text is stored and sent to the model.** Retention accepted by MSV (review F3). Q3 remains open for the product owner.
 - **Not yet verified:** NFR-2 (refusal latency, one sample), NFR-4 (ingest timing), NFR-5 (health with Qdrant down), NFR-6 (secrets, scan clean in repo), the citation-to-section link in the browser.
@@ -46,6 +47,8 @@ A staff member can type a policy question and get a cited answer from Aldermere'
 ## How we would know it did NOT work
 
 - `/healthz` reports a dependency down, or the vector store shows 0 passages
+- A high share of `outcome: degraded` answers while the model is up (the 25 second budget may be too tight for the provider's current speed; check `exchange outcome=` in the logs)
+- Any 504 from the API
 - Every question returns `503` or `degraded` when the model is up
 - A refusal answers a question instead of refusing
 - A citation appears without its status, or superseded v3.0 is not flagged
