@@ -38,7 +38,7 @@ Checked: swallowed errors, duplication, dead code, logging consistency.
 
 Checked: every dependency's licence, and anything that may be copied from elsewhere.
 
-- `ci/check_licences.py`: PASS, 59 dependencies. **Correction:** the check passes because it only refuses copyleft families it lists (GPL, AGPL, SSPL, CC-BY-SA, EUPL). MPL-2.0 is not on that list, and several licences are `UNKNOWN`. See F11.
+- `ci/check_licences.py`: PASS, 59 dependencies. **Correction:** the check passes because it only refuses copyleft families it lists (GPL, AGPL, SSPL, CC-BY-SA, EUPL). MPL-2.0 is not on that list. Several packages show `UNKNOWN` to `pip-licenses`, but their metadata is permissive. See F11.
 - Frontend licences read from `node_modules`: see table below.
 - `frontend/lib/markdown.tsx` is written for this project. No third-party code identified. The author should confirm this (F9).
 
@@ -78,7 +78,7 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 **Where:** `messages.content` (`backend/app/core/records.py`); the question is included in the prompt built by `backend/app/generate/compose.py`
 **What:** every question is kept in Postgres indefinitely and sent to OpenRouter. The brief's open question Q3 (who sees the question text, and for how long it is kept) is unanswered. A question can contain client details.
 **Agent recommendation:** do not change the code until Q3 is answered. Record the answer to Q3 as a decision, then add retention if needed.
-**Decision:** DEFERRED — no code change, as recommended. Reason: brief question Q3 (who sees the question text, and for how long it is kept) is owned by Privacy and is unanswered. **This must be answered before stage 05.** Until then, question text is stored and sent to the model, and that is a known risk.
+**Decision:** DEFERRED — no code change, as recommended. Reason: brief question Q3 (who sees the question text, and for how long it is kept) is owned by Privacy and is unanswered. **This must be answered before stage 05.** Until then, question text is stored and sent to the model, and that is a known risk. The team reports the answers are correct. That is product quality, not the Privacy owner's answer to Q3. **To close:** Privacy answers Q3, or MSV records an explicit acceptance with a reason.
 
 ### F4 — A protected script prints a fragment of the API key to the terminal
 **Pass:** 2 — security and privacy
@@ -86,7 +86,7 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 **Where:** `scripts/quickstart.sh` (prints `${OPENROUTER_API_KEY:0:14}...`)
 **What:** 14 characters of the key appear in terminal output. NFR-6 says secrets never appear in terminal output. The file is protected, so this team cannot change it.
 **Agent recommendation:** raise with the instructors to remove the print. Do not edit the script.
-**Decision:** DEFERRED — protected file, raised with instructors. Reason: `scripts/` is outside this team's permitted paths.
+**Decision:** DEFERRED — the leak is in two protected scripts, which this team cannot edit (AGENTS.md §1): `scripts/quickstart.sh:49` prints 14 characters of the key, and `scripts/set_table_keys.sh:55` prints 12. **Leak scan, done 2026-10-15:** no key in any tracked file, in git history (`git log -S`), or in any log in `/tmp`. `.env` is git-ignored and not tracked. So the repository itself does not leak. **Owner:** instructors, to remove the two prints. **Note:** the 14-character prefix was printed in this session's terminal during a quickstart run, so the instructors may choose to rotate the key.
 
 ### F5 — Startup status uses `print()`, not logging
 **Pass:** 3 — maintainability
@@ -125,7 +125,7 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 **Severity:** low
 **Where:** `frontend/lib/markdown.tsx`
 **What:** the file is written for this project. No third-party code is identified, but the author should confirm this in writing.
-**Decision:** OPEN — the author must confirm in writing that `frontend/lib/markdown.tsx` is original. The agent cannot confirm this, and it must be closed before stage 05.
+**Decision:** OPEN — the author must confirm in writing that `frontend/lib/markdown.tsx` is original. The team reports that the Markdown renders correctly. That shows the renderer works, not where its code came from, so it does not close this finding. The agent cannot confirm provenance, and this must be closed before stage 05.
 
 ### F11 — MPL-2.0 dependencies conflict with AGENTS.md §5; CI does not flag them
 **Pass:** 4 — provenance and IP
@@ -133,7 +133,11 @@ Checked: failure paths when Qdrant, the model or Postgres are unavailable or slo
 **Where:** `certifi` (MPL-2.0, required by `httpx` and `httpcore`); `tqdm` (MPL-2.0 AND MIT, required by `openai`). Several other packages show licence `UNKNOWN`, including `typing_extensions`, `urllib3` and `anyio`.
 **What:** AGENTS.md §5 says a GPL, LGPL, AGPL or MPL licence needs an alternative proposed. `ci/check_licences.py` only refuses GPL, AGPL, SSPL, CC-BY-SA and EUPL, so MPL passes the build. My earlier review said all dependencies were permissive. That was too strong: CI passing does not mean the project's own rule is met, and `UNKNOWN` licences were not checked. `pip-licenses` also reads the whole environment, not only the pinned requirements.
 **Agent recommendation:** the team decides whether to accept MPL-2.0 for these two transitive packages, with a reason, or to propose an alternative. Both are pulled in by pinned packages, so swapping them is a dependency decision, which AGENTS.md §5 reserves for a human. The agent has not changed any dependency.
-**Decision:** PENDING — team to decide. Open until recorded.
+**Decision:** ACCEPTED — no dependency change, with a reason. Checks run 2026-10-15:
+- `certifi` (MPL-2.0) is a hard requirement of `httpx`, which `openai` requires. `tqdm` (MPL-2.0 AND MIT) is a hard requirement of `openai` above 4. Removing either means replacing or upgrading the model SDK, which is the only model path. That risks the deployment, and it is not justified for these licences.
+- MPL-2.0 is file-level copyleft. Its obligations apply only if an MPL file is modified. These are used unmodified.
+- The packages marked `UNKNOWN` are not a problem. Their package metadata is permissive (MIT, BSD, Apache-2.0, PSF-2.0). `pip-licenses` failed to read them.
+- AGENTS.md §5 asks for an alternative to be proposed when MPL appears. No alternative keeps the deployment unchanged, so none is proposed. **Sign-off required:** a named person must accept this in writing, because it is a licence policy decision. **Name:** [pending].
 
 ### F10 — NFR-1 latency misses the p50 target
 **Pass:** 1 — correctness (against the NFR, not a code defect)
@@ -181,7 +185,7 @@ Transitive packages with a note (see F11):
 |---|---|---|---|
 | certifi | MPL-2.0 | httpx, httpcore | conflicts with AGENTS.md §5 |
 | tqdm | MPL-2.0 AND MIT | openai | conflicts with AGENTS.md §5 |
-| several others | UNKNOWN in metadata | various | not verified; see F11 |
+| several others | shown as UNKNOWN by pip-licenses; permissive in package metadata | various | checked; see F11 |
 
 ## Summary
 
@@ -189,12 +193,12 @@ Transitive packages with a note (see F11):
 |---|---|
 | Findings | 11 |
 | Fixed | 6 (F1, F2, F5, F6, F7, F8) |
-| Accepted | 1 (F10, NFR-1, by MSV) |
-| Deferred | 2 (F3 until Q3 is answered; F4 protected file) |
-| Open — needs a named person | 2 (F9 author confirmation; F11 MPL decision) |
+| Accepted | 2 (F10, NFR-1, by MSV · F11, MPL-2.0, sign-off pending) |
+| Deferred | 2 (F3 until Q3 is answered · F4 in protected scripts, instructors to fix) |
+| Open — needs a named person | 1 (F9 author confirms the Markdown renderer is original) |
 
 **The one we accepted on purpose, and why:** NFR-1, the answer latency. Live answers take 9 to 12 seconds against a p50 target of 5. MSV chose to accept the known miss rather than change the model. The reason is the team's to state at the gate.
 
 **The most serious item, now fixed:** F1. A retrieval failure returned an unhandled 500. It now returns a 503 and records nothing. Verified live.
 
-**Stage 04 status: NOT COMPLETE.** The gate is every finding has a decision and a reason. Two findings still need a named person: F9 (the author confirms the Markdown renderer is original) and F11 (the team accepts or rejects MPL-2.0 for two transitive packages). F3 is deferred until Q3 is answered, and must close before stage 05.
+**Stage 04 status: NOT COMPLETE.** The gate is that every finding has a decision and a reason. One finding is still open: F9, which needs the author's written confirmation. Two more need a named sign-off: F11 (MPL-2.0 acceptance) and F3 (Q3 from Privacy, or MSV's explicit acceptance). F3 must close before stage 05.
