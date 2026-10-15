@@ -53,8 +53,22 @@ merge to table-N  ──▶  CI deploys  ──▶  api-table-N + web-table-N
                                         about 90 seconds
 ```
 
+> ### ⏳ Your deployment indexes itself, and it is not instant
+>
+> You indexed in your Codespace by typing `python -m app.ingest`. **Nobody types it on
+> your deployment** — so the first container to find an empty collection runs it for
+> you, in the background, which takes a minute or two on a cold start.
+>
+> Until it finishes, `/healthz` says **`collection not created yet`** and `/ask` will
+> fail. That is the index being built, not a broken build. **Wait, refresh `/healthz`,
+> and ask again when it reports a passage count.**
+>
+> If it still says zero after about three minutes, read the API logs — an ingestion
+> that cannot reach the model is a real failure and it will say so there.
+
 **Then, on your own URL:**
 
+- [ ] `/healthz` reports a **passage count**, not `collection not created yet`
 - [ ] `/healthz` reports database and vector store reachable
 - [ ] Ask a question you know the corpus answers — **it answers, with citations**
 - [ ] Ask a question you know it cannot — **it refuses, and says where to go instead**
