@@ -223,9 +223,28 @@ jobs:
           echo "frontend ${{ needs.frontend.result }}"
           echo
 
+          # The scope check is a permission boundary, and a boundary belongs on
+          # the proposal. On a pull request it refuses the merge, which is the
+          # whole point.
+          #
+          # On a push the merge has already happened -- a human looked at a red
+          # scope check and allowed it anyway. Failing here cannot un-merge it.
+          # The only thing it does is take `gate` down, and `deploy` needs
+          # `gate`, so the branch silently never reaches its URL. A table would
+          # be told their merge succeeded and then find nothing at their link,
+          # with no failed job that obviously explains why.
+          #
+          # So: blocking on a pull request, loud but not blocking on a push.
+          # Tests and lint still gate the deploy either way.
           if [ "${{ needs.scope.result }}" != "success" ]; then
-            echo "The scope check did not pass. Nothing merges."
-            exit 1
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "The scope check did not pass. Nothing merges."
+              exit 1
+            fi
+            echo "!! scope check failed on a push -- a human allowed this merge."
+            echo "   Not blocking the deploy; it cannot un-merge what landed."
+            echo "   Protected paths were changed. That was somebody's decision."
+            echo
           fi
           for result in "${{ needs.backend.result }}" "${{ needs.frontend.result }}"; do
             case "$result" in
