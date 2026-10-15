@@ -184,7 +184,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # The verdict lives in the comment, not in this check's colour.
+      #
+      # review_agent.py exits 1 for "changes requested" and 2 for "could not
+      # run", which is right for a laptop -- but in CI a red cross beside "AI
+      # review" tells a table at 2:10 that they are blocked, and they are not:
+      # `gate` is the only required check, and it does not need this job.
+      #
+      # On the STEP rather than the job: job-level continue-on-error keeps the
+      # run green but can still paint the job red in the checks list, which is
+      # the thing we are trying to avoid. On the step, the step's conclusion is
+      # success, so the job is unambiguously green.
       - name: review
+        continue-on-error: true
         run: python ci/review_agent.py
         env:
           REVIEW_API: ${{ secrets.REVIEW_API }}
