@@ -18,7 +18,11 @@
 
 ## Findings
 
-### F1 — <one-line summary>
+> **Number findings `FND-1`, `FND-2`, …** — never `F1`, `F2`. `F1`–`F12` are the
+> *features* in `docs/features.md`, so "F11" in a review reads as "Audit export"
+> rather than "the eleventh thing we found". Different things, different labels.
+
+### FND-1 — <one-line summary>
 **Pass:** <1-5>
 **Severity:** low / medium / high
 **Where:** <file:line>

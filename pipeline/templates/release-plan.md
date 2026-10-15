@@ -31,7 +31,8 @@ git push origin table-N
 # Railway redeploys the previous version in about 90 seconds
 ```
 
-**Who decides to roll back:** <name>
+**Who decides to roll back:** the release manager — the human who approved
+this release. A role, not a name
 **What we cannot reverse:** <anything irreversible, or "nothing">
 
 ---
