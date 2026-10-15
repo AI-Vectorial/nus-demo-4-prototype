@@ -3,7 +3,7 @@
 **Stage:** 02 plan
 **Ticket:** [T1](T1.md)
 **Table:** 1
-**Status:** AWAITING APPROVAL
+**Status:** APPROVED by MSV (plan gate)
 **Decision numbering:** PRD §10 (the plan template's D8 row is not in PRD §10 and is not used here)
 
 ---
@@ -73,7 +73,30 @@ Each step depends on the one before it. Nothing can be retrieved before it is in
 
 | | |
 |---|---|
-| **Decision** | AWAITING APPROVAL |
-| **By** | *(MSV, on approval)* |
-| **When** | *(timestamp on approval)* |
-| **If rejected, what would make it acceptable** | |
+| **Decision** | APPROVED |
+| **By** | MSV |
+| **When** | 2026-10-15 (date only; time not recorded) |
+| **If rejected, what would make it acceptable** | n/a |
+
+**Reasons as given by the team at approval** (recorded verbatim in substance, so the plan is self-contained):
+
+- **D0** `text-embedding-3-small`, 1536. Five-document corpus is small, so the lower-cost, faster model is a reasonable start. Validate accuracy against Q1–Q10.
+- **D1** About 500 tokens, split on section boundaries first. Preserves clause context while keeping retrieval manageable. Verify Q10's two clauses land in the top three.
+- **D2** Threshold left open until stage 03. Measure all 13 scores, then choose by separation between answerable and unanswerable questions.
+- **D3** 5 passages. Balances recall against irrelevant context. *Note for the record: the team's reason cites alignment with `CONTEXT_MESSAGES`. That is a separate setting (D8) and is not a reason for the retrieval count. Flagged for MSV, not changed.*
+- **D4** Retain superseded policies, flag every citation with its status, and prefer current versions. Flagging keeps transparency; preferring current versions reduces stale answers. **MSV confirmed the ranking change is intended.**
+- **D5** State the information gap and direct the user to Group Finance. A clear next step without an invented answer.
+- **D6** Surface both conflicting passages and name the conflict. Do not decide. Governance stays open beyond this increment.
+- **D7** Group by section. Reduces duplicate citations and keeps the section-level traceability REQ-U15 needs.
+- **D8** PRD default of 5 turns, unless testing shows drift.
+- **D9** Re-retrieve on every turn, embedding the user turns with the latest last. Satisfies REQ-C5 and REQ-C7.
+
+## Amendment 1 — how tokens are counted (stage 03, before build)
+
+The approved plan says "about 500 tokens" but does not name a counting method. The team chose:
+
+- **No tokenizer dependency.** Token count is approximated from characters, with no new package. Reason given by the team: adding `tiktoken` would take time. No licence check is needed as a result.
+- The setting is still named `CHUNK_MAX_TOKENS`. Its value is an approximation, and the docstring in `config.py` must say so.
+- Consequence to note at the gate: chunk sizes are approximate, so "500 tokens" is a target, not an exact count. D1's verification (Q10's two clauses in the top three) is the real check.
+
+The "Reason not given" entries in the decisions table above are superseded by the reasons recorded at approval.
