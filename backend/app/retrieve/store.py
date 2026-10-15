@@ -53,6 +53,9 @@ class VectorStore(Protocol):
         Must be safe to call repeatedly -- it runs on every boot.
         """
 
+    def reset(self) -> None:
+        """Delete everything and create it again empty. Used by ingest --force only."""
+
     def upsert(self, passages: list[Passage]) -> int:
         """Store passages, replacing any with the same id. Returns the count."""
 

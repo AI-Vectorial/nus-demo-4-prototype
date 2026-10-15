@@ -95,7 +95,7 @@ def generate(prompt: str, *, system: str | None = None, temperature: float = 0.0
     return (response.choices[0].message.content or "").strip()
 
 
-def embed(texts: list[str]) -> list[list[float]]:
+def embed(texts: list[str], *, batch_size: int | None = None) -> list[list[float]]:
     """Turn texts into vectors, in the order given.
 
     Batched: a corpus larger than EMBEDDING_BATCH_SIZE becomes several requests
@@ -104,7 +104,7 @@ def embed(texts: list[str]) -> list[list[float]]:
     if not texts:
         return []
 
-    size = settings.embedding_batch_size
+    size = batch_size or settings.embedding_batch_size
     vectors: list[list[float]] = []
 
     for start in range(0, len(texts), size):

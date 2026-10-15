@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
+
+_BACKEND = Path(__file__).resolve().parents[2]
 
 
 def _origins() -> list[str]:
@@ -70,6 +73,18 @@ class Settings:
     # assistant refuses rather than composing an answer from weak matches.
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
     min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+
+    # Where the policy documents live. Read, never written (REQ-B5).
+    corpus_dir: str = os.getenv("CORPUS_DIR", str(_BACKEND / "corpus"))
+
+    # Chunking -- D1. Token counts are approximated from characters
+    # (CHARS_PER_TOKEN in app.ingest), with no tokenizer dependency. A value
+    # here is a target, not an exact count. Overlap is 0 by decision.
+    chunk_max_tokens: int = int(os.getenv("CHUNK_MAX_TOKENS", "500"))
+    chunk_overlap_tokens: int = int(os.getenv("CHUNK_OVERLAP_TOKENS", "0"))
+
+    # How many passages retrieval returns per question -- D3.
+    retrieve_top_k: int = int(os.getenv("RETRIEVE_TOP_K", "5"))
 
     @property
     def database_configured(self) -> bool:
