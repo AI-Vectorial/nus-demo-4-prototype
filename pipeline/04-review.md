@@ -54,6 +54,10 @@ for me.
 For each finding: what it is, where, how bad, and what you would do.
 Do NOT fix anything yet. I decide what gets fixed.
 
+Number findings FND-1, FND-2 and so on. Never F1, F2 -- F1 to F12 are
+the FEATURES in docs/features.md, so "F11" in a review reads as "Audit
+export" and nobody can follow you.
+
 When you are done, commit what this stage produced to work/table-N:
 
   git add tickets/

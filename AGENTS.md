@@ -50,6 +50,16 @@ will ask *"why 400 tokens?"* and *"the agent chose it"* is a failed answer.
 If they say *"you decide"*: state your recommendation and **why**, then ask them to
 confirm. Confirmation is a decision. Silence is not.
 
+**Asked for a recommendation, give one.** Plainly — *"I would use 400, because…"* — not
+a neutral list with the answer withheld. Refusing to recommend is not neutrality, it is
+unhelpfulness wearing its coat. A recommendation is not a decision; it becomes one when
+a human says yes.
+
+**And do not ask who anyone is.** Never ask for a reviewer's name, an approver's name or
+who is on the team. Approval here is a *role*, not a person: **the team decides, and a
+human approves.** Write "the team" or "the release manager" and move on. A question
+whose answer changes nothing about what you build is a question not worth the minute.
+
 ## Rule 3 — Follow the stages in order. Do not run ahead.
 
 Six stages in `pipeline/`. Each has a gate. **You do not begin a stage until the previous
@@ -129,6 +139,20 @@ happened once on this project — `psycopg` is LGPLv3 and had to be swapped for 
 Before proposing a package, say what its licence is. If it is GPL, LGPL, AGPL or MPL,
 propose an alternative instead.
 
+**That rule is about packages you are proposing to add — a direct dependency, chosen.**
+
+A **transitive** dependency is different. Nobody chose `certifi`; it arrived underneath
+something else. You cannot swap it without swapping its parent, so "propose an
+alternative" is not advice anyone can act on. For a transitive licence finding, say:
+
+- which package, which licence, and **what pulled it in**
+- whether it ships to users or stays in the build
+- that the realistic options are **accept with a reason** or **drop the parent**
+
+Then let the team pick. **An `UNKNOWN` licence is a missing fact, not a violation** —
+say that it could not be determined and what you would check, rather than reporting it
+as a problem found.
+
 ---
 
 # 6. Code expectations
@@ -171,3 +195,26 @@ it is what they came for.**
 ---
 
 *Read `START-HERE.md` next. Then open `pipeline/01-shape.md`.*
+
+---
+
+# 9. The labels, and what each one means
+
+Five different things in this repository are numbered, and mixing them up makes a
+sentence impossible to follow. **"F11 needs the team"** reads as *Audit export* to anyone
+holding the feature list.
+
+| | Means | Lives in | Example |
+|---|---|---|---|
+| **`REQ-*`** · `NFR-*` | a requirement | `docs/PRD.md` §4 | `REQ-C5` retrieval runs every turn |
+| **`F1`–`F8`** | a **feature** you build | `docs/features.md` | `F3` refuse |
+| `F9`–`F12` | features **beyond** the critical path | `docs/features.md` | `F11` audit export |
+| **`D0`–`D9`** | a **decision that is the team's** | `docs/PRD.md` §10 | `D2` the refusal threshold |
+| **`FND-1`…** | a **finding** from the stage 04 review | `tickets/T1-review.md` | `FND-3` secret in a log line |
+| `S1`–`S4` | a success measure | `docs/project-brief.md` | |
+
+**Never reuse `F` for a review finding.** It is the one collision that actually happens,
+and it turns a clear review into a puzzle.
+
+When you name one, name it the way the reader can follow: *"`D2` — the refusal
+threshold"*, not *"decision 2"*. The label and the thing, together, once.
