@@ -36,3 +36,6 @@ docs/CV-NUS_*
 # the `instructor` branch; keeping the directory ignored means it can also sit
 # here locally without ever being committed back.
 docs/instructor/
+
+# Instructor material lives outside this repository.
+docs/instructor/
