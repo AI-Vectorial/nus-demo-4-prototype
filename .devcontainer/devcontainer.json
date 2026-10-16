@@ -11,7 +11,7 @@
   // about two seconds -- that loop is what makes the feature feel like theirs.
   // Frontend deps, and the credential selection wired into every shell --
   // not only the one that starts the servers.
-  "postCreateCommand": "cd frontend && npm install && grep -q credentials.sh ~/.bashrc || echo '. ${containerWorkspaceFolder}/.devcontainer/credentials.sh' >> ~/.bashrc",
+  "postCreateCommand": "cd frontend && npm install; grep -q credentials.sh ~/.bashrc || echo '. ${containerWorkspaceFolder}/.devcontainer/credentials.sh' >> ~/.bashrc; bash ${containerWorkspaceFolder}/.devcontainer/limit-refs.sh || true",
   "postAttachCommand": "bash .devcontainer/start.sh",
 
   // The GitHub CLI, explicitly. Stage 05 has the agent open the pull request

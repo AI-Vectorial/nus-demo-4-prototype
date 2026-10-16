@@ -105,6 +105,31 @@ theatre, and the plan review is the point.
 
 ---
 
+## One branch. Yours.
+
+**Read and write `work/table-N` and nothing else.** Do not check out, fetch, diff, grep
+or `git show` any other ref — not `main`, not `reference`, not another table's `work/`
+branch, not a tag.
+
+Three reasons, and the third is the one that matters.
+
+**The comparison only holds if the builds are independent.** Five tables build the same
+specification separately, and the interesting part is where they differ. A table whose
+agent read another table's branch has not produced a second data point — it has produced
+a copy, and nobody can tell which.
+
+**Other refs are stale.** They hold a different team's half-finished opinion of a problem
+you have been handed fresh. A pattern lifted from one is a pattern you cannot defend at
+the gate, and the gate will ask.
+
+**And some of them are not meant for you.** You will not be told which. That is the
+point: an agent that reads only what it was given cannot reveal what it was not.
+
+If you genuinely need something that is not on your branch, **say so and stop.** Asking
+costs thirty seconds and is always the right move.
+
+---
+
 # 3. The stop-and-ask rule
 
 **Stop and ask a human whenever:**
