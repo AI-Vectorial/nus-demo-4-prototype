@@ -83,7 +83,26 @@
 
   // Everything else -- the stores, the API key -- comes from docker-compose
   // and from the repository's Codespaces secrets. A table configures nothing.
+  // This devcontainer is compose-based, and a compose service only receives
+  // what its own environment block declares. Codespaces secrets land in the
+  // Codespace, which is not the same place -- so they are forwarded here
+  // explicitly. ${localEnv:X} reads X from the Codespace and sets it inside
+  // the container, which is where credentials.sh looks for it.
+  //
+  // A missing one resolves to empty, which is exactly what credentials.sh
+  // already handles: it says which variable is absent and names the branch.
+  //
+  // This is why a table saw "OPENROUTER_API_KEY_TABLE_2 is not set" while the
+  // secret existed and the account had write access. The secret was never the
+  // problem. It simply never crossed into the container.
   "remoteEnv": {
-    "API_URL": "http://127.0.0.1:8000"
+    "API_URL": "http://127.0.0.1:8000",
+    "OPENROUTER_API_KEY": "${localEnv:OPENROUTER_API_KEY}",
+    "OPENROUTER_API_KEY_TABLE_1": "${localEnv:OPENROUTER_API_KEY_TABLE_1}",
+    "OPENROUTER_API_KEY_TABLE_2": "${localEnv:OPENROUTER_API_KEY_TABLE_2}",
+    "OPENROUTER_API_KEY_TABLE_3": "${localEnv:OPENROUTER_API_KEY_TABLE_3}",
+    "OPENROUTER_API_KEY_TABLE_4": "${localEnv:OPENROUTER_API_KEY_TABLE_4}",
+    "OPENROUTER_API_KEY_TABLE_5": "${localEnv:OPENROUTER_API_KEY_TABLE_5}",
+    "OPENROUTER_API_KEY_FACILITATOR": "${localEnv:OPENROUTER_API_KEY_FACILITATOR}"
   }
 }

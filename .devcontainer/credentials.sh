@@ -30,8 +30,26 @@ if [ -z "${OPENROUTER_API_KEY:-}" ]; then
       export OPENROUTER_API_KEY="$_key"
       export TABLE_ID="$_table"
     else
+      # Say which of the two failures this is. They look identical from here
+      # and they are fixed in completely different places, which has already
+      # cost one afternoon.
+      # wc -l, not grep -c: grep exits 1 when there are no matches, so a
+      # `|| echo 0` fallback fires as well and the count arrives doubled.
+      _seen="$(env | grep '^OPENROUTER_API_KEY' 2>/dev/null | wc -l | tr -d ' ')"
       echo "  !! ${_var} is not set. Branch is '${_branch}'."
+      if [ "${_seen}" = "0" ]; then
+        echo "  !! No OPENROUTER_* variable reached this container at all."
+        echo "  !! For an instructor: the secrets are not crossing into the"
+        echo "  !! dev container. Check devcontainer.json remoteEnv, and that"
+        echo "  !! this account has WRITE access -- GitHub withholds secrets"
+        echo "  !! from codespaces whose user cannot write to the repo."
+      else
+        echo "  !! ${_seen} other OPENROUTER_* variable(s) ARE present, so"
+        echo "  !! secrets do reach this container -- ${_var} itself is"
+        echo "  !! missing or misnamed in the repository's Codespaces secrets."
+      fi
       echo "  !! Tell an instructor. Do NOT paste a key into a file."
+      unset _seen
     fi
     unset _var _key
   elif [ -n "$_branch" ]; then
