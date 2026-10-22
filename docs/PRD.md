@@ -402,7 +402,7 @@ appears as a literal in code.**
 
 ```bash
 OPENROUTER_API_KEY=            OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-LLM_MODEL=openai/gpt-oss-120b  LLM_TIMEOUT_SECONDS=60
+LLM_MODEL=anthropic/claude-haiku-5.5  LLM_TIMEOUT_SECONDS=60
 
 EMBEDDING_MODEL_SLUG=openai/text-embedding-3-small
 EMBEDDING_DIMENSIONS=1536      EMBEDDING_BATCH_SIZE=96
