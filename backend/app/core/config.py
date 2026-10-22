@@ -47,7 +47,12 @@ class Settings:
         "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
     )
 
-    llm_model: str = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
+    # The fallback matters as much as the variable. A Codespace sets no
+    # LLM_MODEL at all -- docker-compose does not declare one and .env does not
+    # carry one -- so whatever stands here is the model the product runs
+    # locally while a table builds, and it has to be one the OpenRouter
+    # workspace actually allows. gpt-oss-120b is blocked by the guardrail.
+    llm_model: str = os.getenv("LLM_MODEL", "anthropic/claude-haiku-5.5")
     llm_timeout_seconds: int = int(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
     llm_max_retries: int = int(os.getenv("LLM_MAX_RETRIES", "3"))
 
