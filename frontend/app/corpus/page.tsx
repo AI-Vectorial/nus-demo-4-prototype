@@ -32,7 +32,7 @@ export default function CorpusPage() {
 
   return (
     <main className="wrap">
-      <TopBar />
+      <TopBar showHistory />
       <header>
         <h1>Policy corpus</h1>
         <p className="lede">Browse the policy sources used by the assistant.</p>

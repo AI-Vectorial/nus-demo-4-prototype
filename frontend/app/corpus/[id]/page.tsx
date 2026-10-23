@@ -63,7 +63,7 @@ export default function CorpusDocumentPage({
 
   return (
     <main className="wrap">
-      <TopBar />
+      <TopBar showHistory />
       <div className="route-links">
         <Link href="/corpus">← All policies</Link>
         <Link href="/">← Assistant</Link>

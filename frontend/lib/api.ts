@@ -9,6 +9,8 @@ import type {
   AskResponse,
   CorpusDocument,
   CorpusDocumentDetail,
+  ConversationDetail,
+  ConversationPage,
   Health,
 } from "./types";
 
@@ -83,5 +85,26 @@ export function getCorpusDocument(
   return request<CorpusDocumentDetail>(
     apiUrl,
     `/corpus/${encodeURIComponent(documentId)}${query}`,
+  );
+}
+
+export function listConversations(
+  apiUrl: string,
+  limit = 20,
+  offset = 0,
+): Promise<ConversationPage> {
+  return request<ConversationPage>(
+    apiUrl,
+    `/conversations?limit=${limit}&offset=${offset}`,
+  );
+}
+
+export function getConversation(
+  apiUrl: string,
+  conversationId: string,
+): Promise<ConversationDetail> {
+  return request<ConversationDetail>(
+    apiUrl,
+    `/conversations/${encodeURIComponent(conversationId)}`,
   );
 }

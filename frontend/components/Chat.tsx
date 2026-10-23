@@ -60,7 +60,7 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
 
   return (
     <main className="wrap">
-      <TopBar onReset={reset} />
+      <TopBar onReset={reset} showHistory />
       <header>
         <h1>Ask about policy</h1>
         <p className="lede">Answers use Aldermere policy sources. This assistant explains policy; it does not make decisions.</p>

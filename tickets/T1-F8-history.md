@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F8 History
 **Covers:** REQ-C8, REQ-C9, REQ-A6, REQ-U13, REQ-U14
-**Status:** `todo`
+**Status:** `done`
 **Cuttable:** Yes — first feature cut if time runs short.
 
 ## What this is
@@ -48,9 +48,17 @@ Corpus browsing and its navigation belong to F7.
 > as not done.
 
 ```
+cd backend && pytest -q tests/features/test_history.py
+3 passed, 1 warning in 0.17s
 
+cd frontend && npm run lint && npm run typecheck
+ESLint passed; TypeScript check passed.
+
+cd frontend && npx next build --webpack --debug
+✓ Compiled successfully in 15.6s; TypeScript passed; static generation completed for 7/7 pages.
+Routes include /history, /history/[id], /corpus and /corpus/[id].
 ```
 
 ## Notes
 
-If cut for time, remove the History action with the route; conversations remain persisted.
+The default Turbopack build exited 143 during build attempts; the webpack production build completed. The Codespace has no browser automation installed, so route interaction was validated through API tests and successful compilation rather than a live browser session.

@@ -55,3 +55,34 @@ export interface CorpusDocument {
 export interface CorpusDocumentDetail extends CorpusDocument {
   content: string;
 }
+
+export interface ConversationSummary {
+  id: string;
+  started_at: string;
+  last_at: string;
+  preview: string;
+  turns: number;
+}
+
+export interface ConversationPage {
+  conversations: ConversationSummary[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ConversationMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string | null;
+  outcome: Outcome | null;
+  created_at: string;
+  citations: Citation[];
+}
+
+export interface ConversationDetail {
+  id: string;
+  started_at: string;
+  last_at: string;
+  messages: ConversationMessage[];
+}

@@ -437,6 +437,39 @@ code {
 .policy-document td { border: 1px solid var(--border-strong); padding: 0.45rem 0.6rem; text-align: left; }
 .policy-document blockquote { border-left: 3px solid var(--border-strong); color: var(--text-dim); margin-inline: 0; padding-left: 1rem; }
 
+.history-list,
+.history-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-item {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.history-item:hover { border-color: var(--accent); }
+.history-item span { color: var(--text-dim); font-size: 0.85rem; }
+.history-message { display: flex; flex-direction: column; gap: 0.5rem; }
+.history-message .user-question { margin-block: 0; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; }
+.pagination button {
+  padding: 0.45rem 0.7rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+.pagination button:disabled { cursor: not-allowed; opacity: 0.5; }
+
 .turns {
   display: flex;
   flex-direction: column;

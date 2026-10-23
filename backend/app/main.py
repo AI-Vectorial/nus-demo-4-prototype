@@ -20,7 +20,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import ask, corpus, health
+from app.api import ask, corpus, health, history
 from app.core import database
 
 log = logging.getLogger(__name__)
@@ -117,6 +117,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(ask.router)
 app.include_router(corpus.router)
+app.include_router(history.router)
 
 # Your routers are mounted here.
 #
