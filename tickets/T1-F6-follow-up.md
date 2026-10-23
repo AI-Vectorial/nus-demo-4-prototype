@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F6 Follow-up
 **Covers:** REQ-C3, REQ-C4, REQ-C5, REQ-C6, REQ-C7, REQ-A3, REQ-U8
-**Status:** `todo`
+**Status:** `done`
 **Cuttable:** Yes — cut after F8 and F7 if time runs short.
 
 ## What this is
@@ -48,9 +48,14 @@ Do not reuse old passages instead of retrieving again for a follow-up.
 > as not done.
 
 ```
+cd backend && pytest -q tests/features/test_follow_up.py
+2 passed, 1 warning in 0.19s
 
+cd frontend && npm run lint && npm run typecheck
+ESLint passed; TypeScript check passed.
 ```
 
 ## Notes
 
-If cut for time, remove follow-up UI affordances and record the cut in the release plan.
+Retrieval embeds the current question with recent user questions; generation receives the same complete turns as reference context, not policy evidence.
+Reset clears the client conversation and ignores any response from a request started before Reset.

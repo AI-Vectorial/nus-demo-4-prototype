@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.generate import ProviderError, generate
 from app.retrieve.store import Hit
 
-_PROMPT_PATH = Path(__file__).resolve().parents[1] / "generate" / "prompts" / "v1.md"
+_PROMPT_PATH = Path(__file__).resolve().parents[1] / "generate" / "prompts" / "v2.md"
 
 
 @dataclass(frozen=True)
@@ -44,6 +44,7 @@ def generate_answer(
     question: str,
     hits: list[Hit],
     *,
+    conversation_context: str = "",
     generate_text=generate,
     enabled: bool | None = None,
     model_name: str | None = None,
@@ -57,7 +58,7 @@ def generate_answer(
     prompt_template = _PROMPT_PATH.read_text(encoding="utf-8")
     prompt = prompt_template.replace("{question}", question).replace(
         "{passages}", _passage_context(hits)
-    )
+    ).replace("{conversation_context}", conversation_context)
 
     if not is_enabled:
         return Degraded(

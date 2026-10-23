@@ -68,7 +68,7 @@ def test_ask_endpoint_returns_a_contract_valid_answer_and_persists_turns(
     )
     monkeypatch.setattr(
         "app.features.ask.generate_answer",
-        lambda question, hits: Answered(
+        lambda question, hits, *, conversation_context="": Answered(
             answer="Claims of 75 pounds or more require approval.",
             citations=hits,
             model="test-model",
@@ -127,7 +127,7 @@ def test_degraded_response_has_no_composed_answer(api_client, passages, monkeypa
     )
     monkeypatch.setattr(
         "app.features.ask.generate_answer",
-        lambda question, hits: Degraded(
+        lambda question, hits, *, conversation_context="": Degraded(
             answer=None,
             citations=hits,
             model="test-model",

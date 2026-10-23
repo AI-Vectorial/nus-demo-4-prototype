@@ -68,3 +68,18 @@ def test_generation_rejects_empty_evidence(model) -> None:
     else:
         raise AssertionError("generation accepted an empty evidence set")
     assert model.generate_calls == []
+
+
+def test_generation_includes_conversation_context_as_non_evidence(passages, model) -> None:
+    result = generate_answer(
+        "And above £500?",
+        passages,
+        conversation_context="User: What is the threshold?\nAssistant: See policy.",
+        generate_text=model.generate,
+        enabled=True,
+        model_name="test-model",
+    )
+
+    assert isinstance(result, Answered)
+    assert "User: What is the threshold?" in model.generate_calls[0]["prompt"]
+    assert "not policy evidence" in model.generate_calls[0]["prompt"]

@@ -5,8 +5,10 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.models import Conversation, Message, MessageCitation
 from app.features.answer import Degraded, generate_answer
 from app.retrieve.query import Grounded, Insufficient, retrieve
@@ -28,6 +30,34 @@ def _group_citations(hits: list[Hit]) -> list[Hit]:
     return list(grouped.values())
 
 
+def _recent_turns(
+    session: Session, conversation_id: UUID, current_message_id: UUID
+) -> list[tuple[str, str]]:
+    if settings.context_messages < 0:
+        raise RuntimeError("CONTEXT_MESSAGES must not be negative")
+    if settings.context_messages == 0:
+        return []
+
+    messages = session.scalars(
+        select(Message)
+        .where(
+            Message.conversation_id == conversation_id,
+            Message.id != current_message_id,
+        )
+        .order_by(Message.created_at.desc(), Message.id.desc())
+        .limit(settings.context_messages * 2 + 1)
+    ).all()
+    turns: list[tuple[str, str]] = []
+    pending_question: str | None = None
+    for message in reversed(messages):
+        if message.role == "user":
+            pending_question = message.content
+        elif message.role == "assistant" and pending_question is not None:
+            turns.append((pending_question, message.content or ""))
+            pending_question = None
+    return turns[-settings.context_messages :]
+
+
 def ask_policy(
     session: Session,
     question: str,
@@ -47,11 +77,18 @@ def ask_policy(
         conversation_id=conversation.id,
         role="user",
         content=question,
+        created_at=datetime.now(UTC),
     )
     session.add(user_message)
     session.flush()
 
-    result = retrieve(question)
+    turns = _recent_turns(session, conversation.id, user_message.id)
+    retrieval_query = "\n".join([*(user_question for user_question, _ in turns), question])
+    conversation_context = "\n".join(
+        f"User: {user_question}\nAssistant: {answer}"
+        for user_question, answer in turns
+    )
+    result = retrieve(retrieval_query)
     if isinstance(result, Insufficient):
         outcome = "refused"
         answer: str | None = REFUSAL_MESSAGE
@@ -59,7 +96,11 @@ def ask_policy(
         model_name = None
         prompt_version = None
     elif isinstance(result, Grounded):
-        generated = generate_answer(question, result.hits)
+        generated = generate_answer(
+            question,
+            result.hits,
+            conversation_context=conversation_context,
+        )
         hits = _group_citations(generated.citations)
         if isinstance(generated, Degraded):
             outcome = "degraded"
@@ -81,6 +122,7 @@ def ask_policy(
         model=model_name,
         prompt_version=prompt_version,
         latency_ms=latency_ms,
+        created_at=datetime.now(UTC),
     )
     assistant_message.citations = [
         MessageCitation(

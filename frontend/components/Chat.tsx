@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { ApiError, ask } from "@/lib/api";
 import type { AskResponse } from "@/lib/types";
@@ -21,22 +21,26 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
   const [turns, setTurns] = useState<Array<{ question: string; response: AskResponse }>>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const requestGeneration = useRef(0);
 
   async function submitQuestion(value: string) {
     const trimmed = value.trim();
     if (!trimmed || pending) return;
 
+    const generation = requestGeneration.current;
     setPending(true);
     setError(null);
     setQuestion("");
     try {
       const response = await ask(apiUrl, trimmed, conversationId);
+      if (generation !== requestGeneration.current) return;
       setConversationId(response.conversation_id);
       setTurns((previous) => [...previous, { question: trimmed, response }]);
     } catch (cause) {
+      if (generation !== requestGeneration.current) return;
       setError(cause instanceof ApiError ? cause.message : "The request failed.");
     } finally {
-      setPending(false);
+      if (generation === requestGeneration.current) setPending(false);
     }
   }
 
@@ -46,10 +50,12 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
   }
 
   function reset() {
+    requestGeneration.current += 1;
     setTurns([]);
     setConversationId(null);
     setQuestion("");
     setError(null);
+    setPending(false);
   }
 
   return (
