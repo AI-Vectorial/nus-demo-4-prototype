@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F4 Generate
 **Covers:** REQ-G1, REQ-G2, REQ-G3, REQ-G4, REQ-G5, REQ-G6
-**Status:** `todo`
+**Status:** `done`
 **Cuttable:** No
 
 ## What this is
@@ -48,9 +48,10 @@ The `/ask` route, persistence and UI rendering belong to F5.
 > as not done.
 
 ```
-
+cd backend && pytest -q tests/features/test_generation.py tests/features/test_refusal.py tests/features/test_retrieval.py tests/features/test_ingest.py tests/regression/test_provider_boundary.py tests/regression/test_retrieval_contract.py
+25 passed, 1 warning in 1.92s
 ```
 
 ## Notes
 
-Record both the enabled answer path and degraded-mode output at stage 03.
+The fake-provider tests prove the enabled, disabled and provider-failure branches without network access.
