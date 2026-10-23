@@ -2,7 +2,7 @@
 
 **Stage:** 02 plan
 **Ticket:** tickets/T1.md
-**Status:** AWAITING APPROVAL
+**Status:** APPROVED
 
 ---
 
@@ -76,7 +76,7 @@ Each feature needs the one before it: nothing can be retrieved before the corpus
 
 | | |
 |---|---|
-| **Decision** | AWAITING APPROVAL |
+| **Decision** | APPROVED |
 | **By** | the release manager |
-| **When** | *(pending)* |
+| **When** | 2026-10-23 08:59 UTC |
 | **If rejected, what would make it acceptable** | |
