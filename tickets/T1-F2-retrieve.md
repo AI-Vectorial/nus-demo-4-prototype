@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F2 Retrieve
 **Covers:** REQ-R1, REQ-R5
-**Status:** `todo`
+**Status:** `in progress`
 **Cuttable:** No
 
 ## What this is
@@ -47,9 +47,11 @@ Answer composition and the browser ask flow belong to F4 and F5.
 > as not done.
 
 ```
-
+cd backend && pytest -q tests/features/test_retrieval.py tests/features/test_ingest.py tests/regression/test_retrieval_contract.py
+13 passed, 1 warning in 2.18s
 ```
 
 ## Notes
 
-Keep the live evaluation output with the test evidence at stage 03.
+The local retrieval behavior is tested with the provided fake model and store.
+The ten-question evaluation against the live index remains pending on the Table 1 OpenRouter credential.
