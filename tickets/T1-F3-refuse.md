@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F3 refuse
 **Covers:** REQ-R2, REQ-R3, REQ-R4, REQ-R6
-**Status:** `in progress` · blocked on D2 (the threshold value, team decision)
+**Status:** `done`
 
 ## What this is
 
@@ -56,7 +56,17 @@ $ python -c "...retrieve_grounded(...) with MIN_SCORE unset"
 refused to run: MIN_SCORE is not set. The refusal threshold is decision D2; ...
 ```
 
-Mechanism proven with fakes. NOT yet proven: the live Done-when (Q11–13 refuse, Q1–10 do not). That needs `MIN_SCORE` set by the team.
+Mechanism proven with fakes.
+
+Live, with `MIN_SCORE=0.50` (team decision D2, accepted the recommendation):
+
+```
+MIN_SCORE = 0.5
+answerable grounded: 10/10     (Q1-Q10 all Grounded)
+unanswerable refused: 3/3      (Q11, Q12, Q13 all Insufficient)
+```
+
+Note: `MIN_SCORE` was exported in the shell for this run. It is not in a committed file, so the deployed app needs it set as a Railway variable at stage 05.
 
 ## Notes
 
