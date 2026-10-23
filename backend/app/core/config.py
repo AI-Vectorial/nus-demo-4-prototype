@@ -77,7 +77,9 @@ class Settings:
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # No default. The value is the team's decision (D2), set in the environment
+    # once measured against corpus/EVALUATION.md. None means retrieval refuses to run.
+    min_score: float | None = float(os.environ["MIN_SCORE"]) if os.getenv("MIN_SCORE") else None
 
     @property
     def database_configured(self) -> bool:

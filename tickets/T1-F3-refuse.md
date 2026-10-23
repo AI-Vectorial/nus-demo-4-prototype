@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F3 refuse
 **Covers:** REQ-R2, REQ-R3, REQ-R4, REQ-R6
-**Status:** `todo`
+**Status:** `in progress` · blocked on D2 (the threshold value, team decision)
 
 ## What this is
 
@@ -49,8 +49,18 @@ All refusal tests pass. The live-index run prints each of Q1–Q13 with its top 
 > as not done.
 
 ```
+$ cd backend && pytest -q && ruff check .
+79 passed, 1 warning in 2.67s
+All checks passed!
+$ python -c "...retrieve_grounded(...) with MIN_SCORE unset"
+refused to run: MIN_SCORE is not set. The refusal threshold is decision D2; ...
 ```
+
+Mechanism proven with fakes. NOT yet proven: the live Done-when (Q11–13 refuse, Q1–10 do not). That needs `MIN_SCORE` set by the team.
 
 ## Notes
 
-Make refusal a type, not an empty list. Then generation cannot run on a refusal by accident.
+- Make refusal a type, not an empty list: `Grounded | Insufficient` in `app/retrieve/search.py`. Grounded cannot hold an empty list by construction.
+- `MIN_SCORE` has no default. The old `0.35` was never adopted, and is removed.
+- Score gap from F2, for D2: lowest answerable 0.5420 (Q5), highest unanswerable 0.4684 (Q12). Any value in [0.4684, 0.5420) separates the two sets on the current index.
+- D5 (refusal wording, naming an owner) is not implemented. The reason is generic for now; the owner naming is a follow-up before stage 04.
