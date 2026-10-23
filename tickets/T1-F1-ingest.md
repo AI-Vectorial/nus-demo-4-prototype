@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F1 Ingest
 **Covers:** REQ-I1, REQ-I2, REQ-I3, REQ-I4, REQ-I5, REQ-I6, REQ-I7
-**Status:** `todo`
+**Status:** `in progress`
 **Cuttable:** No
 
 ## What this is
@@ -48,9 +48,12 @@ Do not edit policy text to improve indexing.
 > as not done.
 
 ```
-
+cd backend && pytest -q tests/features/test_ingest.py
+5 passed, 1 warning in 0.32s
 ```
 
 ## Notes
 
-Record evidence from the actual ingestion command and tests at stage 03.
+Offline tests cover the full corpus, idempotent IDs/counts, payload status and `--force`.
+The live `python -m app.ingest` run is pending: Table 1's credential is unavailable; setting approved chunk values still fails before embedding.
+The team approved `tiktoken==0.14.0` (MIT) for model-compatible token counts; local Docker configuration now supplies the accepted D1 chunk values.

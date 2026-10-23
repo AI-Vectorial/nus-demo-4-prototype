@@ -71,10 +71,23 @@ class Settings:
     # replaces the search.
     context_messages: int = int(os.getenv("CONTEXT_MESSAGES", "5"))
 
-    # Below this, retrieval is treated as having found nothing and the
-    # assistant refuses rather than composing an answer from weak matches.
-    # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
-    min_score: float = float(os.getenv("MIN_SCORE", "0.35"))
+    # D1: set in the environment; a missing chunk configuration blocks ingestion.
+    chunk_max_tokens: int | None = (
+        int(os.environ["CHUNK_MAX_TOKENS"]) if os.getenv("CHUNK_MAX_TOKENS") else None
+    )
+    chunk_overlap_tokens: int | None = (
+        int(os.environ["CHUNK_OVERLAP_TOKENS"])
+        if os.getenv("CHUNK_OVERLAP_TOKENS")
+        else None
+    )
+
+    # Set after live evaluation (D2); no guessed fallback threshold.
+    min_score: float | None = (
+        float(os.environ["MIN_SCORE"]) if os.getenv("MIN_SCORE") else None
+    )
+    retrieve_top_k: int | None = (
+        int(os.environ["RETRIEVE_TOP_K"]) if os.getenv("RETRIEVE_TOP_K") else None
+    )
 
     @property
     def database_configured(self) -> bool:
