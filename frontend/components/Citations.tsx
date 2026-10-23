@@ -12,6 +12,7 @@
  */
 
 import type { Citation } from "@/lib/types";
+import Link from "next/link";
 
 export default function Citations({ citations }: { citations: Citation[] }) {
   if (!citations.length) return null;
@@ -20,8 +21,9 @@ export default function Citations({ citations }: { citations: Citation[] }) {
     <section className="citations" aria-label="Policy sources">
       <h3>Sources</h3>
       {citations.map((citation, index) => (
-        <div
+        <Link
           className={`citation ${citation.status === "superseded" ? "superseded" : ""}`}
+          href={`/corpus/${encodeURIComponent(citation.document_id)}?version=${encodeURIComponent(citation.version)}&section=${encodeURIComponent(citation.section)}`}
           key={`${citation.document_id}:${citation.section}:${citation.version}:${index}`}
         >
           <span className="doc">{citation.document_title}</span>
@@ -30,7 +32,7 @@ export default function Citations({ citations }: { citations: Citation[] }) {
           {citation.status === "superseded" && (
             <span className="badge">Superseded</span>
           )}
-        </div>
+        </Link>
       ))}
     </section>
   );

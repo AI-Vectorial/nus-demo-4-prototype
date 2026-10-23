@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F7 Corpus browser
 **Covers:** REQ-B1, REQ-B2, REQ-B3, REQ-B4, REQ-B5, REQ-B6, REQ-A4, REQ-U12, REQ-U15
-**Status:** `todo`
+**Status:** `done`
 **Cuttable:** Yes — cut after F8 if time runs short.
 
 ## What this is
@@ -48,9 +48,14 @@ Conversation history and follow-up handling belong to F6 and F8.
 > as not done.
 
 ```
+cd backend && pytest -q tests/features/test_corpus.py
+3 passed, 1 warning in 0.06s
 
+cd frontend && npm run lint && npm run typecheck
+ESLint passed; TypeScript check passed.
 ```
 
 ## Notes
 
-If cut for time, remove the Corpus action and citation links with the routes.
+The document ID is not unique across versions, so citation links include the exact version and section heading.
+Markdown renders with the approved MIT-licensed `react-markdown` and `remark-gfm` packages; policy source files remain read-only.

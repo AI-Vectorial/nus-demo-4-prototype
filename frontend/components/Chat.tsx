@@ -1,9 +1,9 @@
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
-import Link from "next/link";
 import { ApiError, ask } from "@/lib/api";
 import type { AskResponse } from "@/lib/types";
+import TopBar from "./TopBar";
 import Answer from "./Answer";
 import Citations from "./Citations";
 import Degraded from "./Degraded";
@@ -60,10 +60,7 @@ export default function Chat({ apiUrl }: { apiUrl: string }) {
 
   return (
     <main className="wrap">
-      <nav className="topbar" aria-label="Main navigation">
-        <Link className="brand" href="/">Policy Assistant</Link>
-        <button className="reset" type="button" onClick={reset}>Reset</button>
-      </nav>
+      <TopBar onReset={reset} />
       <header>
         <h1>Ask about policy</h1>
         <p className="lede">Answers use Aldermere policy sources. This assistant explains policy; it does not make decisions.</p>

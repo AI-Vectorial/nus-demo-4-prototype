@@ -42,3 +42,16 @@ export interface Health {
   environment: string;
   dependencies: Record<string, string>;
 }
+
+export interface CorpusDocument {
+  id: string;
+  title: string;
+  version: string;
+  effective: string;
+  owner: string;
+  status: "current" | "superseded";
+}
+
+export interface CorpusDocumentDetail extends CorpusDocument {
+  content: string;
+}

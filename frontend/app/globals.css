@@ -157,6 +157,8 @@ code {
   border-radius: 7px;
   border: 1px solid var(--border);
   font-size: 0.85rem;
+  color: inherit;
+  text-decoration: none;
 }
 
 .citation .doc { font-weight: 600; }
@@ -365,14 +367,27 @@ code {
   text-decoration: none;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.topbar-actions a:not(.reset) {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 .reset,
 .example {
+  display: inline-block;
   color: var(--text);
   background: var(--panel);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   font: inherit;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .reset { padding: 0.45rem 0.8rem; }
@@ -380,6 +395,47 @@ code {
 .example { padding: 0.5rem 0.7rem; text-align: left; }
 .example:hover,
 .reset:hover { background: var(--surface-tint); }
+
+.corpus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.corpus-document {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.corpus-document:hover { border-color: var(--accent); }
+.corpus-document-title { font-weight: 650; }
+.corpus-status { color: var(--text-dim); font-size: 0.85rem; text-transform: capitalize; }
+.corpus-document.superseded { border-color: var(--warn-border); }
+.superseded-warning { color: var(--danger); font-weight: 650; }
+.route-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+.policy-document {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  overflow-wrap: anywhere;
+}
+.policy-document h1 { font-size: 1.5rem; }
+.policy-document h2,
+.policy-document h3,
+.policy-document h4,
+.policy-document h5,
+.policy-document h6 { scroll-margin-top: 1.5rem; }
+.policy-document table { border-collapse: collapse; display: block; max-width: 100%; overflow-x: auto; }
+.policy-document th,
+.policy-document td { border: 1px solid var(--border-strong); padding: 0.45rem 0.6rem; text-align: left; }
+.policy-document blockquote { border-left: 3px solid var(--border-strong); color: var(--text-dim); margin-inline: 0; padding-left: 1rem; }
 
 .turns {
   display: flex;
