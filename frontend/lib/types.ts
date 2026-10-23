@@ -31,7 +31,8 @@ export interface AskResponse {
   /** The composed answer, or the reason for a refusal. null when degraded. */
   answer: string | null;
   citations: Citation[];
-  exchange_id: string;
+  conversation_id: string;
+  message_id: string;
   latency_ms: number;
 }
 
@@ -40,4 +41,48 @@ export interface Health {
   build: string;
   environment: string;
   dependencies: Record<string, string>;
+}
+
+export interface CorpusDocument {
+  id: string;
+  title: string;
+  version: string;
+  effective: string;
+  owner: string;
+  status: "current" | "superseded";
+}
+
+export interface CorpusDocumentDetail extends CorpusDocument {
+  content: string;
+}
+
+export interface ConversationSummary {
+  id: string;
+  started_at: string;
+  last_at: string;
+  preview: string;
+  turns: number;
+}
+
+export interface ConversationPage {
+  conversations: ConversationSummary[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ConversationMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string | null;
+  outcome: Outcome | null;
+  created_at: string;
+  citations: Citation[];
+}
+
+export interface ConversationDetail {
+  id: string;
+  started_at: string;
+  last_at: string;
+  messages: ConversationMessage[];
 }

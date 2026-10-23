@@ -5,7 +5,14 @@
  * so a component never has to interpret a fetch rejection.
  */
 
-import type { AskResponse, Health } from "./types";
+import type {
+  AskResponse,
+  CorpusDocument,
+  CorpusDocumentDetail,
+  ConversationDetail,
+  ConversationPage,
+  Health,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -49,13 +56,55 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
  * outcome: "refused" with 200. Treating it as a failure would render the
  * product's defining behaviour as a bug.
  */
-export function ask(apiUrl: string, question: string): Promise<AskResponse> {
+export function ask(
+  apiUrl: string,
+  question: string,
+  conversationId: string | null = null,
+): Promise<AskResponse> {
   return request<AskResponse>(apiUrl, "/ask", {
     method: "POST",
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, conversation_id: conversationId }),
   });
 }
 
 export function health(apiUrl: string): Promise<Health> {
   return request<Health>(apiUrl, "/healthz");
+}
+
+export async function listCorpus(apiUrl: string): Promise<CorpusDocument[]> {
+  const response = await request<{ documents: CorpusDocument[] }>(apiUrl, "/corpus");
+  return response.documents;
+}
+
+export function getCorpusDocument(
+  apiUrl: string,
+  documentId: string,
+  version?: string,
+): Promise<CorpusDocumentDetail> {
+  const query = version ? `?version=${encodeURIComponent(version)}` : "";
+  return request<CorpusDocumentDetail>(
+    apiUrl,
+    `/corpus/${encodeURIComponent(documentId)}${query}`,
+  );
+}
+
+export function listConversations(
+  apiUrl: string,
+  limit = 20,
+  offset = 0,
+): Promise<ConversationPage> {
+  return request<ConversationPage>(
+    apiUrl,
+    `/conversations?limit=${limit}&offset=${offset}`,
+  );
+}
+
+export function getConversation(
+  apiUrl: string,
+  conversationId: string,
+): Promise<ConversationDetail> {
+  return request<ConversationDetail>(
+    apiUrl,
+    `/conversations/${encodeURIComponent(conversationId)}`,
+  );
 }

@@ -15,3 +15,6 @@ qdrant-client==1.12.1
 
 # OpenRouter -- every model call, chat and embeddings (Apache-2.0)
 openai==1.59.6
+
+# Model-compatible token counting for section-aware corpus chunking (MIT)
+tiktoken==0.14.0

@@ -13,8 +13,14 @@
  */
 
 import type { Citation } from "@/lib/types";
+import Citations from "./Citations";
 
 export default function Degraded({ citations }: { citations: Citation[] }) {
-  void citations;
-  return null;
+  return (
+    <section className="degraded" role="status">
+      <strong>No composed answer is available.</strong>
+      <p>The assistant could not reach its answer-generation service. These are matching policy sources, not an answer.</p>
+      {citations.length > 0 && <Citations citations={citations} />}
+    </section>
+  );
 }

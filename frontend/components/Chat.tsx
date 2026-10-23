@@ -1,115 +1,119 @@
 "use client";
 
-/**
- * The page a table lands on before they have built anything.
- *
- * It says what is running, what is not, and where to start -- and it says the
- * true thing. An earlier version claimed "the corpus is indexed and waiting",
- * which was false: indexing it is F1, the first thing a table builds. A
- * scaffold that misreports its own state teaches the wrong lesson on the first
- * screen anyone sees.
- *
- * Replacing this with the real assistant is F5. Nothing here is precious.
- */
+import { FormEvent, useRef, useState } from "react";
+import { ApiError, ask } from "@/lib/api";
+import type { AskResponse } from "@/lib/types";
+import TopBar from "./TopBar";
+import Answer from "./Answer";
+import Citations from "./Citations";
+import Degraded from "./Degraded";
+import Refusal from "./Refusal";
 
-import { useEffect, useState } from "react";
-
-type Health = {
-  status: string;
-  build: string;
-  environment: string;
-  dependencies: Record<string, string>;
-};
+const EXAMPLE_QUESTIONS = [
+  "What is the approval threshold for a travel expense claim?",
+  "How often do we refresh KYC for a high-risk client?",
+  "How long do we keep client correspondence?",
+];
 
 export default function Chat({ apiUrl }: { apiUrl: string }) {
-  const [health, setHealth] = useState<Health | null>(null);
-  const [reachable, setReachable] = useState<boolean | null>(null);
+  const [question, setQuestion] = useState("");
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [turns, setTurns] = useState<Array<{ question: string; response: AskResponse }>>([]);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestGeneration = useRef(0);
 
-  useEffect(() => {
-    fetch(`${apiUrl}/healthz`)
-      .then((r) => r.json())
-      .then((data: Health) => {
-        setHealth(data);
-        setReachable(true);
-      })
-      .catch(() => setReachable(false));
-  }, [apiUrl]);
+  async function submitQuestion(value: string) {
+    const trimmed = value.trim();
+    if (!trimmed || pending) return;
+
+    const generation = requestGeneration.current;
+    setPending(true);
+    setError(null);
+    setQuestion("");
+    try {
+      const response = await ask(apiUrl, trimmed, conversationId);
+      if (generation !== requestGeneration.current) return;
+      setConversationId(response.conversation_id);
+      setTurns((previous) => [...previous, { question: trimmed, response }]);
+    } catch (cause) {
+      if (generation !== requestGeneration.current) return;
+      setError(cause instanceof ApiError ? cause.message : "The request failed.");
+    } finally {
+      if (generation === requestGeneration.current) setPending(false);
+    }
+  }
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submitQuestion(question);
+  }
+
+  function reset() {
+    requestGeneration.current += 1;
+    setTurns([]);
+    setConversationId(null);
+    setQuestion("");
+    setError(null);
+    setPending(false);
+  }
 
   return (
-    <main className="welcome">
-      <header className="welcome-head">
-        <p className="eyebrow">M04 · AI-Native Development Lifecycle</p>
-        <h1>Policy Assistant</h1>
-        <p className="lede">
-          You are going to build this, and deploy it. A staff member at
-          Aldermere Bank asks a policy question in plain language; the assistant
-          answers <strong>only</strong> from the bank&rsquo;s policy corpus and
-          shows which sections it used. When the corpus cannot support an
-          answer, <strong>it says so and stops.</strong>
-        </p>
+    <main className="wrap">
+      <TopBar onReset={reset} showHistory />
+      <header>
+        <h1>Ask about policy</h1>
+        <p className="lede">Answers use Aldermere policy sources. This assistant explains policy; it does not make decisions.</p>
       </header>
-
-      <section className="card">
-        <h2>What is running</h2>
-        <ul className="status-list">
-          <li>
-            <span className="status-name">API</span>
-            <span className={reachable === false ? "status-bad" : "status-ok"}>
-              {reachable === null
-                ? "checking…"
-                : reachable
-                  ? "reachable on :8000"
-                  : `unreachable at ${apiUrl}`}
-            </span>
-          </li>
-          {health &&
-            Object.entries(health.dependencies).map(([name, detail]) => (
-              <li key={name}>
-                <span className="status-name">{name.replace(/_/g, " ")}</span>
-                <span
-                  className={
-                    detail.startsWith("down") ? "status-bad" : "status-ok"
-                  }
+      <section className="chat" aria-live="polite">
+        {turns.length === 0 ? (
+          <div className="placeholder">
+            <strong>What would you like to know?</strong>
+            <p>Choose an example or ask in your own words.</p>
+            <div className="examples">
+              {EXAMPLE_QUESTIONS.map((example) => (
+                <button
+                  className="example"
+                  key={example}
+                  type="button"
+                  disabled={pending}
+                  onClick={() => void submitQuestion(example)}
                 >
-                  {detail}
-                </span>
+                  {example}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <ol className="turns">
+            {turns.map(({ question: asked, response }, index) => (
+              <li className="turn" key={`${response.message_id}-${index}`}>
+                <p className="user-question">{asked}</p>
+                {response.outcome === "answered" && <Answer response={response} />}
+                {response.outcome === "refused" && <Refusal reason={response.answer ?? ""} />}
+                {response.outcome === "degraded" && <Degraded citations={response.citations} />}
+                {response.outcome !== "degraded" && (
+                  <Citations citations={response.citations} />
+                )}
               </li>
             ))}
-        </ul>
-        <p className="note">
-          Postgres and Qdrant are running beside you in this Codespace, and they
-          are yours alone. <strong>The corpus is not indexed yet</strong> —
-          indexing it is the first thing you build.
-        </p>
+          </ol>
+        )}
+        {pending && <p className="pending" role="status">Searching the policy corpus…</p>}
+        {error && <p className="error" role="alert">{error}</p>}
       </section>
-
-      <section className="card">
-        <h2>Where to start</h2>
-        <ol className="start-list">
-          <li>
-            <code>START-HERE.md</code> — ninety seconds, already open in your
-            editor
-          </li>
-          <li>
-            <code>docs/PRD.md</code> — what must be true. The contract.{" "}
-            <strong>§10 is the one to read twice</strong>
-          </li>
-          <li>
-            <code>pipeline/01-shape.md</code> — then follow the six stages in
-            order
-          </li>
-        </ol>
-        <p className="note">
-          Ten decisions in §10 are deliberately left to you.{" "}
-          <strong>You will be asked to defend them</strong>, and{" "}
-          <em>&ldquo;the agent chose it&rdquo;</em> is a failed answer.
-        </p>
-      </section>
-
-      <p className="footnote">
-        Aldermere Bank is fictional. This screen is scaffolding — replacing it
-        is F5.
-      </p>
+      <form className="composer" onSubmit={onSubmit}>
+        <label className="sr-only" htmlFor="question">Your policy question</label>
+        <input
+          id="question"
+          value={question}
+          onChange={(event) => setQuestion(event.target.value)}
+          placeholder="Ask a policy question…"
+          disabled={pending}
+        />
+        <button type="submit" disabled={pending || !question.trim()}>Ask</button>
+      </form>
+      <footer><p className="dim">Aldermere Bank is fictional. Check the cited policy source before acting.</p></footer>
     </main>
   );
 }

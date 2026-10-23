@@ -47,6 +47,11 @@ class QdrantVectorStore:
         )
         log.info("created Qdrant collection %s (dim=%d)", self.collection, self.dim)
 
+    def recreate(self) -> None:
+        if self._client.collection_exists(self.collection):
+            self._client.delete_collection(self.collection)
+        self.ensure_ready()
+
     def upsert(self, passages: list[Passage]) -> int:
         if not passages:
             return 0
@@ -74,7 +79,7 @@ class QdrantVectorStore:
             collection_name=self.collection,
             query=embedding,
             limit=limit,
-            score_threshold=min_score or None,
+            score_threshold=min_score,
             with_payload=True,
         ).points
 

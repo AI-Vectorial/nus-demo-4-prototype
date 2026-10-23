@@ -53,6 +53,9 @@ class VectorStore(Protocol):
         Must be safe to call repeatedly -- it runs on every boot.
         """
 
+    def recreate(self) -> None:
+        """Delete and recreate the store's collection."""
+
     def upsert(self, passages: list[Passage]) -> int:
         """Store passages, replacing any with the same id. Returns the count."""
 
