@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F4 generate
 **Covers:** REQ-G1, REQ-G2, REQ-G3, REQ-G4, REQ-G5, REQ-G6
-**Status:** `todo`
+**Status:** `done`
 
 ## What this is
 
@@ -54,3 +54,25 @@ All generation and degraded tests pass, including the test that `GENERATION_ENAB
 ## Notes
 
 Build the kill switch while writing the model call. Retrofitting it changes every caller.
+
+### Evidence, F4
+
+```
+$ cd backend && pytest -q && ruff check .
+90 passed, 1 warning in 2.99s
+All checks passed!
+
+Live, real model call (anthropic/claude-haiku-5.5), prompt answer_v1:
+Q1  Answered  latency_ms=4950  notice: superseded passage retrieved
+    Tier table (below £75 / £75 / £500 / £2,500) checked against v3.1 §4.2: present.
+Q4  Answered  latency_ms=3802  notice: superseded passage retrieved
+    Answer: £300, v3.1 §6.2. Also mentions v3.0 §6.1 (£275), labelled superseded.
+```
+
+Degraded mode (GENERATION_ENABLED=false, failing provider) is proven with fakes: passages returned, `answer` null, no model call.
+
+### Limits, stated not hidden
+
+- "Cites only retrieved passages" (Done-when) is enforced by the prompt rule, not by code. Nothing checks the answer's citations against the passages. A stage 04 review item.
+- The superseded notice fires when any superseded passage was retrieved, not when the answer relies on one. D4 says "the answer says when a superseded version was the source". That needs citation checking, which is not built. Recorded as a gap for the team; wording was corrected to match what the code knows.
+- The `answered` path does not yet carry a `refused` or `degraded` type into `/ask`. That is F5.
