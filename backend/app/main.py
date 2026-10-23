@@ -10,6 +10,7 @@ build first. START-HERE.md is your first two minutes.
 
 from __future__ import annotations
 
+import logging
 import os
 import runpy
 import sys
@@ -19,8 +20,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import ask, health
 from app.core import database
+
+log = logging.getLogger(__name__)
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
 ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT_NAME", "development")
@@ -85,6 +88,11 @@ async def lifespan(_: FastAPI):
     """
     ok, detail = database.ensure_database()
     print(f"database: {detail}")
+    if ok:
+        try:
+            database.create_schema()
+        except Exception as exc:
+            log.error("database schema initialization failed (%s)", type(exc).__name__)
 
     # The deployment indexes itself. See _index_if_empty.
     threading.Thread(target=_index_if_empty, name="index", daemon=True).start()
@@ -107,6 +115,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(ask.router)
 
 # Your routers are mounted here.
 #

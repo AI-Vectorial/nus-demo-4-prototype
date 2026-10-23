@@ -349,3 +349,79 @@ code {
   color: var(--text-dim);
   text-align: center;
 }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.reset,
+.example {
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  cursor: pointer;
+}
+
+.reset { padding: 0.45rem 0.8rem; }
+.examples { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.example { padding: 0.5rem 0.7rem; text-align: left; }
+.example:hover,
+.reset:hover { background: var(--surface-tint); }
+
+.turns {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.turn { display: flex; flex-direction: column; gap: 0.65rem; }
+.turn p { margin-top: 0; }
+
+.user-question {
+  align-self: flex-end;
+  max-width: 90%;
+  margin-bottom: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-tint);
+}
+
+.answer p { margin-bottom: 0.5rem; }
+.answer p:last-child { margin-bottom: 0; }
+.citations h3 { margin: 0; font-size: 0.9rem; }
+.degraded p { margin: 0.3rem 0; }
+.error { color: var(--danger); }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 480px) {
+  .wrap { padding: 1.5rem 0.9rem 1rem; }
+  .chat { padding: 0.85rem; }
+  .composer button { padding-inline: 0.9rem; }
+  .example { width: 100%; }
+}

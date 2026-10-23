@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F5 Ask and UI
 **Covers:** REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1, REQ-U1b, REQ-U2, REQ-U3, REQ-U4, REQ-U5, REQ-U6, REQ-U7, REQ-U9, REQ-U10, REQ-U11
-**Status:** `todo`
+**Status:** `in progress`
 **Cuttable:** No
 
 ## What this is
@@ -48,9 +48,14 @@ Do not show a History or Corpus action before its route exists.
 > as not done.
 
 ```
+cd backend && pytest -q tests/features/test_ask.py
+4 passed, 1 warning in 0.10s
 
+cd frontend && npm run lint && npm run typecheck
+ESLint passed; TypeScript check passed.
 ```
 
 ## Notes
 
-Keep API test output and the browser check evidence with this ticket at stage 03.
+API tests use SQLite and controlled retrieval/generation outcomes to validate persistence and response contracts.
+Interactive end-to-end browser evidence is pending; the local UI and API are reachable, but the API reports its model credential missing.

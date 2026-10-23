@@ -63,6 +63,14 @@ SessionLocal = (
 )
 
 
+def create_schema() -> None:
+    if _engine is None:
+        raise RuntimeError("DATABASE_URL is not set")
+    from app.core import models  # noqa: F401
+
+    Base.metadata.create_all(_engine)
+
+
 @contextmanager
 def session_scope() -> Iterator[Session]:
     """A transaction. Commits on success, rolls back on anything else."""

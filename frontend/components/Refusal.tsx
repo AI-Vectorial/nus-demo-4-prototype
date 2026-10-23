@@ -12,6 +12,10 @@
  */
 
 export default function Refusal({ reason }: { reason: string }) {
-  void reason;
-  return null;
+  return (
+    <section className="refusal" role="status">
+      <p className="lead">{reason}</p>
+      <p className="next">For policy guidance that is not covered here, contact Compliance.</p>
+    </section>
+  );
 }

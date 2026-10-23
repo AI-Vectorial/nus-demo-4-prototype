@@ -12,6 +12,12 @@
 import type { AskResponse } from "@/lib/types";
 
 export default function Answer({ response }: { response: AskResponse }) {
-  void response;
-  return null;
+  if (response.outcome !== "answered" || response.answer === null) return null;
+
+  return (
+    <section className="answer" aria-label="Policy answer">
+      <p>{response.answer}</p>
+      <p className="mono dim">Answered in {response.latency_ms} ms</p>
+    </section>
+  );
 }
