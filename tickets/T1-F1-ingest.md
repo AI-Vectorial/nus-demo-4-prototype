@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F1 ingest
 **Covers:** REQ-I1, REQ-I2, REQ-I3, REQ-I4, REQ-I5, REQ-I6, REQ-I7
-**Status:** `todo`
+**Status:** `done`
 
 ## What this is
 
@@ -50,8 +50,22 @@ Both runs exit 0, the log shows the same passage count on each, and `pytest -q -
 > as not done.
 
 ```
+$ cd backend && pytest -q
+66 passed, 1 warning in 1.84s
+$ ruff check .
+All checks passed!
+$ python -m app.ingest      # run 1
+indexed 164 passages; collection now holds 164
+$ python -m app.ingest      # run 2
+indexed 164 passages; collection now holds 164
 ```
+
+Passage count is 164 on both runs (REQ-I4). Ids are UUIDs derived from document, version, section and text.
+Not yet proven live: `--force` (REQ-I5). `reset()` is written but not run against Qdrant.
 
 ## Notes
 
-Stable passage id, a hash of document, section and text, makes REQ-I4 hold without extra logic.
+- Stable passage id, a hash of document, version, section and text, makes REQ-I4 hold. The version is in the hash because v3.0 and v3.1 share a document id.
+- D1 taken as the simplest reading: one passage per section, no splitting. `CHUNK_MAX_TOKENS` is not introduced. Section lengths are measured before any split is considered.
+- `QdrantVectorStore.reset()` is added for `--force`. It is not on the `VectorStore` protocol, so the fixture store is unchanged.
+- Finding: this Codespace has `QDRANT_COLLECTION=policy_passages` and `DATABASE_NAME=policy`. PRD §8 says these are set per table (`policy_passages_table_4`, `table_4`). Config is outside this stage's scope, so it is raised, not changed.
