@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F2 retrieve
 **Covers:** REQ-R1, REQ-R5
-**Status:** `todo`
+**Status:** `done`
 
 ## What this is
 
@@ -17,10 +17,10 @@ All ten answerable questions in `backend/corpus/EVALUATION.md` (Q1–Q10) return
 ## How to check it
 
 ```bash
-cd backend && pytest -q -k "retrieval or evaluation"
+cd backend && pytest -q && python -m app.retrieve.evaluate
 ```
 
-The run reports all Q1–Q10 tests passed. If any fail, the top score and the rank of the expected section are printed for each, and are recorded at stage 04 rather than tuned away.
+`pytest` covers the mechanism with fakes. `evaluate` runs Q1–Q10 on the live index with real embeddings, and prints `answerable: N/10 pass`. Any failure is recorded at stage 04, not tuned away.
 
 ## Decisions this depends on
 
@@ -38,6 +38,8 @@ The run reports all Q1–Q10 tests passed. If any fail, the top score and the ra
 ## Not in this feature
 
 - The refusal threshold and the decision to refuse (F3)
+- Q11–Q13 refusal itself (F3). F2 only records their scores
+- Q4 finding: the top hit is superseded v3.0 §6.1, and current v3.1 §6.2 is second. Handled by D4 in F4, not here
 - Any generation (F4)
 - Re-ranking, hybrid search or query expansion, unless measured failing first (out of scope in features.md)
 
@@ -49,8 +51,17 @@ The run reports all Q1–Q10 tests passed. If any fail, the top score and the ra
 > as not done.
 
 ```
+$ cd backend && pytest -q && ruff check .
+72 passed, 1 warning in 2.39s
+All checks passed!
+$ python -m app.retrieve.evaluate
+Q1  PASS  top=0.7062  ...   Q2  PASS  top=0.7135  ...   Q3  PASS  top=0.5616
+Q4  PASS  top=0.6614  ...   Q5  PASS  top=0.5420  ...   Q6  PASS  top=0.5934
+Q7  PASS  top=0.5906  ...   Q8  PASS  top=0.7306  ...   Q9  PASS  top=0.6045
+Q10 PASS  top=0.5938  ...
+answerable: 10/10 pass
+Q11 top=0.4352   Q12 top=0.4684   Q13 top=0.2799
 ```
 
-## Notes
-
-The per-question top scores and ranks are the input to D2 at stage 02 and 03.
+Full per-question output, with the top three and their scores, is in the terminal log of this commit's run.
+Refusal scores for D2 (F3 sets the value): lowest answerable top score 0.5420 (Q5); highest unanswerable 0.4684 (Q12). The gap is 0.4684 to 0.5420. Not set here.

@@ -71,6 +71,9 @@ class Settings:
     # replaces the search.
     context_messages: int = int(os.getenv("CONTEXT_MESSAGES", "5"))
 
+    # How many passages retrieval returns before the threshold is applied. D3.
+    retrieve_top_k: int = int(os.getenv("RETRIEVE_TOP_K", "5"))
+
     # Below this, retrieval is treated as having found nothing and the
     # assistant refuses rather than composing an answer from weak matches.
     # Yours to choose -- D2. Tune it against corpus/EVALUATION.md.
