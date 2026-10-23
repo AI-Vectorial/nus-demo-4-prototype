@@ -1,115 +1,159 @@
 "use client";
 
 /**
- * The page a table lands on before they have built anything.
+ * The assistant. F5.
  *
- * It says what is running, what is not, and where to start -- and it says the
- * true thing. An earlier version claimed "the corpus is indexed and waiting",
- * which was false: indexing it is F1, the first thing a table builds. A
- * scaffold that misreports its own state teaches the wrong lesson on the first
- * screen anyone sees.
- *
- * Replacing this with the real assistant is F5. Nothing here is precious.
+ * REQ-U1 / REQ-U1b: an empty state that invites a question and offers three
+ * questions the corpus can answer. One is the superseded-policy case, so the
+ * first thing anyone sees is a citation flagged as withdrawn.
+ * REQ-U2: the question, then the answer, with citations visible.
+ * REQ-U5 / REQ-U6: refusal, degraded and error each render differently.
+ * REQ-U7: a pending state while waiting.
+ * REQ-U8: a follow-up keeps the conversation above it.
+ * REQ-U9: Reset clears the conversation and starts a new one (REQ-C6).
  */
 
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 
-type Health = {
-  status: string;
-  build: string;
-  environment: string;
-  dependencies: Record<string, string>;
-};
+import Answer from "@/components/Answer";
+import Degraded from "@/components/Degraded";
+import Refusal from "@/components/Refusal";
+import TopBar from "@/components/TopBar";
+import { ApiError, ask } from "@/lib/api";
+import type { AskResponse } from "@/lib/types";
+
+const EXAMPLES = [
+  "What is the approval threshold for a travel expense claim?",
+  "Do I need approval for a claim of exactly £75?",
+  "How long must client correspondence be kept?",
+];
+
+type Turn =
+  | { kind: "question"; text: string }
+  | { kind: "response"; response: AskResponse }
+  | { kind: "error"; message: string };
 
 export default function Chat({ apiUrl }: { apiUrl: string }) {
-  const [health, setHealth] = useState<Health | null>(null);
-  const [reachable, setReachable] = useState<boolean | null>(null);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [pending, setPending] = useState(false);
+  // Bumped on Reset so a request still in flight cannot write into a new chat.
+  const generation = useRef(0);
 
-  useEffect(() => {
-    fetch(`${apiUrl}/healthz`)
-      .then((r) => r.json())
-      .then((data: Health) => {
-        setHealth(data);
-        setReachable(true);
-      })
-      .catch(() => setReachable(false));
-  }, [apiUrl]);
+  async function send(text: string) {
+    const question = text.trim();
+    if (!question || pending) return;
+
+    const current = generation.current;
+    setDraft("");
+    setPending(true);
+    setTurns((t) => [...t, { kind: "question", text: question }]);
+
+    try {
+      const response = await ask(apiUrl, question, conversationId);
+      if (current !== generation.current) return;
+      setConversationId(response.conversation_id);
+      setTurns((t) => [...t, { kind: "response", response }]);
+    } catch (err) {
+      if (current !== generation.current) return;
+      const message =
+        err instanceof ApiError ? err.message : "Something went wrong.";
+      setTurns((t) => [...t, { kind: "error", message }]);
+    } finally {
+      if (current === generation.current) setPending(false);
+    }
+  }
+
+  function reset() {
+    generation.current += 1;
+    setTurns([]);
+    setConversationId(null);
+    setDraft("");
+    setPending(false);
+  }
 
   return (
-    <main className="welcome">
-      <header className="welcome-head">
-        <p className="eyebrow">M04 · AI-Native Development Lifecycle</p>
-        <h1>Policy Assistant</h1>
-        <p className="lede">
-          You are going to build this, and deploy it. A staff member at
-          Aldermere Bank asks a policy question in plain language; the assistant
-          answers <strong>only</strong> from the bank&rsquo;s policy corpus and
-          shows which sections it used. When the corpus cannot support an
-          answer, <strong>it says so and stops.</strong>
-        </p>
-      </header>
-
-      <section className="card">
-        <h2>What is running</h2>
-        <ul className="status-list">
-          <li>
-            <span className="status-name">API</span>
-            <span className={reachable === false ? "status-bad" : "status-ok"}>
-              {reachable === null
-                ? "checking…"
-                : reachable
-                  ? "reachable on :8000"
-                  : `unreachable at ${apiUrl}`}
-            </span>
-          </li>
-          {health &&
-            Object.entries(health.dependencies).map(([name, detail]) => (
-              <li key={name}>
-                <span className="status-name">{name.replace(/_/g, " ")}</span>
-                <span
-                  className={
-                    detail.startsWith("down") ? "status-bad" : "status-ok"
-                  }
+    <>
+      <TopBar onReset={reset} />
+      <main className="wrap">
+        {turns.length === 0 ? (
+          <section className="empty">
+            <h1>Ask a policy question</h1>
+            <p className="lede">
+              Answers come only from Aldermere Bank&rsquo;s policy corpus, and
+              every answer shows the sections it used.
+            </p>
+            <div className="examples">
+              {EXAMPLES.map((example) => (
+                <button
+                  key={example}
+                  type="button"
+                  onClick={() => send(example)}
+                  disabled={pending}
                 >
-                  {detail}
-                </span>
-              </li>
-            ))}
-        </ul>
-        <p className="note">
-          Postgres and Qdrant are running beside you in this Codespace, and they
-          are yours alone. <strong>The corpus is not indexed yet</strong> —
-          indexing it is the first thing you build.
-        </p>
-      </section>
+                  {example}
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="chat" aria-live="polite">
+            {turns.map((turn, i) => {
+              if (turn.kind === "question") {
+                return (
+                  <p key={i} className="question">
+                    {turn.text}
+                  </p>
+                );
+              }
+              if (turn.kind === "error") {
+                return (
+                  <div key={i} className="error" role="alert">
+                    <span className="lead">Error.</span> {turn.message}
+                  </div>
+                );
+              }
+              const { response } = turn;
+              if (response.outcome === "answered") {
+                return <Answer key={i} response={response} />;
+              }
+              if (response.outcome === "refused") {
+                return (
+                  <Refusal
+                    key={i}
+                    reason={
+                      response.answer ??
+                      "Nothing in the corpus supports an answer to that question."
+                    }
+                  />
+                );
+              }
+              return <Degraded key={i} citations={response.citations} />;
+            })}
+            {pending && <p className="pending">Searching the policy corpus…</p>}
+          </section>
+        )}
 
-      <section className="card">
-        <h2>Where to start</h2>
-        <ol className="start-list">
-          <li>
-            <code>START-HERE.md</code> — ninety seconds, already open in your
-            editor
-          </li>
-          <li>
-            <code>docs/PRD.md</code> — what must be true. The contract.{" "}
-            <strong>§10 is the one to read twice</strong>
-          </li>
-          <li>
-            <code>pipeline/01-shape.md</code> — then follow the six stages in
-            order
-          </li>
-        </ol>
-        <p className="note">
-          Ten decisions in §10 are deliberately left to you.{" "}
-          <strong>You will be asked to defend them</strong>, and{" "}
-          <em>&ldquo;the agent chose it&rdquo;</em> is a failed answer.
-        </p>
-      </section>
-
-      <p className="footnote">
-        Aldermere Bank is fictional. This screen is scaffolding — replacing it
-        is F5.
-      </p>
-    </main>
+        <form
+          className="composer"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(draft);
+          }}
+        >
+          <input
+            aria-label="Ask a policy question"
+            placeholder="Ask about a policy…"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            disabled={pending}
+          />
+          <button type="submit" disabled={pending || !draft.trim()}>
+            Send
+          </button>
+        </form>
+      </main>
+    </>
   );
 }

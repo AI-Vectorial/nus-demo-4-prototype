@@ -349,3 +349,110 @@ code {
   color: var(--text-dim);
   text-align: center;
 }
+
+/* ---------------------------------------------------------------------------
+   The assistant (F5): top bar, empty state, question line, answer text, and
+   the error outcome. Added beside the outcome styles above.
+   --------------------------------------------------------------------------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.5rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.topbar-actions button {
+  padding: 0.45rem 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.topbar-actions button:hover { background: var(--surface-tint); }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 4rem;
+  text-align: center;
+  align-items: center;
+}
+
+.empty .lede { max-width: 32rem; }
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 32rem;
+}
+
+.examples button {
+  padding: 0.75rem 1rem;
+  font: inherit;
+  text-align: left;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.examples button:hover { border-color: var(--accent); }
+.examples button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.question {
+  margin: 0 0 0.85rem;
+  font-weight: 600;
+}
+
+.answer-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.answer { margin-bottom: 1rem; }
+
+/* A failed request. Solid and filled, so it cannot be mistaken for the dashed
+   refusal (REQ-U5) or for degraded sources. */
+.error {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.error .lead { font-weight: 700; }
+
+.refusal,
+.answer,
+.degraded { margin-bottom: 1rem; }
+
+.refusal .next { white-space: pre-wrap; }
+
+.citation .dim { font-size: 0.78rem; }
+
+@media (max-width: 480px) {
+  .topbar { padding: 0.75rem 1rem; }
+  .wrap { padding: 2rem 1rem 1.5rem; }
+  .composer { flex-direction: column; }
+  .composer button { width: 100%; }
+}

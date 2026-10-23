@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F5 ask + UI
 **Covers:** REQ-A1, REQ-A2, REQ-A5, REQ-C1, REQ-C2, REQ-U1, REQ-U1b, REQ-U2, REQ-U3, REQ-U4, REQ-U5, REQ-U6, REQ-U7, REQ-U9, REQ-U10, REQ-U11
-**Status:** `todo`
+**Status:** `done`
 
 ## What this is
 
@@ -50,9 +50,41 @@ The backend tests pass, the frontend typecheck and lint exit 0, and a manual che
 > count — it is a claim, not a record. A ticket marked done on a claim is reported
 > as not done.
 
-```
-```
+$ cd backend && python3 -m pytest -q -k "ask or healthz"
+16 passed, 87 deselected, 1 warning
+
+$ cd frontend && npm run typecheck && npm run lint
+typecheck exit=0
+lint exit=0
+
+$ curl -s localhost:8000/healthz
+{"status":"ok",...,"model":"anthropic/claude-haiku-5.5 configured"}
+
+$ POST /ask (live, MIN_SCORE=0.50)
+"What is the approval threshold for a travel expense claim?" -> answered; cites 4.2 v3.1 current, 4.1 v3.0 superseded
+"Do I need approval for a claim of exactly £75?"            -> answered; cites 4.2 v3.1 current, 4.1 v3.0 superseded
+"How long must client correspondence be kept?"              -> answered; cites records retention v4.0 current
+"What is the best pizza topping in Paris?"                  -> refused; no citations
+
+Browser check at localhost:3000 (reported by the team, "browser passed"):
+answered cited view, superseded citation marked, refusal distinct from error, Reset clears.
 
 ## Notes
 
 Nothing deploys here. Keep going; everything goes out together at stage 05.
+
+**Blocker resolved.** The table key was missing at first; it was then set in the
+API environment. Live outcomes are in Evidence above. The provider-failure path
+(503) was tested separately: `/ask` returns 503 when the provider is unreachable,
+and the web proxy forwards it.
+
+**Decisions on record (stage 03).**
+- D2 refusal threshold: `MIN_SCORE=0.50`. Team said "just use 0.50"; reason
+  given: the value accepted in F3 (`T1-F3-refuse.md`).
+- 503 on provider failure: accepted the proposal. Reason: an unreachable provider
+  is neither an answer nor a refusal, and a refusal would wrongly tell staff the
+  policy does not cover the question. Not in PRD §5; the PRD should be updated
+  by the team.
+- Example questions: accepted the proposal. Reason: each is answerable from the
+  corpus, and the first is the superseded-travel-policy case (REQ-U1b). The
+  superseded citation is not yet verified live, since the key is missing.

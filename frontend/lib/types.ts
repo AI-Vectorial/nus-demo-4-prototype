@@ -31,8 +31,12 @@ export interface AskResponse {
   /** The composed answer, or the reason for a refusal. null when degraded. */
   answer: string | null;
   citations: Citation[];
-  exchange_id: string;
+  /** PRD §5: the conversation this turn belongs to. Send it back to follow up. */
+  conversation_id: string;
+  message_id: string;
   latency_ms: number;
+  /** Why a refusal or degradation happened, when the API says so. */
+  notice?: string | null;
 }
 
 export interface Health {

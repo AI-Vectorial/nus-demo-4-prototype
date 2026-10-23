@@ -1,8 +1,6 @@
 /**
  * The kill switch, shown honestly. F4.
  *
- * SHELL -- renders nothing until you implement it.
- *
  * REQ-U6: degraded mode must be VISIBLY degraded. The model is off or
  * unreachable, so there is no composed answer -- only the policy sections that
  * were found.
@@ -12,9 +10,17 @@
  * compose an answer: less useful, still honest, still working.
  */
 
+import Citations from "@/components/Citations";
 import type { Citation } from "@/lib/types";
 
 export default function Degraded({ citations }: { citations: Citation[] }) {
-  void citations;
-  return null;
+  return (
+    <div>
+      <p className="degraded">
+        The assistant could not compose an answer right now. The policy sections
+        it found are listed below. They are sources, not an answer.
+      </p>
+      <Citations citations={citations} />
+    </div>
+  );
 }

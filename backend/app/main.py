@@ -19,7 +19,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import ask, health
 from app.core import database
 
 BUILD_SHA = os.getenv("RAILWAY_GIT_COMMIT_SHA", "local")[:7]
@@ -86,6 +86,9 @@ async def lifespan(_: FastAPI):
     ok, detail = database.ensure_database()
     print(f"database: {detail}")
 
+    ok, detail = database.ensure_schema()
+    print(f"schema: {detail}")
+
     # The deployment indexes itself. See _index_if_empty.
     threading.Thread(target=_index_if_empty, name="index", daemon=True).start()
     yield
@@ -107,6 +110,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(ask.router)
 
 # Your routers are mounted here.
 #

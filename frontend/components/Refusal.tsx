@@ -1,8 +1,6 @@
 /**
  * When the corpus cannot support an answer. F3.
  *
- * SHELL -- renders nothing until you implement it.
- *
  * REQ-U5: a refusal must look different from an answer AND different from an
  * error. It is not a failure -- it is the product working correctly, and it is
  * the behaviour the brief says we would defend hardest.
@@ -12,6 +10,10 @@
  */
 
 export default function Refusal({ reason }: { reason: string }) {
-  void reason;
-  return null;
+  return (
+    <div className="refusal" role="status">
+      <p className="lead">The policy corpus does not answer this question.</p>
+      <p className="next">{reason}</p>
+    </div>
+  );
 }

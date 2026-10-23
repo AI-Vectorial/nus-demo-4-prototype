@@ -138,6 +138,26 @@ def ensure_database() -> tuple[bool, str]:
             pass
 
 
+def ensure_schema() -> tuple[bool, str]:
+    """Create this table's tables if they do not exist yet. PRD §6.
+
+    Runs after ensure_database, so the database is there. Idempotent: existing
+    tables are left alone. Never raises; a failure is reported by /healthz.
+    """
+    if _engine is None:
+        return False, "DATABASE_URL not set"
+
+    # Importing the models registers their tables on Base.metadata. Done here,
+    # not at module top, because the models import Base from this module.
+    import app.models  # noqa: F401
+
+    try:
+        Base.metadata.create_all(_engine)
+        return True, "schema ready"
+    except Exception as error:  # noqa: BLE001 - reported, not handled
+        return False, f"could not create schema: {type(error).__name__}"
+
+
 def health() -> tuple[bool, str]:
     """Never raises: /healthz must answer even when Postgres is down."""
     if _engine is None:

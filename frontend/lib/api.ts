@@ -49,10 +49,14 @@ async function request<T>(apiUrl: string, path: string, init?: RequestInit): Pro
  * outcome: "refused" with 200. Treating it as a failure would render the
  * product's defining behaviour as a bug.
  */
-export function ask(apiUrl: string, question: string): Promise<AskResponse> {
+export function ask(
+  apiUrl: string,
+  question: string,
+  conversationId: string | null,
+): Promise<AskResponse> {
   return request<AskResponse>(apiUrl, "/ask", {
     method: "POST",
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, conversation_id: conversationId }),
   });
 }
 
