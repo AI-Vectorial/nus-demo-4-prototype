@@ -60,7 +60,7 @@ F6–F8 follow the ask flow and are cut in the required order if time is short.
 
 | | |
 |---|---|
-| **Decision** | AWAITING APPROVAL |
+| **Decision** | APPROVED |
 | **By** | the release manager |
-| **When** | |
+| **When** | 2026-10-23 08:52 UTC |
 | **If rejected, what would make it acceptable** | |
