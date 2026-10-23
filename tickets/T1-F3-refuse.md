@@ -3,7 +3,7 @@
 **Parent:** [T1](T1.md)
 **Feature:** F3 Refuse
 **Covers:** REQ-R2, REQ-R3, REQ-R4, REQ-R6
-**Status:** `todo`
+**Status:** `in progress`
 **Cuttable:** No
 
 ## What this is
@@ -48,9 +48,11 @@ Do not let the model choose whether evidence is sufficient.
 > as not done.
 
 ```
-
+cd backend && pytest -q tests/features/test_refusal.py tests/features/test_retrieval.py tests/features/test_ingest.py
+8 passed, 1 warning in 0.35s
 ```
 
 ## Notes
 
-Capture live evaluation scores as well as the automated refusal assertion.
+The refusal type and no-generation branch are covered offline.
+The final threshold and all 13 evaluation scores remain pending live-index calibration (D2).
